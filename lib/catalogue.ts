@@ -55,6 +55,12 @@ export async function getProductsInCategories(ids: string[]): Promise<Product[]>
   return (must(data, error) as unknown as Product[]).map(sortImages);
 }
 
+export async function getProductsBySlugs(slugs: string[]): Promise<Product[]> {
+  if (!slugs.length) return [];
+  const { data, error } = await supabase.from("products").select(productSelect).in("slug", slugs);
+  return (must(data, error) as unknown as Product[]).map(sortImages);
+}
+
 export async function getProductsByTheme(id: string): Promise<Product[]> {
   const { data, error } = await supabase.from("products").select(productSelect).eq("theme_id", id).order("sort_order");
   return (must(data, error) as unknown as Product[]).map(sortImages);
@@ -75,8 +81,9 @@ export function formatDate(date: string | null) {
   return new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", timeZone: "Australia/Brisbane" }).format(new Date(date));
 }
 
-export type PostSection = { heading: string; text: string; image: string; alt: string; position: string };
-export type Post = { id: string; slug: string; title: string; excerpt: string; body: string; sections: PostSection[]; image_url: string; image_alt: string; image_position: string; published_at: string };
+export type PostProduct = { slug?: string; name?: string; image?: string; alt?: string; price?: string; shop?: string; url?: string };
+export type PostSection = { heading: string; text: string; image: string; alt: string; position: string; credit?: string; note?: string; products?: PostProduct[] };
+export type Post = { id: string; slug: string; title: string; excerpt: string; intro: string; category: string; author: string; sections: PostSection[]; image_url: string; image_alt: string; image_position: string; image_credit: string; published_at: string };
 
 export async function getPosts(): Promise<Post[]> {
   const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });
