@@ -1,0 +1,20 @@
+# Image credits
+
+All images in `public/images/` are temporary Pexels stock photos used for design only. They show other people's rooms and products and must be replaced with Ivy & Bough's own photography before launch.
+
+| File | Pexels photo ID |
+|---|---|
+| hero-traditional.jpg | 1708601 |
+| theme-winter.jpg | 14647412 |
+| theme-modern.jpg | 19421460 |
+| theme-rustic.jpg | 10068655 |
+| theme-woodland.jpg | 19578037 |
+| fireplace.jpg | 30756857 |
+| home-table.jpg | 20371072 |
+| home-tree.jpg | 6305604 |
+| home-door.jpg | 19788587 |
+| product-wreath.jpg | 6073048 |
+| product-wreath-door.jpg | 5367771 |
+| product-bow.jpg | 3303615 |
+| product-floral.jpg | 14561650 |
+| product-centrepiece.jpg | 6032736 |

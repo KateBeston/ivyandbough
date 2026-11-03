@@ -1,0 +1,30 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+
+export function SignupForm() {
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setState("sending");
+    const form = e.currentTarget;
+    const email = new FormData(form).get("email");
+    const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }).catch(() => null);
+    if (res?.ok) {
+      form.reset();
+      setState("done");
+    } else {
+      setState("error");
+    }
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <label>Email address<input name="email" type="email" required autoComplete="email" /></label>
+      <button type="submit" disabled={state === "sending"}>Join</button>
+      {state === "done" && <div className="msg" role="status">You&apos;re on the list.</div>}
+      {state === "error" && <div className="msg" role="alert">That didn&apos;t go through. Please try again.</div>}
+    </form>
+  );
+}
