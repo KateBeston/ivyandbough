@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { RichText } from "@/components/RichText";
 import { SignupForm } from "@/components/SignupForm";
-import { formatPrice, getPost, getPosts, getProductsBySlugs, type PostProduct, type Product } from "@/lib/catalogue";
+import { designStyle, ratio, type ArticleDesign } from "@/lib/article-design";
+import { formatPrice, getArticleDesign, getPost, getPosts, getProductsBySlugs, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
@@ -37,15 +39,71 @@ function ArticleProduct({ item, catalogue }: { item: PostProduct; catalogue: Pro
   );
 }
 
+function Divider({ style }: { style: string }) {
+  if (style === "wreath") return <img className="article-divider-wreath" src="/brand/wreath-ink.svg" alt="" width={96} height={96} />;
+  if (style === "space") return <div className="article-divider-space" />;
+  return <hr className={`article-divider ${style === "short" ? "short" : ""}`} />;
+}
+
+const sizes: Record<string, string> = { small: "article-h-small", large: "article-h-large" };
+
+function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
+  if (s.type === "divider") return <Divider style={s.style ?? "line"} />;
+  if (s.type === "quote") {
+    return (
+      <blockquote className="article-quote">
+        <p>{s.text}</p>
+        {s.note && <footer>{s.note}</footer>}
+      </blockquote>
+    );
+  }
+  if (s.type === "pair") {
+    return (
+      <figure className="article-figure">
+        <div className="article-pair">
+          {s.image && <div className="frame article-photo"><Image src={s.image} alt={s.alt} fill sizes="(max-width: 760px) 50vw, 400px" className="cover" style={{ objectPosition: s.position }} /></div>}
+          {s.image2 && <div className="frame article-photo"><Image src={s.image2} alt={s.alt2 ?? ""} fill sizes="(max-width: 760px) 50vw, 400px" className="cover" style={{ objectPosition: s.position2 }} /></div>}
+        </div>
+        {s.credit && <figcaption className="article-credit">{s.credit}</figcaption>}
+      </figure>
+    );
+  }
+  if (s.type === "photo") {
+    const full = s.width === "full";
+    return (
+      <figure className={`article-figure ${full ? "article-full" : ""}`}>
+        {s.image && <div className="frame article-photo" style={full ? { aspectRatio: "21 / 9" } : { aspectRatio: ratio(s.shape) }}><Image src={s.image} alt={s.alt} fill sizes={full ? "100vw" : "(max-width: 760px) 100vw, 860px"} className="cover" style={{ objectPosition: s.position }} /></div>}
+        {s.credit && <figcaption className="article-credit">{s.credit}</figcaption>}
+      </figure>
+    );
+  }
+  return (
+    <section className={`article-section ${s.align === "center" ? "centre" : ""}`}>
+      {s.heading && <h2 className={sizes[s.size ?? ""]}>{s.heading}</h2>}
+      {s.image && <div className="frame article-photo" style={{ aspectRatio: ratio(s.shape) }}><Image src={s.image} alt={s.alt} fill sizes="(max-width: 760px) 100vw, 860px" className="cover" style={{ objectPosition: s.position }} /></div>}
+      {s.credit && <div className="article-credit">{s.credit}</div>}
+      {s.note && <div className="article-note">{s.note}</div>}
+      {s.text && <RichText text={s.text} />}
+      {!!s.products?.length && <div className={`article-products ${s.columns === 3 ? "three" : ""}`}>{s.products.map((item, n) => <ArticleProduct key={n} item={item} catalogue={catalogue} />)}</div>}
+    </section>
+  );
+}
+
+const isSection = (s?: PostSection) => !!s && (!s.type || s.type === "section");
+
+function autoDivider(design: ArticleDesign, s: PostSection, before?: PostSection) {
+  return design.divider !== "none" && isSection(s) && isSection(before) ? <Divider style={design.divider} /> : null;
+}
+
 export default async function PostPage({ params }: Props) {
   const post = await getPost((await params).slug);
   if (!post) notFound();
   const related = (await getPosts()).filter((p) => p.id !== post.id).slice(0, 3);
   const slugs = post.sections.flatMap((s) => (s.products ?? []).flatMap((p) => (p.slug ? [p.slug] : [])));
-  const catalogue = await getProductsBySlugs([...new Set(slugs)]);
+  const [catalogue, design] = await Promise.all([getProductsBySlugs([...new Set(slugs)]), getArticleDesign()]);
   return (
-    <main>
-      <section className="post-hero">
+    <main className="article-page" style={designStyle(design)}>
+      <section className={`post-hero ${design.heroSide === "left" ? "photo-left" : ""}`}>
         <div className="post-hero-copy">
           <Link href="/the-christmas-edit" className="eyebrow">{post.category}</Link>
           <h1>{post.title}</h1>
@@ -71,14 +129,10 @@ export default async function PostPage({ params }: Props) {
           </aside>
         )}
         {post.sections.map((s, i) => (
-          <section key={i} className="article-section">
-            {s.heading && <h2>{s.heading}</h2>}
-            {s.image && <div className="frame article-photo"><Image src={s.image} alt={s.alt} fill sizes="(max-width: 760px) 100vw, 652px" className="cover" style={{ objectPosition: s.position }} /></div>}
-            {s.credit && <div className="article-credit">{s.credit}</div>}
-            {s.note && <div className="article-note">{s.note}</div>}
-            {s.text && <RichText text={s.text} />}
-            {!!s.products?.length && <div className="article-products">{s.products.map((item, n) => <ArticleProduct key={n} item={item} catalogue={catalogue} />)}</div>}
-          </section>
+          <Fragment key={i}>
+            {autoDivider(design, s, post.sections[i - 1])}
+            <Block s={s} catalogue={catalogue} />
+          </Fragment>
         ))}
         <section className="article-signup">
           <h2 className="heading">First look at new pieces</h2>

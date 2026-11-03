@@ -1,3 +1,4 @@
+import { defaultDesign, type ArticleDesign } from "./article-design";
 import { supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number };
@@ -82,7 +83,7 @@ export function formatDate(date: string | null) {
 }
 
 export type PostProduct = { slug?: string; name?: string; image?: string; alt?: string; price?: string; shop?: string; url?: string };
-export type PostSection = { heading: string; text: string; image: string; alt: string; position: string; credit?: string; note?: string; products?: PostProduct[] };
+export type PostSection = { type?: "section" | "photo" | "pair" | "quote" | "divider"; heading: string; text: string; image: string; alt: string; position: string; credit?: string; note?: string; products?: PostProduct[]; shape?: string; size?: string; align?: string; columns?: number; width?: string; image2?: string; alt2?: string; position2?: string; style?: string };
 export type Post = { id: string; slug: string; title: string; excerpt: string; intro: string; category: string; author: string; sections: PostSection[]; image_url: string; image_alt: string; image_position: string; image_credit: string; published_at: string };
 
 export async function getPosts(): Promise<Post[]> {
@@ -94,4 +95,9 @@ export async function getPost(slug: string): Promise<Post | null> {
   const { data, error } = await supabase.from("posts").select("*").eq("slug", slug).maybeSingle();
   if (error) throw new Error(error.message);
   return data as Post | null;
+}
+
+export async function getArticleDesign(): Promise<ArticleDesign> {
+  const { data } = await supabase.from("site_settings").select("value").eq("key", "article_design").maybeSingle();
+  return { ...defaultDesign, ...(data?.value as Partial<ArticleDesign> | undefined) };
 }
