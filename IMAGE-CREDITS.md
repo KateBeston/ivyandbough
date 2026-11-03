@@ -27,3 +27,5 @@ All images in `public/images/` are temporary Pexels stock photos used for design
 | theme-sugar-plum.jpg | 5980207 |
 | theme-boho.jpg | 6805518 |
 | theme-australian-native.jpg | 5797909 |
+| theme-midnight-silver.jpg | 6102031 |
+| theme-modern-luxe.jpg | 14866350 |

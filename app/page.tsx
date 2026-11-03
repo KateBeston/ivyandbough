@@ -38,7 +38,7 @@ export default async function HomePage() {
         <section id="collections" className="themes">
           <div className="centre">
             <div className="eyebrow">Find your Christmas</div>
-            <h2 className="heading">Nine ways to dress the home</h2>
+            <h2 className="heading">Eleven ways to dress the home</h2>
           </div>
           <div className="theme-grid">
             {themes.map((t) => (
