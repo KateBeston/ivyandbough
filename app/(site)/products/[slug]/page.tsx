@@ -1,23 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Footer } from "@/components/Footer";
 import { Gallery } from "@/components/Gallery";
-import { Nav } from "@/components/Nav";
-import { formatPrice, getProduct, getThemes } from "@/lib/catalogue";
+import { formatPrice, getProduct } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [product, themes] = await Promise.all([getProduct(slug), getThemes()]);
+  const product = await getProduct(slug);
   if (!product) notFound();
   const theme = product.themes?.name;
   const size = [product.materials || "[Materials]", product.dimensions || "[Dimensions]", product.weight || "[Weight]"].join(" · ");
   return (
     <>
-      <Nav themes={themes} solid />
       <main className="product-page">
-        <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{theme ? <> / <Link href="/#themes">{theme}</Link></> : null} / {product.name}</nav>
+        <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
         <div className="product-layout">
           <Gallery images={product.product_images} />
           <div className="details">
@@ -41,7 +38,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

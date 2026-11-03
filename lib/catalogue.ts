@@ -2,10 +2,11 @@ import { supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number };
-export type Product = { id: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; materials: string; dimensions: string; weight: string; dispatch_days: number | null; care: string; themes: { name: string } | null; product_images: ProductImage[] };
+export type Product = { id: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; materials: string; dimensions: string; weight: string; dispatch_days: number | null; care: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
+export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
-const productSelect = "id,slug,name,kind,description,price_cents,materials,dimensions,weight,dispatch_days,care,themes(name),product_images(url,alt,position,sort_order)";
+const productSelect = "id,slug,name,kind,description,price_cents,materials,dimensions,weight,dispatch_days,care,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)";
 
 function must<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
@@ -30,6 +31,28 @@ export async function getProduct(slug: string): Promise<Product | null> {
   const { data, error } = await supabase.from("products").select(productSelect).eq("slug", slug).maybeSingle();
   if (error) throw new Error(error.message);
   return data ? sortImages(data as unknown as Product) : null;
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const { data, error } = await supabase.from("categories").select("*").order("sort_order");
+  return must(data, error) as Category[];
+}
+
+export async function getCategory(slug: string): Promise<Category | null> {
+  const { data, error } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as Category | null;
+}
+
+export async function getTheme(slug: string): Promise<Theme | null> {
+  const { data, error } = await supabase.from("themes").select("*").eq("slug", slug).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as Theme | null;
+}
+
+export async function getProductsBy(column: "category_id" | "theme_id", id: string): Promise<Product[]> {
+  const { data, error } = await supabase.from("products").select(productSelect).eq(column, id).order("sort_order");
+  return (must(data, error) as unknown as Product[]).map(sortImages);
 }
 
 export async function getDeliveryDates(): Promise<DeliveryDate[]> {

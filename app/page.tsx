@@ -5,21 +5,22 @@ import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { ShopTheLook } from "@/components/ShopTheLook";
 import { SignupForm } from "@/components/SignupForm";
-import { formatDate, formatPrice, getDeliveryDates, getProducts, getThemes } from "@/lib/catalogue";
+import { ProductGrid } from "@/components/ProductGrid";
+import { formatDate, getCategories, getDeliveryDates, getProducts, getThemes } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
 const places = [
-  { title: "The Table", src: "/images/home-table.jpg", alt: "Candlelit table set with gold accents" },
-  { title: "The Tree", src: "/images/home-tree.jpg", alt: "Softly lit Christmas tree by a fireplace" },
-  { title: "The Front Door", src: "/images/home-door.jpg", alt: "Silver wreath on a black front door" },
+  { title: "The Table", href: "/shop/tableware", src: "/images/home-table.jpg", alt: "Candlelit table set with gold accents" },
+  { title: "The Tree", href: "/shop/tree-decorations", src: "/images/home-tree.jpg", alt: "Softly lit Christmas tree by a fireplace" },
+  { title: "The Front Door", href: "/shop/wreaths-garlands", src: "/images/home-door.jpg", alt: "Silver wreath on a black front door" },
 ];
 
 export default async function HomePage() {
-  const [themes, products, dates] = await Promise.all([getThemes(), getProducts(), getDeliveryDates()]);
+  const [themes, categories, products, dates] = await Promise.all([getThemes(), getCategories(), getProducts(), getDeliveryDates()]);
   return (
     <>
-      <Hero themes={themes} />
+      <Hero themes={themes} categories={categories} />
       <main>
         <section className="intro">
           <div>
@@ -41,10 +42,10 @@ export default async function HomePage() {
           </div>
           <div className="theme-grid">
             {themes.map((t) => (
-              <a key={t.id} href="#edit" className="theme-card">
+              <Link key={t.id} href={`/themes/${t.slug}`} className="theme-card">
                 <Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 100vw, 20vw" className="cover" style={{ objectPosition: t.card_position }} />
                 <div><strong>{t.name}</strong><span>{t.note}</span></div>
-              </a>
+              </Link>
             ))}
           </div>
         </section>
@@ -63,10 +64,10 @@ export default async function HomePage() {
           <h2 className="heading">From the table to the front door</h2>
           <div className="home-grid">
             {places.map((p) => (
-              <a key={p.title} href="#edit">
+              <Link key={p.title} href={p.href}>
                 <div className="frame" style={{ height: 520 }}><Image src={p.src} alt={p.alt} fill sizes="(max-width: 900px) 100vw, 33vw" className="cover" /></div>
                 <h3>{p.title}</h3>
-              </a>
+              </Link>
             ))}
           </div>
         </section>
@@ -77,21 +78,9 @@ export default async function HomePage() {
           <div className="edit-inner">
             <div className="edit-head">
               <h2 className="heading">The Christmas Edit</h2>
-              <a href="#edit" className="text-link">View all</a>
+              <Link href="/shop" className="text-link">View all</Link>
             </div>
-            <div className="product-grid">
-              {products.map((p) => {
-                const img = p.product_images[0];
-                return (
-                  <Link key={p.id} href={`/products/${p.slug}`} className="product-card">
-                    {img && <div className="frame" style={{ height: 420 }}><Image src={img.url} alt={img.alt} fill sizes="(max-width: 760px) 100vw, 25vw" className="cover" style={{ objectPosition: img.position }} /></div>}
-                    <small>{p.kind}</small>
-                    <strong>{p.name}</strong>
-                    <span>{formatPrice(p.price_cents)}</span>
-                  </Link>
-                );
-              })}
-            </div>
+            <ProductGrid products={products} />
           </div>
         </section>
 

@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import type { Theme } from "@/lib/catalogue";
+import type { Category, Theme } from "@/lib/catalogue";
 import { Nav } from "./Nav";
 
-export function Hero({ themes }: { themes: Theme[] }) {
+export function Hero({ themes, categories }: { themes: Theme[]; categories: Category[] }) {
   const [active, setActive] = useState(themes[0]);
   return (
     <section className="hero">
@@ -14,13 +15,13 @@ export function Hero({ themes }: { themes: Theme[] }) {
       ))}
       <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, rgba(16,13,9,${active.hero_shade}) 0%, rgba(16,13,9,${active.hero_shade * 0.4}) 52%, rgba(16,13,9,0) 78%)` }} />
       <div className="hero-wash" />
-      <Nav themes={themes} showLogo={false} />
+      <Nav themes={themes} categories={categories} showLogo={false} />
       <div className="hero-inner">
         <div style={{ maxWidth: 560 }}>
           <img src="/brand/wreath-cream.svg" alt="Ivy &amp; Bough" className="hero-logo" width={300} height={300} />
           <h1>Bring Christmas home, to keep for years</h1>
           <p>{active.line}</p>
-          <a href="#edit" className="outline">Shop {active.name}</a>
+          <Link href={`/themes/${active.slug}`} className="outline">Shop {active.name}</Link>
         </div>
         <div className="theme-tabs" role="group" aria-label="Choose a theme">
           {themes.map((t) => (

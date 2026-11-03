@@ -26,6 +26,31 @@ button{font:inherit;color:inherit}
 .themes-menu-photo{display:block;height:170px}
 .themes-menu strong{display:block;margin-top:10px;font-family:var(--serif);font-size:16px;font-weight:400;letter-spacing:.12em;text-transform:uppercase}
 .hero-logo{display:block;width:300px;height:300px;margin:0 0 22px -14px}
+.themes-menu-photo.short{height:110px}
+.themes-menu-all{max-width:1360px;margin:0 auto;padding:0 32px 24px}
+.themes-menu-all a{font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase}
+.collection-hero{position:relative;overflow:hidden;background:var(--night);color:#fff}
+.collection-hero .shade{background:rgba(14,10,7,.5)}
+.collection-inner{position:relative;max-width:900px;margin:0 auto;padding:110px 32px;text-align:center}
+.collection-inner h1{margin:0 0 12px;font-family:var(--serif);font-size:44px;font-weight:400;line-height:1.2;letter-spacing:.14em;text-transform:uppercase}
+.collection-body{max-width:1360px;margin:0 auto;padding:72px 40px 110px}
+.empty{padding:40px 0;text-align:center}
+.pill-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 24px;margin-bottom:44px}
+.pill-row a{padding:8px 0;text-decoration:none;font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase}
+.pill-row a.on{border-bottom:1px solid var(--gold)}
+.category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:40px 24px}
+.category-card{display:block;text-decoration:none}
+.category-card strong{display:block;margin-top:14px;font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:.14em;text-transform:uppercase}
+.prose{max-width:760px;margin:0 auto;padding:80px 32px 110px}
+.prose h1{margin:0 0 28px;font-family:var(--serif);font-size:44px;font-weight:400;line-height:1.2;letter-spacing:.14em;text-transform:uppercase}
+.prose h2{margin:36px 0 8px;font-family:var(--serif);font-size:24px;font-weight:400;letter-spacing:.12em;text-transform:uppercase}
+.prose p{margin-bottom:16px}
+.prose .delivery-grid{margin-top:20px}
+.contact-form{display:flex;flex-direction:column;gap:16px;margin-top:28px}
+.contact-form label{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.contact-form input,.contact-form textarea{padding:13px 14px;border:1px solid #B9AE9E;background:#fff;font:inherit;font-size:16px;color:var(--ink)}
+.contact-form .hp{position:absolute;left:-9999px}
+.contact-form button{align-self:flex-start}
 .hero{position:relative;overflow:hidden;background:var(--night);color:#fff}
 .cover{object-fit:cover}
 .hero-wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,13,9,.32) 0%,rgba(16,13,9,0) 18%,rgba(16,13,9,0) 72%,rgba(16,13,9,.42) 100%)}
@@ -140,10 +165,14 @@ button{font:inherit;color:inherit}
 .menu a,.menu button{width:100%;padding:12px 0;text-align:left}
 .themes-menu{position:static}
 .themes-menu-inner{grid-template-columns:repeat(2,minmax(0,1fr));padding:16px 20px 20px}
+.themes-menu-all{padding:0 20px 18px}
 .themes-menu-photo{height:110px}
 .intro,.look,.home,.edit-inner,.delivery,.product-page{padding-left:20px;padding-right:20px}
 .intro{padding-top:72px;padding-bottom:72px;gap:40px}
 .heading,.look-copy .heading,.signup .heading{font-size:29px;letter-spacing:.11em}
+.collection-inner,.prose{padding-top:64px;padding-bottom:64px}
+.collection-inner h1,.prose h1{font-size:30px;letter-spacing:.11em}
+.collection-body{padding:48px 20px 72px}
 .moment-inner{padding:110px 24px}
 .moment-inner p{font-size:26px;letter-spacing:.1em}
 .theme-card{height:420px}

@@ -18,3 +18,7 @@ All images in `public/images/` are temporary Pexels stock photos used for design
 | product-bow.jpg | 3303615 |
 | product-floral.jpg | 14561650 |
 | product-centrepiece.jpg | 6032736 |
+| cat-baubles.jpg | 250677 |
+| cat-tableware.jpg | 19594431 |
+| cat-lighting.jpg | 19375544 |
+| cat-outdoor.jpg | 712319 |
