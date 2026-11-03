@@ -75,7 +75,8 @@ export function formatDate(date: string | null) {
   return new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", timeZone: "Australia/Brisbane" }).format(new Date(date));
 }
 
-export type Post = { id: string; slug: string; title: string; excerpt: string; body: string; image_url: string; image_alt: string; image_position: string; published_at: string };
+export type PostSection = { heading: string; text: string; image: string; alt: string; position: string };
+export type Post = { id: string; slug: string; title: string; excerpt: string; body: string; sections: PostSection[]; image_url: string; image_alt: string; image_position: string; published_at: string };
 
 export async function getPosts(): Promise<Post[]> {
   const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });
