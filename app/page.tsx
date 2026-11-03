@@ -24,7 +24,7 @@ export default async function HomePage() {
         <section className="intro">
           <div>
             <div className="eyebrow">Welcome</div>
-            <h2 className="heading">The pieces you unpack every December. <em>The ones that feel like home.</em></h2>
+            <h2 className="heading">The pieces you unpack every December. The ones that feel like home.</h2>
             <p>Ivy &amp; Bough brings together elegant, unique Christmas pieces for the table, the tree and the front door.</p>
             <p>Every piece is selected to be kept, and seen and approved by us before it reaches the store.</p>
             <a href="#themes" className="text-link">Find your Christmas</a>
@@ -37,7 +37,7 @@ export default async function HomePage() {
         <section id="themes" className="themes">
           <div className="centre">
             <div className="eyebrow">Find your Christmas</div>
-            <h2 className="heading">Five ways to <em>dress the home</em></h2>
+            <h2 className="heading">Five ways to dress the home</h2>
           </div>
           <div className="theme-grid">
             {themes.map((t) => (
@@ -60,7 +60,7 @@ export default async function HomePage() {
 
         <section id="home" className="home">
           <div className="eyebrow">Around the home</div>
-          <h2 className="heading">From the table <em>to the front door</em></h2>
+          <h2 className="heading">From the table to the front door</h2>
           <div className="home-grid">
             {places.map((p) => (
               <a key={p.title} href="#edit">
@@ -76,7 +76,7 @@ export default async function HomePage() {
         <section id="edit" className="edit">
           <div className="edit-inner">
             <div className="edit-head">
-              <h2 className="heading">The <em>Christmas Edit</em></h2>
+              <h2 className="heading">The Christmas Edit</h2>
               <a href="#edit" className="text-link">View all</a>
             </div>
             <div className="product-grid">
@@ -96,7 +96,7 @@ export default async function HomePage() {
         </section>
 
         <section id="delivery" className="delivery">
-          <h2 className="heading">Under the tree <em>in time</em></h2>
+          <h2 className="heading">Under the tree in time</h2>
           <p>Last order dates for Christmas delivery.</p>
           <div className="delivery-grid">
             {dates.map((d) => (
@@ -109,7 +109,7 @@ export default async function HomePage() {
           <Image src="/images/theme-modern.jpg" alt="" fill sizes="100vw" className="cover" style={{ objectPosition: "center 40%" }} />
           <div className="shade" />
           <div className="signup-inner">
-            <h2 className="heading">First look at <em>new pieces</em></h2>
+            <h2 className="heading">First look at new pieces</h2>
             <p>New collections and Christmas delivery dates, before anyone else.</p>
             <SignupForm />
           </div>

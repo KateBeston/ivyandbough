@@ -4,7 +4,7 @@ All images in `public/images/` are temporary Pexels stock photos used for design
 
 | File | Pexels photo ID |
 |---|---|
-| hero-traditional.jpg | 1708601 |
+| hero-traditional.jpg | 29465901 (extended wall on the left) |
 | theme-winter.jpg | 14647412 |
 | theme-modern.jpg | 19421460 |
 | theme-rustic.jpg | 10068655 |
