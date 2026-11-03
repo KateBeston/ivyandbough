@@ -12,7 +12,7 @@ export function Footer() {
         </nav>
         <nav aria-label="About">
           <Link href="/about">About</Link>
-          <Link href="/journal">The Journal</Link>
+          <Link href="/the-christmas-edit">The Christmas Edit</Link>
           <Link href="/contact">Contact</Link>
         </nav>
         <nav aria-label="Help">

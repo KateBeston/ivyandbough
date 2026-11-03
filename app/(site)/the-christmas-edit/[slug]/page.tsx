@@ -23,7 +23,7 @@ export default async function PostPage({ params }: Props) {
     <main>
       <section className="post-hero">
         <div className="post-hero-copy">
-          <Link href="/journal" className="eyebrow">The Journal</Link>
+          <Link href="/the-christmas-edit" className="eyebrow">The Christmas Edit</Link>
           <h1>{post.title}</h1>
           <p>{post.excerpt}</p>
           <div className="post-meta">Ivy &amp; Bough · {longDate.format(new Date(post.published_at))}</div>
@@ -44,10 +44,10 @@ export default async function PostPage({ params }: Props) {
         ))}
       </article>
       <section className="post-related">
-        <h2 className="heading">More from the Journal</h2>
+        <h2 className="heading">More from The Christmas Edit</h2>
         <div className="journal-grid">
           {related.map((p) => (
-            <Link key={p.id} href={`/journal/${p.slug}`} className="journal-card">
+            <Link key={p.id} href={`/the-christmas-edit/${p.slug}`} className="journal-card">
               <div className="frame" style={{ height: 280 }}><Image src={p.image_url} alt={p.image_alt} fill sizes="(max-width: 760px) 100vw, 33vw" className="cover" style={{ objectPosition: p.image_position }} /></div>
               <strong>{p.title}</strong>
             </Link>

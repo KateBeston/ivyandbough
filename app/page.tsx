@@ -77,7 +77,7 @@ export default async function HomePage() {
         <section id="edit" className="edit">
           <div className="edit-inner">
             <div className="edit-head">
-              <h2 className="heading">The Christmas Edit</h2>
+              <h2 className="heading">Christmas Favourites</h2>
               <Link href="/shop" className="text-link">View all</Link>
             </div>
             <ProductGrid products={products} />
