@@ -26,3 +26,16 @@ insert into public.themes (slug, name, note, line, image_url, image_alt, hero_po
 update public.themes t set sort_order = o.n from (values
   ('traditional',1),('christmas-past',2),('bordeaux-glamour',3),('winter-wonderland',4),('midnight-silver',5),('silver-and-gold',6),('sugar-plum',7),('merry-and-bright',8),('silent-night',9),('modern-luxe',10),('rustic-homestead',11),('boho',12),('woodland',13),('australian-native',14)
 ) as o(slug, n) where t.slug = o.slug;
+
+-- Article design controls, edited in the portal.
+create table public.site_settings (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.site_settings enable row level security;
+create policy "Anyone can read site settings" on public.site_settings for select to anon, authenticated using (true);
+create policy "Portal admins manage site settings" on public.site_settings for all to authenticated using (public.is_portal_admin()) with check (public.is_portal_admin());
+grant select on public.site_settings to anon, authenticated;
+grant insert, update, delete on public.site_settings to authenticated;
+insert into public.site_settings (key, value) values ('article_design', '{}'::jsonb);
