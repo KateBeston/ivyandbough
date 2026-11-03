@@ -26,7 +26,7 @@ export function Nav({ themes, solid = false, showLogo = true }: { themes: Theme[
     <div className={`site-nav ${solid ? "nav-solid" : "nav-light"}${showLogo ? "" : " no-logo"}`} onMouseLeave={() => setThemesOpen(false)}>
       <header className="nav">
         <button type="button" className="menu-toggle" aria-expanded={mobileOpen} aria-controls="main-menu" onClick={() => setMobileOpen(!mobileOpen)}>Menu</button>
-        {showLogo && <Link href="/" className="logo">Ivy &amp; Bough</Link>}
+        {showLogo && <Link href="/" className="logo" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-ink.svg" alt="" width={120} height={70} /></Link>}
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
           <button type="button" aria-expanded={themesOpen} aria-controls="themes-menu" onClick={() => setThemesOpen(!themesOpen)} onMouseEnter={() => setThemesOpen(true)}>Themes</button>
           {range.map((item) => <Link key={item} href="/#edit" onClick={() => setMobileOpen(false)}>{item}</Link>)}

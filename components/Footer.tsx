@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-top">
-        <div className="footer-logo">Ivy &amp; Bough</div>
+        <img src="/brand/stacked-cream.svg" alt="Ivy &amp; Bough" className="footer-logo" width={150} height={88} />
         <nav aria-label="Shop">
           <Link href="/#themes">Themes</Link>
           <Link href="/#home">Around the home</Link>
