@@ -26,9 +26,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
     setPanel(null);
     setMobileOpen(false);
   };
-  const items = panel === "themes"
-    ? themes.map((t) => ({ key: t.id, href: `/themes/${t.slug}`, name: t.name, src: t.image_url, pos: t.card_position }))
-    : categories.map((c) => ({ key: c.id, href: `/shop/${c.slug}`, name: c.name, src: c.image_url, pos: c.image_position }));
+  const mains = categories.filter((c) => !c.parent_id);
 
   return (
     <div className={`site-nav ${solid ? "nav-solid" : "nav-light"}${showLogo ? "" : " no-logo"}`} onMouseLeave={() => setPanel(null)}>
@@ -36,7 +34,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
         <button type="button" className="menu-toggle" aria-expanded={mobileOpen} aria-controls="main-menu" onClick={() => setMobileOpen(!mobileOpen)}>Menu</button>
         {showLogo && <Link href="/" className="logo" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-ink.svg" alt="" width={120} height={70} /></Link>}
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
-          <button type="button" aria-expanded={panel === "themes"} aria-controls="nav-panel" onClick={() => setPanel(panel === "themes" ? null : "themes")} onMouseEnter={() => setPanel("themes")}>Themes</button>
+          <button type="button" aria-expanded={panel === "themes"} aria-controls="nav-panel" onClick={() => setPanel(panel === "themes" ? null : "themes")} onMouseEnter={() => setPanel("themes")}>Collections</button>
           <button type="button" aria-expanded={panel === "shop"} aria-controls="nav-panel" onClick={() => setPanel(panel === "shop" ? null : "shop")} onMouseEnter={() => setPanel("shop")}>Shop</button>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>
           <Link href="/delivery" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Delivery</Link>
@@ -47,17 +45,29 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
           <a href="#basket">Basket (0)</a>
         </div>
       </header>
-      {panel && (
+      {panel === "themes" && (
         <div id="nav-panel" className="themes-menu">
           <div className="themes-menu-inner">
-            {items.map((i) => (
-              <Link key={i.key} href={i.href} onClick={closeAll}>
-                <span className={`frame themes-menu-photo${panel === "shop" ? " short" : ""}`}><Image src={i.src} alt="" fill sizes="240px" className="cover" style={{ objectPosition: i.pos }} /></span>
-                <strong>{i.name}</strong>
+            {themes.map((t) => (
+              <Link key={t.id} href={`/collections/${t.slug}`} onClick={closeAll}>
+                <span className="frame themes-menu-photo"><Image src={t.image_url} alt="" fill sizes="240px" className="cover" style={{ objectPosition: t.card_position }} /></span>
+                <strong>{t.name}</strong>
               </Link>
             ))}
           </div>
-          {panel === "shop" && <div className="themes-menu-all"><Link href="/shop" onClick={closeAll}>Shop everything</Link></div>}
+        </div>
+      )}
+      {panel === "shop" && (
+        <div id="nav-panel" className="themes-menu">
+          <div className="shop-menu">
+            {mains.map((m) => (
+              <div key={m.id}>
+                <Link href={`/shop/${m.slug}`} className="shop-menu-title" onClick={closeAll}>{m.name}</Link>
+                {categories.filter((c) => c.parent_id === m.id).map((c) => <Link key={c.id} href={`/shop/${c.slug}`} onClick={closeAll}>{c.name}</Link>)}
+              </div>
+            ))}
+          </div>
+          <div className="themes-menu-all"><Link href="/shop" onClick={closeAll}>Shop everything</Link></div>
         </div>
       )}
     </div>

@@ -6,7 +6,7 @@ export function Footer() {
       <div className="footer-top">
         <img src="/brand/stacked-cream.svg" alt="Ivy &amp; Bough" className="footer-logo" width={150} height={88} />
         <nav aria-label="Shop">
-          <Link href="/#themes">Themes</Link>
+          <Link href="/#collections">Collections</Link>
           <Link href="/shop">Shop everything</Link>
           <Link href="/#home">Around the home</Link>
         </nav>

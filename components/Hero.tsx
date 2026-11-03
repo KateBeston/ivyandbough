@@ -21,9 +21,9 @@ export function Hero({ themes, categories }: { themes: Theme[]; categories: Cate
           <img src="/brand/wreath-cream.svg" alt="Ivy &amp; Bough" className="hero-logo" width={300} height={300} />
           <h1>Bring Christmas home, to keep for years</h1>
           <p>{active.line}</p>
-          <Link href={`/themes/${active.slug}`} className="outline">Shop {active.name}</Link>
+          <Link href={`/collections/${active.slug}`} className="outline">Shop {active.name}</Link>
         </div>
-        <div className="theme-tabs" role="group" aria-label="Choose a theme">
+        <div className="theme-tabs" role="group" aria-label="Choose a collection">
           {themes.map((t) => (
             <button key={t.id} type="button" aria-pressed={t.id === active.id} onClick={() => setActive(t)}>{t.name}</button>
           ))}

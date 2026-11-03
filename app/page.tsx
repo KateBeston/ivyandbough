@@ -28,21 +28,21 @@ export default async function HomePage() {
             <h2 className="heading">The pieces you unpack every December. The ones that feel like home.</h2>
             <p>Ivy &amp; Bough brings together elegant, unique Christmas pieces for the table, the tree and the front door.</p>
             <p>Every piece is selected to be kept, and seen and approved by us before it reaches the store.</p>
-            <a href="#themes" className="text-link">Find your Christmas</a>
+            <a href="#collections" className="text-link">Find your Christmas</a>
           </div>
           <div className="frame" style={{ height: 620 }}>
             <Image src="/images/theme-woodland.jpg" alt="Lit pillar candles among pine branches and a pine cone" fill sizes="(max-width: 900px) 100vw, 50vw" className="cover" style={{ objectPosition: "40% center" }} />
           </div>
         </section>
 
-        <section id="themes" className="themes">
+        <section id="collections" className="themes">
           <div className="centre">
             <div className="eyebrow">Find your Christmas</div>
             <h2 className="heading">Five ways to dress the home</h2>
           </div>
           <div className="theme-grid">
             {themes.map((t) => (
-              <Link key={t.id} href={`/themes/${t.slug}`} className="theme-card">
+              <Link key={t.id} href={`/collections/${t.slug}`} className="theme-card">
                 <Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 100vw, 20vw" className="cover" style={{ objectPosition: t.card_position }} />
                 <div><strong>{t.name}</strong><span>{t.note}</span></div>
               </Link>

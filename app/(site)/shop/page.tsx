@@ -15,7 +15,7 @@ export default async function ShopPage() {
         <h1 className="heading">Shop everything</h1>
       </div>
       <div className="category-grid" style={{ marginBottom: 88 }}>
-        {categories.map((c) => (
+        {categories.filter((c) => !c.parent_id).map((c) => (
           <Link key={c.id} href={`/shop/${c.slug}`} className="category-card">
             <div className="frame" style={{ height: 320 }}><Image src={c.image_url} alt={c.image_alt} fill sizes="(max-width: 760px) 100vw, 25vw" className="cover" style={{ objectPosition: c.image_position }} /></div>
             <strong>{c.name}</strong>

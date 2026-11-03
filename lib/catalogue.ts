@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number };
 export type Product = { id: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; materials: string; dimensions: string; weight: string; dispatch_days: number | null; care: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
-export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string };
+export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string; parent_id: string | null };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
 const productSelect = "id,slug,name,kind,description,price_cents,materials,dimensions,weight,dispatch_days,care,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)";
@@ -50,8 +50,13 @@ export async function getTheme(slug: string): Promise<Theme | null> {
   return data as Theme | null;
 }
 
-export async function getProductsBy(column: "category_id" | "theme_id", id: string): Promise<Product[]> {
-  const { data, error } = await supabase.from("products").select(productSelect).eq(column, id).order("sort_order");
+export async function getProductsInCategories(ids: string[]): Promise<Product[]> {
+  const { data, error } = await supabase.from("products").select(productSelect).in("category_id", ids).order("sort_order");
+  return (must(data, error) as unknown as Product[]).map(sortImages);
+}
+
+export async function getProductsByTheme(id: string): Promise<Product[]> {
+  const { data, error } = await supabase.from("products").select(productSelect).eq("theme_id", id).order("sort_order");
   return (must(data, error) as unknown as Product[]).map(sortImages);
 }
 
