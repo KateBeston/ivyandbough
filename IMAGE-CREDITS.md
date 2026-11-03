@@ -22,3 +22,8 @@ All images in `public/images/` are temporary Pexels stock photos used for design
 | cat-tableware.jpg | 19594431 |
 | cat-lighting.jpg | 19375544 |
 | cat-outdoor.jpg | 712319 |
+| theme-minimal.jpg | 19051375 |
+| theme-bordeaux.jpg | 3362418 |
+| theme-sugar-plum.jpg | 5980207 |
+| theme-boho.jpg | 6805518 |
+| theme-australian-native.jpg | 5797909 |
