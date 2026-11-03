@@ -44,6 +44,10 @@ button{font:inherit;color:inherit}
 .category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:40px 24px}
 .category-card{display:block;text-decoration:none}
 .category-card strong{display:block;margin-top:14px;font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:.14em;text-transform:uppercase}
+.journal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:44px 28px}
+.journal-card{display:block;text-decoration:none}
+.journal-card strong{display:block;margin:16px 0 6px;font-family:var(--serif);font-size:22px;font-weight:400;line-height:1.3;letter-spacing:.12em;text-transform:uppercase}
+.journal-card span{font-size:15px}
 .prose{max-width:760px;margin:0 auto;padding:80px 32px 110px}
 .prose h1{margin:0 0 28px;font-family:var(--serif);font-size:44px;font-weight:400;line-height:1.2;letter-spacing:.14em;text-transform:uppercase}
 .prose h2{margin:36px 0 8px;font-family:var(--serif);font-size:24px;font-weight:400;letter-spacing:.12em;text-transform:uppercase}

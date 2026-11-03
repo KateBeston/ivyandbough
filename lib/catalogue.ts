@@ -74,3 +74,16 @@ export function formatDate(date: string | null) {
   if (!date) return "[DATE]";
   return new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", timeZone: "Australia/Brisbane" }).format(new Date(date));
 }
+
+export type Post = { id: string; slug: string; title: string; excerpt: string; body: string; image_url: string; image_alt: string; image_position: string; published_at: string };
+
+export async function getPosts(): Promise<Post[]> {
+  const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });
+  return must(data, error) as Post[];
+}
+
+export async function getPost(slug: string): Promise<Post | null> {
+  const { data, error } = await supabase.from("posts").select("*").eq("slug", slug).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as Post | null;
+}

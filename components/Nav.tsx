@@ -36,6 +36,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
           <button type="button" aria-expanded={panel === "themes"} aria-controls="nav-panel" onClick={() => setPanel(panel === "themes" ? null : "themes")} onMouseEnter={() => setPanel("themes")}>Collections</button>
           <button type="button" aria-expanded={panel === "shop"} aria-controls="nav-panel" onClick={() => setPanel(panel === "shop" ? null : "shop")} onMouseEnter={() => setPanel("shop")}>Shop</button>
+          <Link href="/journal" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Journal</Link>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>
           <Link href="/delivery" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Delivery</Link>
           <Link href="/contact" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Contact</Link>
