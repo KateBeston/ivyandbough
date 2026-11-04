@@ -34,6 +34,13 @@ export async function getProduct(slug: string): Promise<Product | null> {
   return data ? sortImages(data as unknown as Product) : null;
 }
 
+export async function getProductPreview(token: string): Promise<Product | null> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) return null;
+  const { data, error } = await supabase.rpc("product_preview", { token });
+  if (error) throw new Error(error.message);
+  return data ? sortImages(data as Product) : null;
+}
+
 export async function getCategories(): Promise<Category[]> {
   const { data, error } = await supabase.from("categories").select("*").order("sort_order");
   return must(data, error) as Category[];
