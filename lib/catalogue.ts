@@ -34,6 +34,18 @@ export async function getProduct(slug: string): Promise<Product | null> {
   return data ? sortImages(data as unknown as Product) : null;
 }
 
+export async function searchProducts(query: string): Promise<Product[]> {
+  const words = query.replace(/[^\p{L}\p{N} &-]/gu, " ").trim().split(/\s+/).filter(Boolean).slice(0, 5);
+  if (!words.length) return [];
+  let request = supabase.from("products").select(productSelect);
+  for (const word of words) {
+    const term = `"%${word}%"`;
+    request = request.or(`name.ilike.${term},description.ilike.${term},materials.ilike.${term},kind.ilike.${term}`);
+  }
+  const { data, error } = await request.order("sort_order").limit(48);
+  return (must(data, error) as unknown as Product[]).map(sortImages);
+}
+
 export async function getProductPreview(token: string): Promise<Product | null> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) return null;
   const { data, error } = await supabase.rpc("product_preview", { token });

@@ -44,7 +44,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
           <Link href="/contact" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Contact</Link>
         </nav>
         <div className="nav-tools">
-          <a href="#search">Search</a>
+          <form action="/search" role="search" className="nav-search"><input type="search" name="q" placeholder="Search" aria-label="Search the site" /><button type="submit">Go</button></form>
           <Link href="/account">Account</Link>
           <Link href="/basket">Basket ({count})</Link>
         </div>
