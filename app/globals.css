@@ -322,41 +322,6 @@ button{font:inherit;color:inherit}
 /* Shop window homepage */
 .window-bar{padding:9px 16px;background:#6B1F2B;color:#FFF6E8;text-align:center}
 .window-bar .eyebrow{color:inherit}
-.window{max-width:1440px;margin:0 auto;padding:24px 40px 56px;color:var(--ink)}
-.window-photos{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:300px 300px;gap:12px}
-.window-main{grid-row:span 2;height:100%}
-.window-side{height:100%}
-.window-copy{display:flex;align-items:center;gap:36px;padding:32px 0 26px}
-.window-wreath{flex:none;width:170px;height:170px}
-.window-copy h1{margin:0 0 8px;font-family:var(--serif);font-size:48px;line-height:1.2;font-weight:400;letter-spacing:.11em;text-transform:uppercase;color:#6B1F2B}
-.window-copy p{max-width:620px;margin:0;font-size:18px}
-.window-copy .solid{margin-top:18px;background:#6B1F2B}
-.window .theme-tabs{border-top-color:var(--line)}
-.window .theme-tabs button{color:var(--ink)}
-.window .theme-tabs button[aria-pressed=true]{color:#6B1F2B;font-weight:500}
 .edit-inner{padding-top:64px;padding-bottom:72px}
 .heading{color:#6B1F2B}
 .moment .heading,.signup .heading{color:inherit}
-@media (max-width:1100px){.window{padding:20px 24px 44px}.window-photos{grid-template-rows:230px 230px}.window-copy h1{font-size:40px}}
-@media (max-width:760px){
-.window{padding:12px 20px 36px}
-.window-photos{grid-template-columns:1fr 1fr;grid-template-rows:300px 150px;gap:8px}
-.window-main{grid-column:1/-1;grid-row:auto}
-.window-copy{flex-direction:column;align-items:flex-start;gap:12px;padding:22px 0 18px}
-.window-wreath{width:120px;height:120px}
-.window-copy h1{font-size:29px;letter-spacing:.09em}
-.window-copy p{font-size:16px}
-}
-@media (max-width:760px){
-.window{padding:0 0 28px}
-.window-photos{display:block}
-.window-main{height:66vw;min-height:250px;max-height:420px}
-.window-side,.window-wreath{display:none}
-.window-copy{align-items:center;padding:24px 20px 20px;text-align:center}
-.window-copy h1{font-size:27px;line-height:1.25}
-.window-copy p{max-width:320px}
-.window-copy .solid{margin-top:14px}
-.window .theme-tabs{flex-wrap:nowrap;gap:0 22px;margin:0;padding:6px 20px 0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.window .theme-tabs::-webkit-scrollbar{display:none}
-.window .theme-tabs button{flex:none;white-space:nowrap}
-}

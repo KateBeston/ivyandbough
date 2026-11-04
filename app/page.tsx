@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Countdown } from "@/components/Countdown";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { ShopTheLook } from "@/components/ShopTheLook";
@@ -19,6 +20,7 @@ export default async function HomePage() {
   const [themes, categories, products, dates] = await Promise.all([getThemes(), getCategories(), getProducts(), getDeliveryDates()]);
   return (
     <>
+      <div className="window-bar"><Countdown /></div>
       <Hero themes={themes} categories={categories} />
       <main>
         <section id="edit" className="edit">
