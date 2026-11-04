@@ -62,6 +62,9 @@ function paragraph(block: string) {
 export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, body: string) {
   const marketing = draft.message_class === "Marketing";
   const link = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="color:#E9E3D8;text-decoration:none">${label}</a>`;
+  const nav = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="display:inline-block;padding:2px 9px;color:#2F2C27;text-decoration:none">${label}</a>`;
+  const tile = (name: string, slug: string) => `<td width="33.33%" valign="top" style="padding:0 5px"><a href="${SITE_URL}/collections/${slug}" style="color:#2F2C27;text-decoration:none"><img src="${SITE_URL}/email/collection-${slug}.jpg" width="170" alt="" style="display:block;width:100%;height:auto;border:0"><div style="padding-top:8px;font-family:Georgia,'Times New Roman',serif;font-size:13px;line-height:1.3;text-align:center">${name}</div></a></td>`;
+  const collections = `<tr><td style="padding:0 27px 34px"><div style="padding-bottom:14px;font-family:Georgia,'Times New Roman',serif;font-size:15px;letter-spacing:3px;text-align:center;text-transform:uppercase;color:#2F2C27">Explore the collections</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${tile("Traditional", "traditional")}${tile("Bordeaux Glamour", "bordeaux-glamour")}${tile("Winter Wonderland", "winter-wonderland")}</tr></table></td></tr>`;
   const why = marketing ? "You're receiving this because you joined the Ivy &amp; Bough email list." : "You're receiving this email about your order or enquiry with Ivy &amp; Bough.";
   const unsubscribe = marketing ? ' &nbsp;&middot;&nbsp; <a href="{{{ pm:unsubscribe }}}" style="color:#C4A265">Unsubscribe</a>' : "";
   return `<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -69,9 +72,9 @@ export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, b
 <div style="display:none;max-height:0;overflow:hidden">${esc(draft.preheader)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE5"><tr><td align="center" style="padding:28px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#FBF8F2;border:1px solid #E0D8CC">
-<tr><td align="center" style="padding:34px 32px 30px;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;color:#2F2C27">IVY &amp; BOUGH</td></tr>
-<tr><td style="padding:0;font-size:0;line-height:0"><img src="${SITE_URL}/email/christmas-lights.jpg" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>
-<tr><td style="padding:32px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>
+<tr><td style="padding:0;background:#2B2925;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;line-height:1.4;color:#FBF8F2;text-align:center"><a href="${SITE_URL}" style="color:#FBF8F2;text-decoration:none"><img src="${SITE_URL}/email/header-banner.jpg" width="600" alt="Ivy &amp; Bough" style="display:block;width:100%;max-width:600px;height:auto;border:0"></a></td></tr>
+<tr><td align="center" style="padding:13px 12px;border-bottom:1px solid #E0D8CC;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase">${nav("Shop", "/shop")}${nav("Collections", "/collections")}${nav("The Christmas Edit", "/the-christmas-edit")}</td></tr>
+<tr><td style="padding:28px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>${marketing ? collections : ""}
 <tr><td align="center" style="padding:30px 28px 28px;background:#2B2925;font-family:Arial,Helvetica,sans-serif;color:#E9E3D8">
 <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;letter-spacing:4px;padding-bottom:16px">IVY &amp; BOUGH</div>
 <div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
