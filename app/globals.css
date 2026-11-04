@@ -429,3 +429,26 @@ button{font:inherit;color:inherit}
 .faq-item{border-bottom:1px solid var(--line)}
 .faq-item summary{padding:14px 0;font-weight:400;cursor:pointer}
 .faq-item p{margin:0 0 16px}
+
+/* Legal pages and cookie choices */
+.legal-page ul{margin:0 0 16px;padding-left:20px}
+.legal-page li{margin-bottom:6px}
+.legal-page .footer-cookie{color:inherit}
+.legal-table{overflow-x:auto;margin-bottom:16px}
+.legal-table table{width:100%;border-collapse:collapse;font-size:14px}
+.legal-table th,.legal-table td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.footer-legal{max-width:1360px;margin:0 auto;padding:0 40px 30px;display:flex;flex-wrap:wrap;gap:6px 22px;font-size:12px}
+.footer-legal a{text-decoration:none}
+.footer-cookie{padding:0;border:0;background:none;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
+.form-note{flex:1 1 100%;margin-top:4px;font-size:12px;line-height:1.5;text-align:left}
+.check-line{display:flex!important;flex-direction:row!important;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5}
+.check-line input{width:auto;margin-top:3px}
+.cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:80;max-width:900px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 26px rgba(21,19,15,.16);font-size:13px}
+.cookie-banner p{margin:0}
+.cookie-banner div{display:flex;flex:0 0 auto;gap:8px}
+.cookie-banner button{padding:11px 16px;border:1px solid var(--ink);background:none;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.cookie-banner button.solid{background:var(--ink);color:#fff}
+@media (max-width:640px){.cookie-banner{flex-direction:column;align-items:stretch;gap:14px}.cookie-banner div>button{flex:1}.footer-legal{padding-left:24px;padding-right:24px}}
+.cookie-banner button{letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.footer-legal .footer-cookie{text-decoration:none}
+.account-form .check-line input{flex:0 0 auto;width:16px;height:16px;margin:3px 0 0;padding:0}

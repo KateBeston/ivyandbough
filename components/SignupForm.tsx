@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 export function SignupForm() {
@@ -25,6 +26,7 @@ export function SignupForm() {
       <button type="submit" disabled={state === "sending"}>Join</button>
       {state === "done" && <div className="msg" role="status">You&apos;re on the list.</div>}
       {state === "error" && <div className="msg" role="alert">That didn&apos;t go through. Please try again.</div>}
+      <small className="form-note">By joining, you agree to receive marketing emails from Ivy &amp; Bough. You can unsubscribe at any time. See our <Link href="/privacy">Privacy Policy</Link>.</small>
     </form>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatPrice, type Product } from "@/lib/catalogue";
+import { DELIVERY_SUMMARY } from "@/lib/delivery";
 import { AddToBasket } from "./AddToBasket";
 import { Gallery } from "./Gallery";
 
@@ -17,14 +18,14 @@ export function ProductView({ product, preview = false }: { product: Product; pr
               {theme && <div className="eyebrow">{theme}</div>}
               <h1>{product.name}</h1>
               <div className="price">{formatPrice(product.price_cents)}</div>
-              <div className="muted">Delivery calculated at checkout.</div>
+              <div className="muted">{DELIVERY_SUMMARY}</div>
             </div>
             <p className="lede">{product.description}</p>
             <AddToBasket product={product} preview={preview} />
             <div className="spec">
               <div><h2>Materials and size</h2><p>{size}</p></div>
-              <div><h2>Delivery</h2><p>Dispatches in {product.dispatch_days ?? "[X]"} business days. Order by [CUT-OFF DATE] for Christmas delivery to [STATE].</p></div>
-              <div><h2>Care and storage</h2><p>{product.care || "[How to store it so it comes out beautifully every Christmas.]"}</p></div>
+              <div><h2>Delivery</h2><p>{product.dispatch_days !== null && <>Dispatches in {product.dispatch_days} business days. </>}See our <Link href="/delivery">Christmas last order dates</Link>.</p></div>
+              {product.care && <div><h2>Care and storage</h2><p>{product.care}</p></div>}
             </div>
           </div>
         </div>

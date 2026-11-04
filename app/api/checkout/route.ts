@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     shipping_address_collection: { allowed_countries: ["AU"] },
     shipping_options: [{ shipping_rate_data: { display_name: free ? "Free delivery" : "Standard delivery", type: "fixed_amount", fixed_amount: { amount: free ? 0 : DELIVERY_CENTS, currency: "aud" } } }],
     phone_number_collection: { enabled: true },
+    custom_text: { submit: { message: "By placing your order, you agree to the Ivy & Bough Terms of Sale and Privacy Policy." } },
     customer_email: user?.email,
     metadata: { user_id: user?.id ?? "", cart_session: String(body?.sessionId ?? "").slice(0, 60) },
     success_url: `${origin}/order/thanks`,

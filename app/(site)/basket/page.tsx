@@ -49,6 +49,7 @@ export default function BasketPage() {
             <div className="total"><span>Total</span><span>{formatPrice(subtotal + delivery)}</span></div>
             <p className="muted">Prices include GST. Free delivery over {formatPrice(FREE_DELIVERY_OVER_CENTS)}.</p>
             <button type="button" className="solid" disabled={busy} onClick={pay}>Checkout</button>
+            <p className="muted">By checking out, you agree to our <Link href="/terms-of-sale">Terms of Sale</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
             {error && <p role="alert">{error}</p>}
           </aside>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsLink } from "./CookieConsent";
 
 export function Footer() {
   return (
@@ -19,14 +20,20 @@ export function Footer() {
           <Link href="/delivery">Delivery</Link>
           <Link href="/returns">Returns</Link>
           <Link href="/faq">FAQs</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
         </nav>
       </div>
       <div className="footer-bottom">
-        <div>© 2026 Ivy &amp; Bough</div>
+        <div>© 2026 Aurella Group Pty Ltd trading as Ivy &amp; Bough · ABN 70 649 742 423</div>
         <div>Visa · Mastercard · American Express · Apple Pay · Google Pay</div>
       </div>
+      <nav className="footer-legal" aria-label="Legal">
+        <Link href="/privacy">Privacy Policy</Link>
+        <Link href="/terms">Website Terms of Use</Link>
+        <Link href="/terms-of-sale">Terms of Sale</Link>
+        <Link href="/account-terms">Account Terms</Link>
+        <Link href="/cookies">Cookie Policy</Link>
+        <CookieSettingsLink />
+      </nav>
     </footer>
   );
 }
