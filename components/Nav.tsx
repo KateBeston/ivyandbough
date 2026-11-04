@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
 import type { Category, Theme } from "@/lib/catalogue";
 import { useBasket } from "./BasketProvider";
 
@@ -12,6 +12,17 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
   const { count } = useBasket();
   const [panel, setPanel] = useState<Panel>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // A new page can load under a resting cursor. The menu waits until the cursor has
+  // left the link and come back, so it can't reopen over the page just clicked through to.
+  const hoverReady = useRef(false);
+
+  useEffect(() => {
+    const arm = (e: globalThis.PointerEvent) => {
+      if (!(e.target instanceof Element && e.target.closest(".menu a"))) hoverReady.current = true;
+    };
+    window.addEventListener("pointermove", arm);
+    return () => window.removeEventListener("pointermove", arm);
+  }, []);
 
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
@@ -25,9 +36,12 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
   }, []);
 
   const closeAll = () => {
+    hoverReady.current = false;
     setPanel(null);
     setMobileOpen(false);
   };
+  const hoverOpen = (name: Panel) => (e: PointerEvent) => { if (e.pointerType === "mouse" && hoverReady.current) setPanel(name); };
+  const focusOpen = (name: Panel) => (e: FocusEvent<HTMLElement>) => { if (e.currentTarget.matches(":focus-visible")) setPanel(name); };
   const mains = categories.filter((c) => !c.parent_id);
 
   return (
@@ -36,8 +50,8 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
         <button type="button" className="menu-toggle" aria-expanded={mobileOpen} aria-controls="main-menu" onClick={() => setMobileOpen(!mobileOpen)}>Menu</button>
         {showLogo && <Link href="/" className="logo" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-ink.svg" alt="" width={120} height={70} /></Link>}
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
-          <Link href="/collections" onClick={closeAll} onPointerEnter={(e) => { if (e.pointerType === "mouse") setPanel("themes"); }} onFocus={() => setPanel("themes")}>Collections</Link>
-          <Link href="/shop" onClick={closeAll} onPointerEnter={(e) => { if (e.pointerType === "mouse") setPanel("shop"); }} onFocus={() => setPanel("shop")}>Shop</Link>
+          <Link href="/collections" onClick={closeAll} onPointerEnter={hoverOpen("themes")} onFocus={focusOpen("themes")}>Collections</Link>
+          <Link href="/shop" onClick={closeAll} onPointerEnter={hoverOpen("shop")} onFocus={focusOpen("shop")}>Shop</Link>
           <Link href="/the-christmas-edit" onClick={closeAll} onMouseEnter={() => setPanel(null)}>The Christmas Edit</Link>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>
           <Link href="/delivery" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Delivery</Link>
