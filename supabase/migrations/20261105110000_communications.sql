@@ -1,0 +1,4 @@
+-- Applied to production, with the starter templates loaded.
+-- Tables: message_templates, message_sends, message_suppressions, message_consents.
+-- All four are protected by row level security and are for portal admins only.
+-- The website server writes to them with the Supabase secret key.

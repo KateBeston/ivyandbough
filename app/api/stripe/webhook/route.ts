@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { sendMessage } from "@/lib/comms";
 import { admin, stripe } from "@/lib/server";
 
 type Address = { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null };
@@ -42,6 +43,9 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   if (session.metadata?.cart_session) await db.from("cart_items").update({ status: "Converted" }).eq("session_id", session.metadata.cart_session).eq("status", "In cart");
   if (userId) await db.from("cart_items").update({ status: "Converted" }).eq("auth_user_id", userId).eq("status", "In cart");
+
+  // The order is safe by this point. A failed email is logged and can be resent from the portal.
+  await sendMessage({ slug: "order-confirmation", orderId: order.id, to: email }).catch(() => null);
 }
 
 export async function POST(request: Request) {
