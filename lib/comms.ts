@@ -60,16 +60,25 @@ function paragraph(block: string) {
 }
 
 export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, body: string) {
-  const unsubscribe = draft.message_class === "Marketing" ? ' &middot; <a href="{{{ pm:unsubscribe }}}" style="color:#7A644F">Unsubscribe</a>' : "";
+  const marketing = draft.message_class === "Marketing";
+  const link = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="color:#E9E3D8;text-decoration:none">${label}</a>`;
+  const why = marketing ? "You're receiving this because you joined the Ivy &amp; Bough email list." : "You're receiving this email about your order or enquiry with Ivy &amp; Bough.";
+  const unsubscribe = marketing ? ' &nbsp;&middot;&nbsp; <a href="{{{ pm:unsubscribe }}}" style="color:#C4A265">Unsubscribe</a>' : "";
   return `<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#F3EEE5">
 <div style="display:none;max-height:0;overflow:hidden">${esc(draft.preheader)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE5"><tr><td align="center" style="padding:28px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#FBF8F2;border:1px solid #E0D8CC">
-<tr><td align="center" style="padding:34px 32px 24px;border-bottom:1px solid #E0D8CC;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;color:#2F2C27">IVY &amp; BOUGH</td></tr>
-<tr><td style="padding:30px 32px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>
+<tr><td align="center" style="padding:34px 32px 10px;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;color:#2F2C27">IVY &amp; BOUGH</td></tr>
+<tr><td style="padding:0;font-size:0;line-height:0"><img src="${SITE_URL}/email/festive-banner.png" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>
+<tr><td style="padding:14px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>
+<tr><td align="center" style="padding:30px 28px 28px;background:#2B2925;font-family:Arial,Helvetica,sans-serif;color:#E9E3D8">
+<div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;letter-spacing:4px;padding-bottom:16px">IVY &amp; BOUGH</div>
+<div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
+<div style="height:1px;background:#4A463F;font-size:0;line-height:0">&nbsp;</div>
+<div style="font-size:11px;line-height:1.7;color:#B9B1A4;padding-top:16px">${why}<br>Ivy &amp; Bough is a trading name of Aurella Group Pty Ltd, ABN 70 649 742 423.<br><a href="mailto:hello@ivyandbough.com" style="color:#C4A265">hello@ivyandbough.com</a> &nbsp;&middot;&nbsp; <a href="${SITE_URL}/privacy" style="color:#C4A265">Privacy Policy</a>${unsubscribe}</div>
+</td></tr>
 </table>
-<p style="max-width:600px;margin:18px auto 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#6A6156">Ivy &amp; Bough is a trading name of Aurella Group Pty Ltd, ABN 70 649 742 423.<br><a href="${SITE_URL}" style="color:#7A644F">ivyandbough.com</a> &middot; <a href="mailto:hello@ivyandbough.com" style="color:#7A644F">hello@ivyandbough.com</a>${unsubscribe}</p>
 </td></tr></table></body></html>`;
 }
 
