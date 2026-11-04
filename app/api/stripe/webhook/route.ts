@@ -39,15 +39,17 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   const email = (session.customer_details?.email ?? session.customer_email ?? "").toLowerCase();
   const shipping = (session as unknown as { collected_information?: { shipping_details?: { name?: string; address?: Address } }; shipping_details?: { name?: string; address?: Address } });
   const details = shipping.collected_information?.shipping_details ?? shipping.shipping_details;
-  const address = addressText(details?.address ?? session.customer_details?.address);
-  const name = details?.name ?? session.customer_details?.name ?? "";
+  const ship = session.metadata ?? {};
+  const address = ship.ship_line1 ? addressText({ line1: ship.ship_line1, line2: ship.ship_line2, city: ship.ship_city, state: ship.ship_state, postal_code: ship.ship_postcode }) : addressText(details?.address ?? session.customer_details?.address);
+  const name = ship.ship_name || details?.name || session.customer_details?.name || "";
+  const phone = ship.ship_phone || session.customer_details?.phone || "";
   const userId = session.metadata?.user_id || null;
 
   const { data: known } = await db.from("customers").select("id").ilike("email", email.replace(/[%_]/g, "\\$&")).maybeSingle();
   let customerId = known?.id as string | undefined;
-  if (customerId) await db.from("customers").update({ address, phone: session.customer_details?.phone ?? "", ...(userId ? { auth_user_id: userId } : {}) }).eq("id", customerId);
+  if (customerId) await db.from("customers").update({ address, phone, ...(userId ? { auth_user_id: userId } : {}) }).eq("id", customerId);
   else {
-    const { data: created, error } = await db.from("customers").insert({ name, email, phone: session.customer_details?.phone ?? "", address, auth_user_id: userId }).select("id").single();
+    const { data: created, error } = await db.from("customers").insert({ name, email, phone, address, auth_user_id: userId }).select("id").single();
     if (error) throw error;
     customerId = created.id;
   }
@@ -57,7 +59,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   const total = (session.amount_total ?? 0) / 100;
   const delivery = (session.total_details?.amount_shipping ?? 0) / 100;
-  const { data: order, error } = await db.from("orders").insert({ customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total - delivery, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address }).select("id").single();
+  const { data: order, error } = await db.from("orders").insert({ customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total - delivery, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id").single();
   if (error) {
     if (error.code === "23505") return; // Stripe delivered this event twice at once.
     throw error;

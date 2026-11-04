@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
-import { DELIVERY_SUMMARY } from "@/lib/delivery";
+import { getDeliverySummary } from "@/lib/catalogue";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Terms of Sale | Ivy & Bough" };
 
-export default function TermsOfSalePage() {
+export const revalidate = 60;
+
+export default async function TermsOfSalePage() {
+  const summary = await getDeliverySummary();
   return (
     <LegalPage title="Terms of Sale">
       <p>These terms apply when you buy from {COMPANY}. By placing an order, you agree to them. You must be 18 or over, or have permission from a parent or guardian, to place an order.</p>
@@ -15,7 +18,7 @@ export default function TermsOfSalePage() {
       <h2>Prices and payment</h2>
       <p>Prices are in Australian dollars and include GST. Payment is taken at checkout through Stripe.</p>
       <h2>Delivery</h2>
-      <p>We deliver within Australia only. {DELIVERY_SUMMARY}</p>
+      <p>We deliver within Australia only. {summary}</p>
       <p>Some items ship directly from our suppliers, so one order may arrive in separate parcels. Dispatch times and Christmas last order dates are estimates and can be affected by carriers, weather and peak periods. If your order is delayed, we&apos;ll let you know and work with you on a fair outcome, which may include a refund.</p>
       <p>Please check your delivery details before paying. Contact us as soon as possible if they&apos;re wrong. Risk in the goods passes to you on delivery, and ownership passes once we have received full payment.</p>
       <h2>Consumer guarantees</h2>

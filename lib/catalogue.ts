@@ -121,6 +121,13 @@ export async function getArticleDesign(): Promise<ArticleDesign> {
   return { ...defaultDesign, ...(data?.value as Partial<ArticleDesign> | undefined) };
 }
 
+export async function getDeliverySummary() {
+  const { data } = await supabase.from("delivery_settings").select("free_over").maybeSingle();
+  const over = data?.free_over === null || data?.free_over === undefined ? null : Number(data.free_over);
+  const amount = over === null ? "" : new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: over % 1 ? 2 : 0 }).format(over);
+  return `Delivery is calculated from your postcode${over === null ? "" : `, and standard items ship free on orders over ${amount}`}.`;
+}
+
 export type Faq = { id: string; category: string; question: string; answer: string };
 
 export async function getFaqs(): Promise<Faq[]> {

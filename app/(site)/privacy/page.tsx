@@ -38,12 +38,13 @@ export default function PrivacyPage() {
         <li>Stripe, for payments and fraud prevention.</li>
         <li>Supabase, which provides our database and sign-in. Our database is hosted in Sydney.</li>
         <li>Postmark, which sends our emails, and Twilio, which sends our text messages.</li>
+        <li>Google, which suggests addresses as you type your delivery details.</li>
         <li>Vercel, which hosts the website, and Cloudflare, which provides our domain and email routing services.</li>
         <li>Our professional advisers, and regulators or other authorities where the law requires it.</li>
       </ul>
       <p>We don&apos;t sell your personal information.</p>
       <h2>Overseas disclosure</h2>
-      <p>Stripe, Vercel, Cloudflare, Supabase, Postmark and Twilio are international providers and may handle information outside Australia, most likely in the United States and other countries where they or their service providers operate.</p>
+      <p>Stripe, Vercel, Cloudflare, Supabase, Postmark, Twilio and Google are international providers and may handle information outside Australia, most likely in the United States and other countries where they or their service providers operate.</p>
       <h2>Marketing</h2>
       <p>We only send marketing emails to people who have asked to receive them. You can unsubscribe at any time using the link in our emails or by contacting us. Order and account messages will still be sent where they are needed. We use email service data to see whether messages are delivered, and whether marketing emails are opened or their links are clicked.</p>
       <h2>Cookies</h2>

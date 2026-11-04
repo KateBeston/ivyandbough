@@ -1,0 +1,4 @@
+-- Applied to production.
+-- delivery_settings, delivery_zones and shipping_classes hold the rates managed in the portal.
+-- products.shipping_class_id sets each product's class.
+-- orders.shipping_phone and orders.delivery_zone keep what was charged.

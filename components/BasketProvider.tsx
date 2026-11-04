@@ -3,8 +3,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { account, authHeader } from "@/lib/account-client";
 
+export type DeliveryDetails = { name: string; phone: string; line1: string; line2: string; city: string; state: string; postcode: string };
 export type Line = { id: string; slug: string; name: string; price_cents: number; image: string; quantity: number };
-type Basket = { lines: Line[]; count: number; subtotal: number; add: (line: Line) => void; setQuantity: (id: string, quantity: number) => void; remove: (id: string) => void; clear: () => void; checkout: (extra?: Line) => Promise<string | null> };
+type Basket = { lines: Line[]; count: number; subtotal: number; add: (line: Line) => void; setQuantity: (id: string, quantity: number) => void; remove: (id: string) => void; clear: () => void; checkout: (delivery: DeliveryDetails) => Promise<string | null> };
 
 const BasketContext = createContext<Basket | null>(null);
 export const useBasket = () => useContext(BasketContext)!;
@@ -57,9 +58,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   const remove = useCallback((id: string) => setLines((l) => l.filter((x) => x.id !== id)), []);
   const clear = useCallback(() => setLines([]), []);
 
-  const checkout = useCallback(async (extra?: Line) => {
-    const items = extra && !lines.some((l) => l.id === extra.id) ? [...lines, extra] : lines;
-    const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, items: items.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
+  const checkout = useCallback(async (delivery: DeliveryDetails) => {
+    const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     const body = await res?.json().catch(() => null);
     if (body?.url) {
       window.location.href = body.url;

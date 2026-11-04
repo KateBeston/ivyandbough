@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { formatPrice, type Product } from "@/lib/catalogue";
-import { DELIVERY_SUMMARY } from "@/lib/delivery";
+import { formatPrice, getDeliverySummary, type Product } from "@/lib/catalogue";
+import { DeliveryCheck } from "./DeliveryCheck";
 import { AddToBasket } from "./AddToBasket";
 import { Gallery } from "./Gallery";
 
-export function ProductView({ product, preview = false }: { product: Product; preview?: boolean }) {
+export async function ProductView({ product, preview = false }: { product: Product; preview?: boolean }) {
   const theme = product.themes?.name;
+  const deliverySummary = await getDeliverySummary();
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const size = [product.materials, measured ? `${measured} cm` : product.dimensions, product.weight_g ? `${product.weight_g} g` : product.weight].filter(Boolean).join(" · ");
   return (
@@ -19,7 +20,8 @@ export function ProductView({ product, preview = false }: { product: Product; pr
               {theme && <div className="eyebrow">{theme}</div>}
               <h1>{product.name}</h1>
               <div className="price">{formatPrice(product.price_cents)}</div>
-              <div className="muted">{DELIVERY_SUMMARY}</div>
+              <div className="muted">{deliverySummary}</div>
+              {!preview && <DeliveryCheck productId={product.id} />}
             </div>
             <p className="lede">{product.description}</p>
             <AddToBasket product={product} preview={preview} />

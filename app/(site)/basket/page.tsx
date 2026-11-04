@@ -2,21 +2,48 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AddressLookup, type PickedAddress } from "@/components/AddressLookup";
 import { useBasket } from "@/components/BasketProvider";
 import { formatPrice } from "@/lib/catalogue";
-import { DELIVERY_CENTS, deliveryFor, FREE_DELIVERY_OVER_CENTS } from "@/lib/delivery";
+
+const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
+const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "" };
+type Quote = { deliveryCents: number; free: boolean; zone: string };
 
 export default function BasketPage() {
   const { lines, subtotal, setQuantity, remove, checkout } = useBasket();
+  const [details, setDetails] = useState(blank);
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quoteError, setQuoteError] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const delivery = deliveryFor(subtotal);
+  const set = (patch: Partial<typeof blank>) => setDetails((d) => ({ ...d, ...patch }));
+  const pick = (a: PickedAddress) => set({ ...a, state: STATES.includes(a.state) ? a.state : "" });
+  const basketKey = useMemo(() => lines.map((l) => `${l.id}:${l.quantity}`).join(","), [lines]);
+
+  useEffect(() => {
+    setQuote(null);
+    setQuoteError("");
+    if (!/^\d{4}$/.test(details.postcode) || !lines.length) return;
+    const stop = new AbortController();
+    fetch("/api/delivery/quote", { method: "POST", signal: stop.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ postcode: details.postcode, items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) })
+      .then(async (res) => {
+        const body = await res.json().catch(() => null);
+        if (res.ok) setQuote(body);
+        else setQuoteError(body?.error ?? "Delivery can't be calculated right now.");
+      })
+      .catch((e) => { if (e.name !== "AbortError") setQuoteError("Delivery can't be calculated right now."); });
+    return () => stop.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details.postcode, basketKey]);
+
+  const ready = quote && details.name.trim() && details.phone.trim() && details.line1.trim() && details.city.trim() && details.state;
 
   async function pay() {
     setBusy(true);
     setError("");
-    const message = await checkout();
+    const message = await checkout(details);
     if (message) {
       setError(message);
       setBusy(false);
@@ -42,13 +69,28 @@ export default function BasketPage() {
                 <label className="qty">Quantity<input type="number" min={1} max={20} value={l.quantity} onChange={(e) => setQuantity(l.id, Number(e.target.value))} /></label>
               </div>
             ))}
+            <section className="delivery-details" aria-labelledby="delivery-details">
+              <h2 id="delivery-details">Delivery details</h2>
+              <AddressLookup onPick={pick} />
+              <div className="delivery-grid">
+                <label className="wide">Full name<input autoComplete="name" value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>
+                <label className="wide">Mobile<input type="tel" autoComplete="tel" value={details.phone} onChange={(e) => set({ phone: e.target.value })} /></label>
+                <label className="wide">Address<input autoComplete="address-line1" value={details.line1} onChange={(e) => set({ line1: e.target.value })} /></label>
+                <label className="wide">Apartment, unit or building (optional)<input autoComplete="address-line2" value={details.line2} onChange={(e) => set({ line2: e.target.value })} /></label>
+                <label className="wide">Suburb<input autoComplete="address-level2" value={details.city} onChange={(e) => set({ city: e.target.value })} /></label>
+                <label>State<select autoComplete="address-level1" value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+                <label>Postcode<input inputMode="numeric" maxLength={4} autoComplete="postal-code" value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
+              </div>
+            </section>
           </div>
           <aside className="basket-summary">
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-            <div><span>Delivery</span><span>{delivery ? formatPrice(DELIVERY_CENTS) : "Free"}</span></div>
-            <div className="total"><span>Total</span><span>{formatPrice(subtotal + delivery)}</span></div>
-            <p className="muted">Prices include GST. Free delivery over {formatPrice(FREE_DELIVERY_OVER_CENTS)}.</p>
-            <button type="button" className="solid" disabled={busy} onClick={pay}>Checkout</button>
+            <div><span>Delivery</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : "Enter your postcode"}</span></div>
+            <div className="total"><span>Total</span><span>{formatPrice(subtotal + (quote?.deliveryCents ?? 0))}</span></div>
+            <p className="muted">Prices include GST.</p>
+            {quoteError && <p role="alert">{quoteError}</p>}
+            <button type="button" className="solid" disabled={busy || !ready} onClick={pay}>Checkout</button>
+            {!ready && <p className="muted">Add your delivery details to continue.</p>}
             <p className="muted">By checking out, you agree to our <Link href="/terms-of-sale">Terms of Sale</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
             {error && <p role="alert">{error}</p>}
           </aside>
