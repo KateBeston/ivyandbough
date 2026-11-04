@@ -69,9 +69,9 @@ export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, b
 <div style="display:none;max-height:0;overflow:hidden">${esc(draft.preheader)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE5"><tr><td align="center" style="padding:28px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#FBF8F2;border:1px solid #E0D8CC">
-<tr><td align="center" style="padding:34px 32px 10px;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;color:#2F2C27">IVY &amp; BOUGH</td></tr>
-<tr><td style="padding:0;font-size:0;line-height:0"><img src="${SITE_URL}/email/festive-banner.png" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>
-<tr><td style="padding:14px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>
+<tr><td align="center" style="padding:34px 32px 30px;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;color:#2F2C27">IVY &amp; BOUGH</td></tr>
+<tr><td style="padding:0;font-size:0;line-height:0"><img src="${SITE_URL}/email/christmas-lights.jpg" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>
+<tr><td style="padding:32px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>
 <tr><td align="center" style="padding:30px 28px 28px;background:#2B2925;font-family:Arial,Helvetica,sans-serif;color:#E9E3D8">
 <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;letter-spacing:4px;padding-bottom:16px">IVY &amp; BOUGH</div>
 <div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
