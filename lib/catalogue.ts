@@ -3,11 +3,11 @@ import { supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number };
-export type Product = { id: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; materials: string; dimensions: string; weight: string; dispatch_days: number | null; care: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
+export type Product = { id: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; materials: string; dimensions: string; weight: string; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
 export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string; parent_id: string | null };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
-const productSelect = "id,slug,name,kind,description,price_cents,materials,dimensions,weight,dispatch_days,care,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)";
+const productSelect = "id,slug,name,kind,description,price_cents,materials,dimensions,weight,dispatch_days,care,seo_title,seo_description,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)";
 
 function must<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);

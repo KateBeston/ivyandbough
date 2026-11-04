@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Gallery } from "@/components/Gallery";
 import { formatPrice, getProduct } from "@/lib/catalogue";
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const product = await getProduct((await params).slug);
+  if (!product) return { title: "Ivy & Bough" };
+  return { title: product.seo_title || `${product.name} | Ivy & Bough`, description: product.seo_description || product.description };
+}
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
