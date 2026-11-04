@@ -71,7 +71,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
               </div>
             ))}
           </div>
-          <div className="themes-menu-all"><Link href="/shop" onClick={closeAll}>Shop everything</Link></div>
+          <div className="themes-menu-all"><Link href="/collections" onClick={closeAll}>Explore all collections</Link></div>
         </div>
       )}
     </div>

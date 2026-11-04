@@ -44,15 +44,17 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section id="collections" className="themes">
-          <div className="centre">
-            <h2 className="heading">Fourteen ways to dress the home</h2>
+        <section id="collections" className="magazine">
+          <div className="magazine-head">
+            <h2 className="heading">Find your Christmas</h2>
+            <Link href="/collections" className="text-link">Explore all collections</Link>
           </div>
-          <div className="theme-grid">
-            {themes.map((t) => (
-              <Link key={t.id} href={`/collections/${t.slug}`} className="theme-card">
-                <Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 100vw, 20vw" className="cover" style={{ objectPosition: t.card_position }} />
-                <div><strong>{t.name}</strong><span>{t.note}</span></div>
+          <div className="magazine-grid">
+            {themes.filter((t) => t.is_featured).sort((a, b) => a.feature_order - b.feature_order).slice(0, 5).map((t) => (
+              <Link key={t.id} href={`/collections/${t.slug}`}>
+                <div className="frame"><Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 100vw, 60vw" className="cover" style={{ objectPosition: t.card_position }} /></div>
+                <strong>{t.name}</strong>
+                <span>{t.note}</span>
               </Link>
             ))}
           </div>
