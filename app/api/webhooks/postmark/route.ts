@@ -3,13 +3,15 @@ import { NextResponse } from "next/server";
 import { admin } from "@/lib/server";
 
 function authorised(request: Request) {
-  const secret = process.env.POSTMARK_WEBHOOK_SECRET;
+  const secret = process.env.POSTMARK_WEBHOOK_SECRET?.trim();
   const header = request.headers.get("authorization") ?? "";
-  if (!secret || !header.startsWith("Basic ")) return false;
-  const decoded = Buffer.from(header.slice(6), "base64").toString("utf8");
-  const given = Buffer.from(decoded.slice(decoded.indexOf(":") + 1));
-  const expected = Buffer.from(secret);
-  return given.length === expected.length && timingSafeEqual(given, expected);
+  const decoded = header.startsWith("Basic ") ? Buffer.from(header.slice(6), "base64").toString("utf8") : "";
+  const given = Buffer.from(decoded.slice(decoded.indexOf(":") + 1).trim());
+  const expected = Buffer.from(secret ?? "");
+  const match = Boolean(secret) && given.length === expected.length && timingSafeEqual(given, expected);
+  // Lengths only, so a failed connection can be diagnosed without logging the password.
+  if (!match) console.warn("Postmark webhook refused", { secretSet: Boolean(secret), basicAuthSent: header.startsWith("Basic "), givenLength: given.length, expectedLength: expected.length });
+  return match;
 }
 
 const HARD = new Set(["HardBounce", "BadEmailAddress", "ManuallyDeactivated", "SpamNotification", "Blocked"]);
