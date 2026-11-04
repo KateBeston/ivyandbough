@@ -424,3 +424,8 @@ button{font:inherit;color:inherit}
 .shop-results .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 10px}
 .shop-results .product-card .frame{height:220px !important}
 }
+
+/* FAQs */
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item summary{padding:14px 0;font-weight:400;cursor:pointer}
+.faq-item p{margin:0 0 16px}

@@ -120,3 +120,10 @@ export async function getArticleDesign(): Promise<ArticleDesign> {
   const { data } = await supabase.from("site_settings").select("value").eq("key", "article_design").maybeSingle();
   return { ...defaultDesign, ...(data?.value as Partial<ArticleDesign> | undefined) };
 }
+
+export type Faq = { id: string; category: string; question: string; answer: string };
+
+export async function getFaqs(): Promise<Faq[]> {
+  const { data, error } = await supabase.from("faqs").select("id,category,question,answer").eq("is_published", true).order("sort_order");
+  return must(data, error) as Faq[];
+}
