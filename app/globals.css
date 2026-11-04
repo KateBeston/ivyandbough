@@ -125,8 +125,6 @@ button{font:inherit;color:inherit}
 .centre{text-align:center;padding:0 24px;margin-bottom:52px}
 .centre .heading{margin-top:14px}
 .theme-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
-.theme-grid>a{grid-column:span 2}
-.theme-grid>a:nth-child(3n+1):nth-last-child(2),.theme-grid>a:nth-child(3n+2):last-child{grid-column:span 3}
 .theme-card{position:relative;display:block;height:460px;overflow:hidden;text-decoration:none;color:#fff}
 .theme-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,11,8,0) 56%,rgba(14,11,8,.76) 100%)}
 .theme-card img{transition:transform .8s ease}
@@ -143,7 +141,6 @@ button{font:inherit;color:inherit}
 .home .heading{margin:14px 0 44px}
 .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
 .home-grid a{text-decoration:none}
-.home-grid a:nth-child(2){margin-top:56px}
 .home-grid h3{margin-top:16px;font-family:var(--serif);font-size:20px;font-weight:400;line-height:1.25;letter-spacing:.14em;text-transform:uppercase}
 .look{max-width:1360px;margin:0 auto;padding:80px 40px 110px;display:flex;flex-wrap:wrap;gap:44px 64px;align-items:center}
 .look-photo{position:relative;flex:3 1 560px;min-width:0}
@@ -244,10 +241,6 @@ button{font:inherit;color:inherit}
 .collection-body{padding:48px 20px 72px}
 .moment-inner{padding:110px 24px}
 .moment-inner p{font-size:26px;letter-spacing:.1em}
-.theme-grid{grid-template-columns:1fr}
-.theme-grid>a,.theme-grid>a:nth-child(3n+1):nth-last-child(2),.theme-grid>a:nth-child(3n+2):last-child{grid-column:auto}
-.theme-card{height:380px}
-.home-grid a:nth-child(2){margin-top:0}
 .ic{height:460px}
 .ic-thumb{width:48px;height:48px}
 .details h1{font-size:32px}
@@ -308,13 +301,69 @@ button{font:inherit;color:inherit}
 .post-hero-copy{padding:44px 24px}
 .product-layout{grid-template-columns:1fr;gap:32px}
 .ic{height:460px}
-.theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.theme-grid>a:last-child:nth-child(odd){grid-column:1/-1}
-.theme-card{height:250px}
 .article-products.three{grid-template-columns:1fr 1fr}
 .nav{padding:10px 20px;gap:6px 14px}
 .nav-tools{gap:16px}
 .menu-toggle,.nav-tools a{letter-spacing:.16em}
 .footer-top{grid-template-columns:repeat(2,minmax(0,1fr))}
 .footer-logo{grid-column:1/-1}
+}
+
+/* Less formula: normal-case type, one label style and uneven layouts. */
+.eyebrow{font-size:14px;font-weight:400;letter-spacing:.01em;text-transform:none}
+.moment-inner .eyebrow{font-size:16px}
+.heading{font-size:44px;line-height:1.16;letter-spacing:.01em;text-transform:none}
+.look-copy .heading{font-size:38px}
+.signup .heading,.article-signup .heading{font-size:36px}
+.collection-inner h1,.prose h1{font-size:54px;letter-spacing:.01em;text-transform:none}
+.prose h2{font-size:29px;letter-spacing:.01em;text-transform:none}
+.details h1{font-size:46px;line-height:1.14;letter-spacing:.01em;text-transform:none}
+.category-card strong,.journal-card strong,.home-grid h3{font-size:25px;letter-spacing:.01em;text-transform:none}
+.product-card strong{font-size:21px;letter-spacing:.01em;text-transform:none}
+.product-card small{font-size:13px;font-weight:400;letter-spacing:.01em;text-transform:none}
+.theme-card strong{font-size:25px;letter-spacing:.01em;text-transform:none}
+.themes-menu strong{font-size:19px;letter-spacing:.01em;text-transform:none}
+.shop-menu a.shop-menu-title{font-size:21px;letter-spacing:.01em;text-transform:none}
+.moment-inner p{font-size:38px;line-height:1.26;letter-spacing:.01em;text-transform:none}
+.spec h2{font-family:var(--serif);font-size:19px;font-weight:400;letter-spacing:.01em;text-transform:none;color:var(--ink)}
+.post-meta{font-size:13px;font-weight:400;letter-spacing:.01em;text-transform:none}
+.article-related h2{font-family:var(--serif);font-size:23px;font-weight:400;letter-spacing:.01em;text-transform:none}
+.intro{grid-template-columns:minmax(0,5fr) minmax(0,6fr);padding-top:88px;padding-bottom:88px}
+.intro .heading{margin-top:0}
+.intro-photo{height:560px}
+.themes{padding-bottom:88px}
+.themes .centre{max-width:1360px;margin:0 auto 32px;padding:0 40px;text-align:left}
+.theme-grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:300px}
+.theme-grid>a{height:auto}
+.theme-grid>a:first-child{grid-column:span 2;grid-row:span 2}
+.theme-grid>a:last-child{grid-column:1/-1}
+.moment-inner{padding:110px 32px}
+.home{padding-top:88px}
+.home .heading{margin:0 0 28px}
+.home-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr);grid-template-rows:280px 280px}
+.home-grid a{display:flex;flex-direction:column;min-height:0}
+.home-grid a:first-child{grid-row:span 2}
+.home-grid .frame{flex:1;min-height:0}
+@media (max-width:1100px){
+.theme-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:240px}
+.theme-grid>a:last-child{grid-column:span 2}
+}
+@media (max-width:760px){
+.heading,.look-copy .heading,.signup .heading{font-size:34px;letter-spacing:.01em}
+.collection-inner h1,.prose h1{font-size:38px;letter-spacing:.01em}
+.details h1{font-size:36px}
+.moment-inner p{font-size:29px;letter-spacing:.01em}
+.moment-inner{padding:72px 24px}
+.intro{grid-template-columns:1fr;padding-top:56px;padding-bottom:40px;gap:28px}
+.intro-photo{height:360px}
+.themes{padding-bottom:56px}
+.themes .centre{padding:0 20px}
+.theme-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:190px}
+.theme-grid>a:first-child,.theme-grid>a:last-child{grid-column:1/-1;grid-row:auto}
+.theme-card span{display:none}
+.theme-card strong{font-size:21px}
+.home{padding-top:56px}
+.home-grid{grid-template-columns:1fr;grid-template-rows:none}
+.home-grid a:first-child{grid-row:auto}
+.home-grid .frame{flex:none;height:300px}
 }
