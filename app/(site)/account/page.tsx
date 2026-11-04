@@ -31,7 +31,7 @@ function AuthForm() {
       : await account.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/account/reset` });
     setBusy(false);
     if (res.error) return setError(mode === "in" ? "That email or password isn't right." : res.error.message);
-    if (mode === "up") setMsg("Check your email to confirm your account.");
+    if (mode === "up") setMsg("If this email is new, check your inbox to confirm your account. If you already have an account, sign in instead.");
     if (mode === "reset") setMsg("If that email has an account, we've sent a reset link.");
   }
 

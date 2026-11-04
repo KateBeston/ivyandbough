@@ -36,7 +36,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
         <button type="button" className="menu-toggle" aria-expanded={mobileOpen} aria-controls="main-menu" onClick={() => setMobileOpen(!mobileOpen)}>Menu</button>
         {showLogo && <Link href="/" className="logo" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-ink.svg" alt="" width={120} height={70} /></Link>}
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
-          <button type="button" aria-expanded={panel === "themes"} aria-controls="nav-panel" onClick={() => setPanel(panel === "themes" ? null : "themes")} onPointerEnter={(e) => { if (e.pointerType === "mouse") setPanel("themes"); }}>Collections</button>
+          <Link href="/collections" onClick={closeAll} onPointerEnter={(e) => { if (e.pointerType === "mouse") setPanel("themes"); }} onFocus={() => setPanel("themes")}>Collections</Link>
           <button type="button" aria-expanded={panel === "shop"} aria-controls="nav-panel" onClick={() => setPanel(panel === "shop" ? null : "shop")} onPointerEnter={(e) => { if (e.pointerType === "mouse") setPanel("shop"); }}>Shop</button>
           <Link href="/the-christmas-edit" onClick={closeAll} onMouseEnter={() => setPanel(null)}>The Christmas Edit</Link>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>
