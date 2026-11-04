@@ -396,3 +396,31 @@ button{font:inherit;color:inherit}
 .nav-search{order:3;flex:1 1 100%}
 .nav-search input{width:100%;font-size:16px}
 }
+
+/* Shop browser */
+.shop-browser{max-width:1440px;margin:0 auto;padding:48px 40px 96px}
+.shop-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:40px;align-items:start;margin-top:28px}
+.filter-panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;padding-right:6px}
+.filter-toggle{display:none}
+.filter-search{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-size:13px}
+.filter-search input{height:44px;padding:0 10px;border:1px solid #B9AE9E;background:#fff;font:inherit;font-size:15px}
+.filter-group{padding:10px 0;border-bottom:1px solid var(--line)}
+.filter-group summary{padding:4px 0;font-family:var(--serif);font-size:18px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.filter-group>div{padding:8px 0 4px}
+.filter-check{display:flex;align-items:center;gap:9px;min-height:32px;font-size:14px;cursor:pointer}
+.filter-check input{flex:none;width:17px;height:17px;accent-color:#6B1F2B}
+.filter-sub{padding-left:26px}
+.shop-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 20px;margin-bottom:24px;font-size:14px}
+.shop-toolbar select{height:40px;margin-left:6px;padding:0 8px;border:1px solid #B9AE9E;background:#fff;font:inherit}
+.shop-results .product-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:36px 18px}
+.shop-results .product-card .frame{height:320px !important}
+@media (max-width:900px){
+.shop-browser{padding:32px 20px 64px}
+.shop-layout{grid-template-columns:1fr;gap:18px;margin-top:18px}
+.filter-panel{position:static;max-height:none;padding:0;border:1px solid var(--line)}
+.filter-toggle{display:block;width:100%;padding:13px 14px;border:0;background:none;font-size:15px;font-weight:500;text-align:left;cursor:pointer}
+.filter-inner{display:none;padding:0 14px 14px}
+.filter-inner.open{display:block}
+.shop-results .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 10px}
+.shop-results .product-card .frame{height:220px !important}
+}
