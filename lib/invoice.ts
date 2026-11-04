@@ -2,7 +2,7 @@ import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 
 export type InvoiceData = {
-  number: string; date: string; billName: string; billEmail: string; deliverName: string; deliverAddress: string;
+  number: string; date: string; customerId: string; transaction: string; paymentMethod: string; billName: string; billEmail: string; deliverName: string; deliverAddress: string;
   items: { name: string; quantity: number; unitPrice: number }[];
   subtotal: number; delivery: number; gst: number; total: number;
 };
@@ -56,10 +56,12 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
   spaced("TAX INVOICE", MARGIN, y, 22, 3.4);
   right("Invoice number", WIDTH - 150, y + 8, 8, regular, BROWN);
   right(data.number, WIDTH - MARGIN, y + 8, 9.5, semi);
-  right("Date", WIDTH - 150, y - 8, 8, regular, BROWN);
-  right(data.date, WIDTH - MARGIN, y - 8, 9.5, semi);
+  right("Customer ID", WIDTH - 150, y - 8, 8, regular, BROWN);
+  right(data.customerId, WIDTH - MARGIN, y - 8, 9.5, semi);
+  right("Date", WIDTH - 150, y - 24, 8, regular, BROWN);
+  right(data.date, WIDTH - MARGIN, y - 24, 9.5, semi);
 
-  y -= 28;
+  y -= 40;
   page.drawLine({ start: { x: MARGIN, y }, end: { x: WIDTH - MARGIN, y }, thickness: 0.8, color: GOLD });
   y -= 24;
 
@@ -107,6 +109,7 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
   }
 
   y -= 12;
+  const paymentTop = y;
   const total = (label: string, value: string, strong = false) => {
     text(label, 340, y, strong ? 11 : 9.5, strong ? semi : regular);
     right(value, amountX - 10, y, strong ? 11 : 9.5, strong ? semi : regular);
@@ -119,6 +122,13 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
   y -= 6;
   total("Total paid (AUD)", money(data.total), true);
   total("Includes GST of", money(data.gst));
+
+  text("PAYMENT", MARGIN, paymentTop, 7.5, semi, BROWN);
+  text(data.paymentMethod || "Card", MARGIN, paymentTop - 15);
+  if (data.transaction) {
+    text("Transaction number", MARGIN, paymentTop - 33, 7.5, regular, BROWN);
+    text(data.transaction, MARGIN, paymentTop - 45, 8);
+  }
 
   const pages = pdf.getPages();
   pages.forEach((p, i) => {

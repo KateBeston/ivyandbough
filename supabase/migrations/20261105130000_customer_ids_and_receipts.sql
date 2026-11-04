@@ -1,0 +1,4 @@
+-- Applied to production.
+-- customers.customer_number gives every guest and account holder an IBC- ID.
+-- orders now hold the Stripe payment references and card summary.
+-- order_receipts records the stored PDF for each order, in the private documents bucket.
