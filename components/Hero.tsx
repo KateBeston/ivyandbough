@@ -19,7 +19,7 @@ export function Hero({ themes, categories }: { themes: Theme[]; categories: Cate
       <div className="hero-inner">
         <div style={{ maxWidth: 560 }}>
           <img src="/brand/wreath-cream.svg" alt="Ivy &amp; Bough" className="hero-logo" width={300} height={300} />
-          <h1>Bring Christmas home, to keep for years</h1>
+          <h1>Bring Christmas home</h1>
           <p>{active.line}</p>
           <Link href={`/collections/${active.slug}`} className="outline">Shop {active.name}</Link>
         </div>

@@ -27,7 +27,7 @@ export function ProductView({ product }: { product: Product }) {
             <div className="spec">
               <div><h2>Materials and size</h2><p>{size}</p></div>
               <div><h2>Delivery</h2><p>Dispatches in {product.dispatch_days ?? "[X]"} business days. Order by [CUT-OFF DATE] for Christmas delivery to [STATE].</p></div>
-              <div><h2>Keeping it for years</h2><p>{product.care || "[How to store it so it comes out beautifully every Christmas.]"}</p></div>
+              <div><h2>Care and storage</h2><p>{product.care || "[How to store it so it comes out beautifully every Christmas.]"}</p></div>
             </div>
           </div>
         </div>
