@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Category, Theme } from "@/lib/catalogue";
+import { useBasket } from "./BasketProvider";
 
 type Panel = "themes" | "shop" | null;
 
 export function Nav({ themes, categories, solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; solid?: boolean; showLogo?: boolean }) {
+  const { count } = useBasket();
   const [panel, setPanel] = useState<Panel>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -43,7 +45,8 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
         </nav>
         <div className="nav-tools">
           <a href="#search">Search</a>
-          <a href="#basket">Basket (0)</a>
+          <Link href="/account">Account</Link>
+          <Link href="/basket">Basket ({count})</Link>
         </div>
       </header>
       {panel === "themes" && (

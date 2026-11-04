@@ -9,5 +9,5 @@ export const metadata: Metadata = { title: "Preview | Ivy & Bough", robots: { in
 export default async function ProductPreviewPage({ params }: { params: Promise<{ token: string }> }) {
   const product = await getProductPreview((await params).token);
   if (!product) notFound();
-  return <ProductView product={product} />;
+  return <ProductView product={product} preview />;
 }
