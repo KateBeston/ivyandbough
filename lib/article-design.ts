@@ -15,7 +15,7 @@ const ratios: Record<string, string> = { square: "1 / 1", landscape: "3 / 2", po
 
 export type ArticleDesign = { headingFont: string; bodyFont: string; titleSize: number; headingSize: number; bodySize: number; capitals: boolean; columnWidth: number; imageShape: string; divider: string; heroSide: string };
 
-export const defaultDesign: ArticleDesign = { headingFont: "forum", bodyFont: "montserrat", titleSize: 44, headingSize: 34, bodySize: 17, capitals: false, columnWidth: 700, imageShape: "square", divider: "none", heroSide: "right" };
+export const defaultDesign: ArticleDesign = { headingFont: "forum", bodyFont: "montserrat", titleSize: 44, headingSize: 34, bodySize: 17, capitals: true, columnWidth: 700, imageShape: "square", divider: "none", heroSide: "right" };
 
 export const ratio = (shape?: string) => ratios[shape ?? ""];
 
