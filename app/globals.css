@@ -190,11 +190,15 @@ button{font:inherit;color:inherit}
 .product-page{max-width:1360px;margin:0 auto;padding:22px 40px 100px}
 .crumbs{font-size:12px;color:#6A6156;margin-bottom:26px}
 .product-layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:72px}
-.gallery{display:flex;flex-direction:column;gap:10px}
-.gallery-main{height:720px}
-.thumbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.thumbs button{position:relative;height:160px;padding:0;border:1px solid transparent;background:none;cursor:pointer;overflow:hidden}
-.thumbs button[aria-pressed=true]{border-color:var(--gold)}
+.ic{position:relative;height:720px;overflow:hidden;background:var(--sand)}
+.ic-stage{position:absolute;inset:0}
+.ic-slide{opacity:0;transform:translateX(28px);transition:opacity .9s ease,transform .9s ease}
+.ic-slide.on{opacity:1;transform:translateX(0)}
+.ic-car{position:absolute;right:20px;bottom:20px;z-index:2;display:flex;align-items:center;gap:7px;max-width:calc(100% - 40px)}
+.ic-cbtn{flex:none;width:18px;height:56px;padding:0;border:0;background:none;color:#fff;font-size:24px;line-height:1;text-shadow:0 1px 5px rgba(49,49,49,.7);cursor:pointer}
+.ic-strip{display:flex;gap:7px;overflow:hidden}
+.ic-thumb{position:relative;flex:none;width:60px;height:60px;padding:0;border:0;background:var(--sand);box-shadow:0 2px 9px rgba(49,49,49,.32);cursor:pointer;overflow:hidden;transition:transform .15s}
+.ic-thumb:hover{transform:translateY(-2px)}
 .details{display:flex;flex-direction:column;gap:24px;padding-top:20px}
 .details h1{margin:12px 0 8px;font-family:var(--serif);font-size:39px;line-height:1.22;font-weight:400;letter-spacing:.13em;text-transform:uppercase}
 .price{font-size:20px}
@@ -244,7 +248,8 @@ button{font:inherit;color:inherit}
 .theme-grid>a,.theme-grid>a:nth-child(3n+1):nth-last-child(2),.theme-grid>a:nth-child(3n+2):last-child{grid-column:auto}
 .theme-card{height:380px}
 .home-grid a:nth-child(2){margin-top:0}
-.gallery-main{height:460px}
+.ic{height:460px}
+.ic-thumb{width:48px;height:48px}
 .details h1{font-size:32px}
 .product-layout{gap:32px}
 }
