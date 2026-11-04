@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { buildInvoice, type InvoiceData } from "./invoice";
 import { admin } from "./server";
 import { trackingUrl } from "./tracking";
 import { key, url } from "./supabase";
@@ -98,9 +99,9 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,customer_email,total,shipping_total,gst_total,shipping_name,shipping_address,customers(name,phone),order_items(name,quantity,unit_price,carrier,tracking_number)").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,placed_on,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,customers(name,phone),order_items(name,quantity,unit_price,carrier,tracking_number)").eq("id", orderId).single();
   if (!data) return null;
-  const order = data as unknown as { order_number: string; customer_email: string; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; customers: { name: string; phone: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string }[] };
+  const order = data as unknown as { order_number: string; placed_on: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; customers: { name: string; phone: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string }[] };
   const name = order.customers?.name || order.shipping_name || "";
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
     const link = trackingUrl(i.carrier, i.tracking_number);
@@ -109,6 +110,12 @@ async function orderData(db: Db, orderId: string) {
   return {
     email: order.customer_email,
     phone: order.customers?.phone ?? "",
+    invoice: {
+      number: order.order_number, date: new Date(`${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" }),
+      billName: name, billEmail: order.customer_email, deliverName: order.shipping_name, deliverAddress: order.shipping_address,
+      items: order.order_items.map((i) => ({ name: i.name, quantity: i.quantity, unitPrice: Number(i.unit_price) })),
+      subtotal: Number(order.subtotal), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
+    } as InvoiceData,
     data: {
       first_name: name.split(" ")[0] || "there", customer_name: name || "there", order_number: order.order_number,
       items: order.order_items.map((i) => `${i.quantity} x ${i.name}, ${money(Number(i.unit_price) * i.quantity)}`).join("\n"),
@@ -136,14 +143,33 @@ async function blocked(db: Db, channel: Channel, address: string, messageClass: 
   return null;
 }
 
-async function postmark(to: string, subject: string, html: string, text: string, marketing: boolean): Promise<{ id?: string; error?: string }> {
+type Attachment = { Name: string; Content: string; ContentType: string };
+
+const SAMPLE_INVOICE: InvoiceData = { number: "IB-1001", date: "5 November 2026", billName: "Sarah Smith", billEmail: "sarah@example.com", deliverName: "Sarah Smith", deliverAddress: "1 Example Street, Brisbane QLD 4000", items: [{ name: "Dark velvet Christmas tree bow", quantity: 1, unitPrice: 49 }], subtotal: 49, delivery: 14.95, gst: 5.81, total: 63.95 };
+
+// Email still goes if the PDF can't be made, and the problem shows in the Vercel logs.
+async function invoiceAttachment(data: InvoiceData): Promise<Attachment[]> {
+  try {
+    const bytes = await buildInvoice(data, async (file) => {
+      const res = await fetch(`${SITE_URL}/invoice/${file}`);
+      if (!res.ok) throw new Error(`${file} returned ${res.status}`);
+      return new Uint8Array(await res.arrayBuffer());
+    });
+    return [{ Name: `Ivy-and-Bough-tax-invoice-${data.number}.pdf`, Content: Buffer.from(bytes).toString("base64"), ContentType: "application/pdf" }];
+  } catch (e) {
+    console.error("Tax invoice could not be created", data.number, e);
+    return [];
+  }
+}
+
+async function postmark(to: string, subject: string, html: string, text: string, marketing: boolean, attachments?: Attachment[]): Promise<{ id?: string; error?: string }> {
   const token = process.env.POSTMARK_SERVER_TOKEN;
   if (!token) return { error: "Email isn't connected yet. POSTMARK_SERVER_TOKEN is not set." };
   try {
     const res = await fetch("https://api.postmarkapp.com/email", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json", "X-Postmark-Server-Token": token },
-      body: JSON.stringify(emailPayload(to, subject, html, text, marketing)),
+      body: JSON.stringify({ ...emailPayload(to, subject, html, text, marketing), ...(attachments?.length ? { Attachments: attachments } : {}) }),
     });
     const json = (await res.json().catch(() => ({}))) as { MessageID?: string; Message?: string };
     return res.ok ? { id: json.MessageID } : { error: json.Message ?? `Postmark returned ${res.status}` };
@@ -215,10 +241,12 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   }
 
   const title = opts.isTest ? `[Test] ${subject.text}` : subject.text;
+  const invoice = template?.slug === "order-confirmation" ? order?.invoice ?? (opts.isTest ? SAMPLE_INVOICE : null) : null;
+  const attachments = invoice ? await invoiceAttachment(invoice) : undefined;
   const plain = toText(body.text);
   const sent = draft.channel === "SMS"
     ? await twilio(to, plain)
-    : await postmark(to, title, renderEmail({ message_class: draft.message_class, preheader: preheader.text }, body.text), plain, draft.message_class === "Marketing");
+    : await postmark(to, title, renderEmail({ message_class: draft.message_class, preheader: preheader.text }, body.text), plain, draft.message_class === "Marketing", attachments);
   const { data: row, error } = await db.from("message_sends").insert({ ...log, status: sent.error ? "Failed" : "Sent", provider_id: sent.id ?? null, error: sent.error ?? null, segments: draft.channel === "SMS" ? smsSegments(plain) : null }).select("id").single();
   if (sent.error) return { ok: false, error: sent.error };
   return { ok: true, id: row?.id ?? error?.message ?? "" };
