@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { admin } from "./server";
+import { trackingUrl } from "./tracking";
 import { key, url } from "./supabase";
 
 // Every email and text leaves through this file, so the unsubscribe check,
@@ -34,16 +35,20 @@ export function normalise(channel: Channel, address: string) {
 
 export const SAMPLE: Record<string, string> = {
   first_name: "Sarah", customer_name: "Sarah Smith", order_number: "IB-1001", items: "1 x Dark velvet Christmas tree bow, $49.00", order_total: "$63.95", delivery_total: "$14.95", gst_total: "$5.81",
-  delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, tracking 123456789",
+  delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95",
+  basket_items: "1 x [Dark velvet Christmas tree bow](https://ivy-and-bough.vercel.app/shop)",
 };
 
 const links = () => ({ site_url: SITE_URL, account_url: `${SITE_URL}/account` });
+
+// These two are built here from cleaned values, because they contain links.
+const RAW = new Set(["tracking", "basket_items"]);
 
 export function merge(text: string, data: Record<string, string>) {
   const missing = new Set<string>();
   const out = text.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (_, name: string) => {
     if (data[name] === undefined) { missing.add(name); return ""; }
-    return clean(data[name]);
+    return RAW.has(name) ? data[name] : clean(data[name]);
   });
   return { text: out, missing: [...missing] };
 }
@@ -97,7 +102,10 @@ async function orderData(db: Db, orderId: string) {
   if (!data) return null;
   const order = data as unknown as { order_number: string; customer_email: string; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; customers: { name: string; phone: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string }[] };
   const name = order.customers?.name || order.shipping_name || "";
-  const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => `${i.name}: ${[i.carrier, `tracking ${i.tracking_number}`].filter(Boolean).join(", ")}`);
+  const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
+    const link = trackingUrl(i.carrier, i.tracking_number);
+    return `${clean(i.name)}: ${[clean(i.carrier), link ? `[track your parcel](${link})` : `tracking ${clean(i.tracking_number)}`].filter(Boolean).join(", ")}`;
+  });
   return {
     email: order.customer_email,
     phone: order.customers?.phone ?? "",
@@ -176,7 +184,7 @@ export async function getDraft(db: Db, slug: string) {
   return data as (Draft & { id: string; slug: string; is_active: boolean }) | null;
 }
 
-export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: string; orderId?: string | null; isTest?: boolean }): Promise<Result> {
+export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: string; orderId?: string | null; isTest?: boolean; data?: Record<string, string> }): Promise<Result> {
   const db = admin();
   if (!db) return { ok: false, error: "SUPABASE_SECRET_KEY is not set." };
   const template = opts.slug ? await getDraft(db, opts.slug) : null;
@@ -190,7 +198,7 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   const to = normalise(draft.channel, opts.to || (draft.channel === "SMS" ? order?.phone : order?.email) || "");
   if (!to) return { ok: false, error: draft.channel === "SMS" ? "There's no valid mobile number for this message." : "There's no valid email address for this message." };
 
-  const values = { ...(opts.isTest ? SAMPLE : {}), ...links(), ...(order?.data ?? {}) };
+  const values = { ...(opts.isTest ? SAMPLE : {}), ...links(), ...(order?.data ?? {}), ...(opts.data ?? {}) };
   const subject = merge(draft.subject, values);
   const preheader = merge(draft.preheader, values);
   const body = merge(draft.body, values);

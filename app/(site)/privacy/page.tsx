@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         <li>To run your account and show your order history.</li>
         <li>To respond to questions, returns and complaints.</li>
         <li>To send order updates by email or text message.</li>
-        <li>To send marketing emails if you have asked to receive them.</li>
+        <li>To send marketing emails, including basket reminders, if you have asked to receive them.</li>
         <li>To keep the site secure and working properly.</li>
         <li>To meet our legal, tax and accounting obligations.</li>
       </ul>

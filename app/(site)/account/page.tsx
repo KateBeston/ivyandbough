@@ -1,5 +1,6 @@
 "use client";
 
+import { trackingUrl } from "@/lib/tracking";
 import Link from "next/link";
 import { LEGAL_VERSION } from "@/lib/legal";
 import type { Session } from "@supabase/supabase-js";
@@ -29,7 +30,7 @@ function AuthForm() {
     const password = String(f.get("password") ?? "");
     const origin = window.location.origin;
     const res = mode === "in" ? await account.auth.signInWithPassword({ email, password })
-      : mode === "up" ? await account.auth.signUp({ email, password, options: { data: { full_name: String(f.get("name")), terms_version: LEGAL_VERSION }, emailRedirectTo: `${origin}/account` } })
+      : mode === "up" ? await account.auth.signUp({ email, password, options: { data: { full_name: String(f.get("name")), terms_version: LEGAL_VERSION, marketing_opt_in: f.get("marketing") === "on" }, emailRedirectTo: `${origin}/account` } })
       : await account.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/account/reset` });
     setBusy(false);
     if (res.error) return setError(mode === "in" ? "That email or password isn't right." : res.error.message);
@@ -46,6 +47,7 @@ function AuthForm() {
         {mode === "up" && <label>Name<input name="name" required autoComplete="name" /></label>}
         <label>Email<input name="email" type="email" required autoComplete="email" /></label>
         {mode !== "reset" && <label>Password<input name="password" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} /></label>}
+        {mode === "up" && <label className="check-line"><input type="checkbox" name="marketing" /><span>Email me about new collections, offers and anything left in my basket. This is optional.</span></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="terms" required /><span>I agree to the <Link href="/account-terms">Account Terms</Link>, <Link href="/terms">Website Terms of Use</Link> and <Link href="/privacy">Privacy Policy</Link>.</span></label>}
         <button className="solid" disabled={busy}>{mode === "in" ? "Sign in" : mode === "up" ? "Create account" : "Send reset link"}</button>
       </form>
@@ -77,7 +79,7 @@ function Orders() {
           {o.items.map((i, n) => (
             <div key={n} className="order-line">
               <div>{i.quantity} × {i.name}</div>
-              <div>{i.shipping_status}{i.carrier ? ` with ${i.carrier}` : ""}{i.tracking_number ? `, tracking ${i.tracking_number}` : ""}</div>
+              <div>{i.shipping_status}{i.carrier ? ` with ${i.carrier}` : ""}{i.tracking_number ? <>, {trackingUrl(i.carrier, i.tracking_number) ? <a href={trackingUrl(i.carrier, i.tracking_number)!} target="_blank" rel="noopener noreferrer">track your parcel</a> : `tracking ${i.tracking_number}`}</> : ""}</div>
             </div>
           ))}
           <p className="muted">Delivered to {o.shipping_name}, {o.shipping_address}</p>

@@ -1,0 +1,3 @@
+-- Applied to production, with the new message templates loaded.
+-- basket_reminders limits abandoned basket emails to one every 14 days.
+-- link_customer now adds people who ticked the optional sign-up box to subscribers.
