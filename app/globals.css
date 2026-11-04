@@ -347,3 +347,16 @@ button{font:inherit;color:inherit}
 .window-copy h1{font-size:29px;letter-spacing:.09em}
 .window-copy p{font-size:16px}
 }
+@media (max-width:760px){
+.window{padding:0 0 28px}
+.window-photos{display:block}
+.window-main{height:66vw;min-height:250px;max-height:420px}
+.window-side,.window-wreath{display:none}
+.window-copy{align-items:center;padding:24px 20px 20px;text-align:center}
+.window-copy h1{font-size:27px;line-height:1.25}
+.window-copy p{max-width:320px}
+.window-copy .solid{margin-top:14px}
+.window .theme-tabs{flex-wrap:nowrap;gap:0 22px;margin:0;padding:6px 20px 0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.window .theme-tabs::-webkit-scrollbar{display:none}
+.window .theme-tabs button{flex:none;white-space:nowrap}
+}
