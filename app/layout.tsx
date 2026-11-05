@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Ivy & Bough",
   description: "Elegant, unique Christmas pieces for the table, the tree and the front door.",
   robots: { index: false, follow: false },
+  other: { "p:domain_verify": "e93d00004715bfb83af1d9e436427150" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
