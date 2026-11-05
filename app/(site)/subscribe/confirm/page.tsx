@@ -7,7 +7,7 @@ export default async function ConfirmPage({ searchParams }: { searchParams: Prom
   return (
     <main className="prose">
       <h1>Your subscription</h1>
-      {status === "done" ? <p>Thank you, you&apos;re on the list.</p> : status === "invalid" || !e || !t ? <p>This link isn&apos;t valid. Please join again from our website.</p> : (
+      {status === "done" ? <p>Thank you, you&apos;re on the list.</p> : status === "offer" ? <p>Thank you, you&apos;re on the list. Your welcome code is on its way to your inbox.</p> : status === "invalid" || !e || !t ? <p>This link isn&apos;t valid. Please join again from our website.</p> : (
         <form action="/api/subscribe/confirm" method="post">
           <p>Please confirm you&apos;d like to receive emails from Ivy &amp; Bough.</p>
           <input type="hidden" name="e" value={e} />

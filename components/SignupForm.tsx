@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
-export function SignupForm() {
+export function SignupForm({ offer = "" }: { offer?: string }) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -22,6 +22,7 @@ export function SignupForm() {
 
   return (
     <form onSubmit={submit}>
+      {offer && <p className="form-offer">Join today for {offer}.</p>}
       <label>Email address<input name="email" type="email" required autoComplete="email" /></label>
       <button type="submit" disabled={state === "sending"}>Join</button>
       {state === "done" && <div className="msg" role="status">Nearly there. Please check your email to confirm.</div>}

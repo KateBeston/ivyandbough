@@ -17,6 +17,8 @@ export default async function TermsOfSalePage() {
       <p>Your order is an offer to buy. A contract is formed when we confirm your order after payment. We may cancel an order if an item is unavailable, a price or description was clearly wrong, or we reasonably suspect fraud. If we do, we&apos;ll tell you and refund what you paid for the cancelled items.</p>
       <h2>Prices and payment</h2>
       <p>Prices are in Australian dollars and include GST. Payment is taken at checkout through Stripe.</p>
+      <h2>Sales and promotional codes</h2>
+      <p>Sale and clearance prices apply while the offer runs and stock lasts. Promotional codes can be used once, have the conditions stated when they are issued, can&apos;t be exchanged for cash, and only one code can be used on an order. Welcome offers are limited to one per person, for a first order.</p>
       <h2>Delivery</h2>
       <p>We deliver within Australia only. {summary}</p>
       <p>Some items ship directly from our suppliers, so one order may arrive in separate parcels. Dispatch times and Christmas last order dates are estimates and can be affected by carriers, weather and peak periods. If your order is delayed, we&apos;ll let you know and work with you on a fair outcome, which may include a refund.</p>

@@ -2,23 +2,29 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AddressLookup, type PickedAddress } from "@/components/AddressLookup";
 import { useBasket } from "@/components/BasketProvider";
+import { Price } from "@/components/Price";
 import { formatPrice } from "@/lib/catalogue";
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "", smsUpdates: false, marketing: false };
 const mobileDigits = (value: string) => value.replace(/\D/g, "").replace(/^61/, "").replace(/^0/, "");
 type Quote = { deliveryCents: number; free: boolean; zone: string };
+type Promo = { code: string; discountCents: number; label: string };
 
 export default function BasketPage() {
-  const { lines, subtotal, setQuantity, remove, checkout } = useBasket();
+  const { lines, subtotal, setQuantity, remove, checkout, sessionId, welcome } = useBasket();
   const [details, setDetails] = useState(blank);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [code, setCode] = useState("");
+  const [promo, setPromo] = useState<Promo | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const offerUsed = useRef(false);
   const validMobile = /^4\d{8}$/.test(mobileDigits(details.phone));
   const set = (patch: Partial<typeof blank>) => setDetails((d) => ({ ...d, ...patch }));
   const pick = (a: PickedAddress) => set({ ...a, state: STATES.includes(a.state) ? a.state : "" });
@@ -40,12 +46,44 @@ export default function BasketPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details.postcode, basketKey]);
 
+  const applyCode = useCallback(async (value: string) => {
+    setPromoError("");
+    const res = await fetch("/api/promo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: value, sessionId: sessionId(), items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
+    const body = await res?.json().catch(() => null);
+    if (res?.ok && body?.code) setPromo(body);
+    else { setPromo(null); setPromoError(body?.error ?? "That code couldn't be applied."); }
+  }, [lines, sessionId]);
+
+  // The discount is worked out again whenever the basket changes.
+  useEffect(() => {
+    if (!lines.length) return;
+    const active = promo?.code ?? (offerUsed.current ? "" : welcome?.code ?? "");
+    if (!active) return;
+    offerUsed.current = true;
+    setCode(active);
+    applyCode(active);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [basketKey, welcome]);
+
+  function submitCode(e: FormEvent) {
+    e.preventDefault();
+    if (code.trim()) applyCode(code);
+  }
+
+  function removeCode() {
+    setPromo(null);
+    setPromoError("");
+    setCode("");
+  }
+
+  const discount = promo?.discountCents ?? 0;
+  const payable = subtotal - discount + (quote?.deliveryCents ?? 0);
   const ready = quote && details.name.trim() && validMobile && details.line1.trim() && details.city.trim() && details.state;
 
   async function pay() {
     setBusy(true);
     setError("");
-    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` });
+    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promo?.code);
     if (message) {
       setError(message);
       setBusy(false);
@@ -66,7 +104,7 @@ export default function BasketPage() {
                 <div>
                   <Link href={`/products/${l.slug}`} className="basket-name">{l.name}</Link>
                   {l.sku && <div className="muted">Item no. {l.sku}</div>}
-                  <div>{formatPrice(l.price_cents)}</div>
+                  <div>{l.sale_label && <span className="product-offer-label">{l.sale_label}</span>}<div><Price cents={l.price_cents} wasCents={l.was_cents} /></div></div>
                   <button type="button" className="link-button" onClick={() => remove(l.id)}>Remove</button>
                 </div>
                 <label className="qty">Quantity<input type="number" min={1} max={20} value={l.quantity} onChange={(e) => setQuantity(l.id, Number(e.target.value))} /></label>
@@ -92,10 +130,18 @@ export default function BasketPage() {
           </div>
           <aside className="basket-summary">
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+            {promo && <div><span>Discount <button type="button" className="link-button" onClick={removeCode}>Remove</button></span><span>-{formatPrice(discount)}</span></div>}
             <div><span>Delivery</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : "Enter your postcode"}</span></div>
-            <div className="total"><span>Total</span><span>{formatPrice(subtotal + (quote?.deliveryCents ?? 0))}</span></div>
-            <p className="muted">{quote ? `Total includes ${formatPrice(Math.round((subtotal + quote.deliveryCents) / 11))} GST.` : "Prices include GST."}</p>
+            <div className="total"><span>Total</span><span>{formatPrice(payable)}</span></div>
+            <p className="muted">{quote ? `Total includes ${formatPrice(Math.round(payable / 11))} GST.` : "Prices include GST."}</p>
             {quoteError && <p role="alert">{quoteError}</p>}
+            {!promo && (
+              <form className="promo-form" onSubmit={submitCode}>
+                <input aria-label="Promotion code" placeholder="Promotion code" value={code} onChange={(e) => setCode(e.target.value)} />
+                <button type="submit">Apply</button>
+              </form>
+            )}
+            {promoError && <p role="alert">{promoError}</p>}
             <button type="button" className="solid" disabled={busy || !ready} onClick={pay}>Checkout</button>
             {!ready && <p className="muted">Add your delivery details to continue.</p>}
             <p className="muted">By checking out, you agree to our <Link href="/terms-of-sale">Terms of Sale</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>

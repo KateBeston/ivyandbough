@@ -7,6 +7,8 @@ import type { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { formatPrice } from "@/lib/catalogue";
 import { account } from "@/lib/account-client";
+import { useBasket } from "@/components/BasketProvider";
+import { offerText } from "@/lib/pricing";
 
 type Item = { name: string; quantity: number; unit_price: number; shipping_status: string; carrier: string; tracking_number: string };
 type Order = { id: string; order_number: string; status: string; placed_on: string; total: number; subtotal: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; items: Item[] };
@@ -19,6 +21,11 @@ function AuthForm() {
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [offer, setOffer] = useState("");
+
+  useEffect(() => {
+    account.from("promotions").select("discount_type,discount_value,min_order").eq("trigger", "Account sign-up").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => setOffer(data ? offerText(data) : ""));
+  }, []);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -41,6 +48,7 @@ function AuthForm() {
   return (
     <main className="shop-page account-narrow">
       <h1 className="heading">{mode === "in" ? "Sign in" : mode === "up" ? "Create an account" : "Reset your password"}</h1>
+      {mode === "up" && offer && <p className="welcome-offer">Create an account for {offer}. We&apos;ll email your code once you confirm your address, along with an unsubscribe link.</p>}
       <form className="account-form" onSubmit={submit}>
         {error && <p role="alert" className="form-error">{error}</p>}
         {msg && <p role="status">{msg}</p>}
@@ -160,6 +168,7 @@ function Addresses({ userId }: { userId: string }) {
 export default function AccountPage() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [tab, setTab] = useState("Orders");
+  const { welcome } = useBasket();
 
   useEffect(() => {
     account.auth.getSession().then(({ data }) => setSession(data.session));
@@ -175,6 +184,7 @@ export default function AccountPage() {
         <h1 className="heading">Your account</h1>
         <button type="button" className="link-button" onClick={() => account.auth.signOut()}>Sign out</button>
       </div>
+      {welcome && <div className="welcome-offer"><p>Your welcome offer: {welcome.offer}.</p><strong>{welcome.code}</strong><p className="muted">{welcome.terms}</p></div>}
       <div className="pill-row account-tabs" role="tablist">
         {["Orders", "Details", "Addresses"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
       </div>

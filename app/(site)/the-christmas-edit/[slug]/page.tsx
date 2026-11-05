@@ -6,7 +6,7 @@ import { Fragment } from "react";
 import { RichText } from "@/components/RichText";
 import { SignupForm } from "@/components/SignupForm";
 import { designStyle, ratio, type ArticleDesign } from "@/lib/article-design";
-import { formatPrice, getArticleDesign, getPost, getPosts, getProductsBySlugs, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
+import { formatPrice, getArticleDesign, getPost, getPosts, getProductsBySlugs, getWelcomeOffer, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
@@ -137,7 +137,7 @@ export default async function PostPage({ params }: Props) {
         <section className="article-signup">
           <h2 className="heading">First look at new pieces</h2>
           <p>New collections and Christmas delivery dates, before anyone else.</p>
-          <SignupForm />
+          <SignupForm offer={await getWelcomeOffer("Newsletter sign-up")} />
         </section>
       </article>
     </main>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { formatPrice, getDeliverySummary, type Product } from "@/lib/catalogue";
+import { getDeliverySummary, type Product } from "@/lib/catalogue";
+import { Price } from "./Price";
 import { DeliveryCheck } from "./DeliveryCheck";
 import { AddToBasket } from "./AddToBasket";
 import { Gallery } from "./Gallery";
@@ -19,7 +20,8 @@ export async function ProductView({ product, preview = false }: { product: Produ
             <div>
               {theme && <div className="eyebrow">{theme}</div>}
               <h1>{product.name}</h1>
-              <div className="price">{formatPrice(product.price_cents)}</div>
+              {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
+              <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
               <div className="muted">Item no. {product.sku}</div>
               <div className="muted">{deliverySummary}</div>
               {!preview && <DeliveryCheck productId={product.id} />}

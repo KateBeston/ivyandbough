@@ -8,7 +8,7 @@ import { useBasket } from "./BasketProvider";
 
 type Panel = "themes" | "shop" | null;
 
-export function Nav({ themes, categories, solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; solid?: boolean; showLogo?: boolean }) {
+export function Nav({ themes, categories, offers = [], solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; offers?: string[]; solid?: boolean; showLogo?: boolean }) {
   const { count } = useBasket();
   const [panel, setPanel] = useState<Panel>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -84,6 +84,7 @@ export function Nav({ themes, categories, solid = false, showLogo = true }: { th
                 {categories.filter((c) => c.parent_id === m.id).map((c) => <Link key={c.id} href={`/shop/${c.slug}`} onClick={closeAll}>{c.name}</Link>)}
               </div>
             ))}
+            {offers.length > 0 && <div><span className="shop-menu-title">Offers</span>{offers.map((o) => <Link key={o} href={`/shop/${o.toLowerCase()}`} onClick={closeAll}>{o}</Link>)}</div>}
           </div>
           <div className="themes-menu-all"><Link href="/collections" onClick={closeAll}>Explore all collections</Link></div>
         </div>

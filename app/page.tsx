@@ -6,7 +6,7 @@ import { Hero } from "@/components/Hero";
 import { ShopTheLook } from "@/components/ShopTheLook";
 import { SignupForm } from "@/components/SignupForm";
 import { ProductGrid } from "@/components/ProductGrid";
-import { formatDate, getCategories, getDeliveryDates, getProducts, getThemes } from "@/lib/catalogue";
+import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getThemes, getWelcomeOffer } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
@@ -17,11 +17,11 @@ const places = [
 ];
 
 export default async function HomePage() {
-  const [themes, categories, products, dates] = await Promise.all([getThemes(), getCategories(), getProducts(), getDeliveryDates()]);
+  const [themes, categories, products, dates, offer, offers] = await Promise.all([getThemes(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks()]);
   return (
     <>
       <div className="window-bar"><Countdown /></div>
-      <Hero themes={themes} categories={categories} />
+      <Hero themes={themes} categories={categories} offers={offers} />
       <main>
         <section id="edit" className="edit">
           <div className="edit-inner">
@@ -98,7 +98,7 @@ export default async function HomePage() {
           <div className="signup-inner">
             <h2 className="heading">First look at new pieces</h2>
             <p>New collections and Christmas delivery dates, before anyone else.</p>
-            <SignupForm />
+            <SignupForm offer={offer} />
           </div>
         </section>
       </main>

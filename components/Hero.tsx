@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { Category, Theme } from "@/lib/catalogue";
 import { Nav } from "./Nav";
 
-export function Hero({ themes, categories }: { themes: Theme[]; categories: Category[] }) {
+export function Hero({ themes, categories, offers }: { themes: Theme[]; categories: Category[]; offers: string[] }) {
   const [active, setActive] = useState(themes[0]);
   return (
     <section className="hero">
@@ -15,7 +15,7 @@ export function Hero({ themes, categories }: { themes: Theme[]; categories: Cate
       ))}
       <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, rgba(16,13,9,${active.hero_shade}) 0%, rgba(16,13,9,${active.hero_shade * 0.4}) 52%, rgba(16,13,9,0) 78%)` }} />
       <div className="hero-wash" />
-      <Nav themes={themes} categories={categories} showLogo={false} />
+      <Nav themes={themes} categories={categories} offers={offers} showLogo={false} />
       <div className="hero-inner">
         <div style={{ maxWidth: 560 }}>
           <img src="/brand/wreath-cream.svg" alt="Ivy &amp; Bough" className="hero-logo" width={300} height={300} />

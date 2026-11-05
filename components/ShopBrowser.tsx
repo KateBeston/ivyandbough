@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import type { Category, Product, Theme } from "@/lib/catalogue";
 import { ProductGrid } from "./ProductGrid";
 
-type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; material: string[]; price: string[] };
-const blank: Filters = { q: "", sort: "featured", category: [], collection: [], colour: [], material: [], price: [] };
-const lists = ["category", "collection", "colour", "material", "price"] as const;
+type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; material: string[]; price: string[]; offer: string[] };
+const blank: Filters = { q: "", sort: "featured", category: [], collection: [], colour: [], material: [], price: [], offer: [] };
+const lists = ["category", "collection", "colour", "material", "price", "offer"] as const;
 const sorts = [["featured", "Featured"], ["newest", "Newest"], ["low", "Price: low to high"], ["high", "Price: high to low"], ["az", "Name: A to Z"]];
 const prices: [string, string, number, number][] = [["under50", "Under $50", 0, 5000], ["50-100", "$50 to $100", 5000, 10000], ["100-200", "$100 to $200", 10000, 20000], ["200", "$200 and over", 20000, Infinity]];
 const colourList = ["Red", "Burgundy", "Green", "Gold", "Silver", "White", "Ivory", "Champagne", "Blush", "Pink", "Blue", "Black", "Brown", "Natural", "Multicolour"];
@@ -39,6 +39,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
   const toggle = (key: (typeof lists)[number], value: string) => setF((s) => ({ ...s, [key]: s[key].includes(value) ? s[key].filter((v) => v !== value) : [...s[key], value] }));
   const mains = categories.filter((c) => !c.parent_id);
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const offers = useMemo(() => ["Sale", "Clearance"].filter((k) => products.some((p) => p.sale_label === k)), [products]);
   const materials = useMemo(() => [...new Set(products.flatMap((p) => split(p.materials)))].sort(), [products]);
 
   const results = useMemo(() => {
@@ -51,6 +52,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
       if (f.collection.length && !f.collection.includes(p.themes?.slug ?? "")) return false;
       if (f.colour.length && !split(p.colours).some((c) => f.colour.includes(c))) return false;
       if (f.material.length && !split(p.materials).some((m) => f.material.includes(m))) return false;
+      if (f.offer.length && !f.offer.includes(p.sale_label)) return false;
       if (f.price.length) {
         const price = p.price_cents;
         if (price === null || !prices.some(([id, , lo, hi]) => f.price.includes(id) && price >= lo && price < hi)) return false;
@@ -90,6 +92,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
             <Group title="Colour">{colourList.map((c) => check("colour", c, c))}</Group>
             {materials.length > 0 && <Group title="Material">{materials.map((m) => check("material", m, m))}</Group>}
             <Group title="Price">{prices.map(([id, label]) => check("price", id, label))}</Group>
+            {offers.length > 0 && <Group title="Offers">{offers.map((o) => check("offer", o, o))}</Group>}
             {active && <button type="button" className="link-button" onClick={() => setF({ ...blank, sort: f.sort })}>Clear all filters</button>}
           </div>
         </div>

@@ -39,6 +39,7 @@ export const SAMPLE: Record<string, string> = {
   first_name: "Sarah", customer_name: "Sarah Smith", order_number: "IB-1001", items: "1 x Dark velvet Christmas tree bow, $49.00", order_total: "$63.95", delivery_total: "$14.95", gst_total: "$5.81",
   delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95", dispatch_estimate: "Most items are dispatched within 3 business days.",
   basket_items: "1 x [Dark velvet Christmas tree bow](https://ivy-and-bough.vercel.app/shop)",
+  promo_code: "WELCOME-SAMPLE12", offer: "$10 off your first order of $50 or more", offer_terms: "It can be used once, on your first order, and expires on 5 December 2026. It can't be used on sale or clearance items.",
 };
 
 const links = () => ({ site_url: SITE_URL, account_url: `${SITE_URL}/account` });
@@ -58,7 +59,7 @@ export function merge(text: string, data: Record<string, string>) {
 export type OrderSummary = {
   number: string; date: string; payment: string; name: string; address: string;
   items: { name: string; sku: string; collection: string; quantity: number; amount: number; image: string }[];
-  subtotal: number; delivery: number; gst: number; total: number;
+  subtotal: number; discount?: number; delivery: number; gst: number; total: number;
 };
 
 const SUMMARY_MARK = "@@ORDER_DETAILS@@";
@@ -83,12 +84,12 @@ export function summaryHtml(o: OrderSummary) {
   const line = (label: string, value: string) => `<tr><td style="padding:4px 0;font-family:${SANS};font-size:13px;color:#2F2C27">${label}</td><td align="right" style="padding:4px 0;font-family:${SANS};font-size:13px;color:#2F2C27">${value}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE5;margin:28px 0 14px"><tr>${stat("Order", o.number)}${stat("Date", o.date)}${stat("Paid", o.payment || "Card")}</tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px"><tr>${heading("Item code")}${heading("Description")}${heading("Qty", "center")}${heading("Amount", "right").replace("padding:0 8px 7px 0", "padding:0 0 7px")}</tr>${o.items.map(row).join("")}</table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px"><tr><td width="42%"></td><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${line("Subtotal", money(o.subtotal))}${line("Delivery", o.delivery ? money(o.delivery) : "Free")}<tr><td colspan="2" style="padding:6px 0 4px"><div style="height:1px;background:#C4A265;font-size:0;line-height:0">&nbsp;</div></td></tr><tr><td style="padding:5px 0;font-family:${SERIF};font-size:17px;color:#2F2C27">Total paid</td><td align="right" style="padding:5px 0;font-family:${SERIF};font-size:17px;color:#2F2C27">${money(o.total)}</td></tr><tr><td colspan="2" align="right" style="font-family:${SANS};font-size:11px;color:#6A6156">Includes ${money(o.gst)} GST</td></tr></table></td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px"><tr><td width="42%"></td><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${line("Subtotal", money(o.subtotal))}${o.discount ? line("Discount", `-${money(o.discount)}`) : ""}${line("Delivery", o.delivery ? money(o.delivery) : "Free")}<tr><td colspan="2" style="padding:6px 0 4px"><div style="height:1px;background:#C4A265;font-size:0;line-height:0">&nbsp;</div></td></tr><tr><td style="padding:5px 0;font-family:${SERIF};font-size:17px;color:#2F2C27">Total paid</td><td align="right" style="padding:5px 0;font-family:${SERIF};font-size:17px;color:#2F2C27">${money(o.total)}</td></tr><tr><td colspan="2" align="right" style="font-family:${SANS};font-size:11px;color:#6A6156">Includes ${money(o.gst)} GST</td></tr></table></td></tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 22px;border-top:1px solid #E0D8CC"><tr><td valign="top" style="padding:18px 0 0;font-family:${SANS};font-size:13px;line-height:1.6;color:#2F2C27"><div style="padding-bottom:6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">Delivering to</div>${esc(o.name)}<br>${esc(o.address)}</td></tr></table>`;
 }
 
 function summaryText(o: OrderSummary) {
-  return [`Order ${o.number}, ${o.date}`, ...o.items.map((i) => `${i.quantity} x ${i.name}${i.sku ? ` (${i.sku})` : ""}, ${money(i.amount)}`), "", `Subtotal: ${money(o.subtotal)}`, `Delivery: ${o.delivery ? money(o.delivery) : "Free"}`, `Total paid: ${money(o.total)} (includes ${money(o.gst)} GST)`, "", `Delivering to: ${o.name}, ${o.address}`].join("\n");
+  return [`Order ${o.number}, ${o.date}`, ...o.items.map((i) => `${i.quantity} x ${i.name}${i.sku ? ` (${i.sku})` : ""}, ${money(i.amount)}`), "", `Subtotal: ${money(o.subtotal)}`, ...(o.discount ? [`Discount: -${money(o.discount)}`] : []), `Delivery: ${o.delivery ? money(o.delivery) : "Free"}`, `Total paid: ${money(o.total)} (includes ${money(o.gst)} GST)`, "", `Delivering to: ${o.name}, ${o.address}`].join("\n");
 }
 
 export const summaryValue = { order_details: SUMMARY_MARK };
@@ -153,9 +154,9 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,themes(name),product_images(url,sort_order)))").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,discount_total,promo_code,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,themes(name),product_images(url,sort_order)))").eq("id", orderId).single();
   if (!data) return null;
-  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; sku: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { dispatch_days: number | null; themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
+  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; discount_total: number; promo_code: string; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; sku: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { dispatch_days: number | null; themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
   const name = order.customers?.name || order.shipping_name || "";
   const dispatchDays = order.order_items.flatMap((i) => (i.products?.dispatch_days ? [i.products.dispatch_days] : []));
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
@@ -169,14 +170,14 @@ async function orderData(db: Db, orderId: string) {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "short", year: "numeric" }),
       payment: order.payment_method, name: order.shipping_name, address: order.shipping_address,
       items: order.order_items.map((i) => ({ name: i.name, sku: i.sku, collection: i.products?.themes?.name ?? "", quantity: i.quantity, amount: Number(i.unit_price) * i.quantity, image: [...(i.products?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "" })),
-      subtotal: Number(order.subtotal), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
+      subtotal: Number(order.subtotal), discount: Number(order.discount_total), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
     } as OrderSummary,
     invoice: {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "long", year: "numeric" }),
       customerId: order.customers?.customer_number ?? "", transaction: order.payment_intent_id ?? "", paymentMethod: order.payment_method,
       billName: name, billEmail: order.customer_email, deliverName: order.shipping_name, deliverAddress: order.shipping_address,
       items: order.order_items.map((i) => ({ name: i.name, sku: i.sku, quantity: i.quantity, unitPrice: Number(i.unit_price) })),
-      subtotal: Number(order.subtotal), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
+      subtotal: Number(order.subtotal), discount: Number(order.discount_total), promoCode: order.promo_code, delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
     } as InvoiceData,
     data: {
       first_name: name.split(" ")[0] || "there", customer_name: name || "there", order_number: order.order_number,
@@ -189,12 +190,13 @@ async function orderData(db: Db, orderId: string) {
   };
 }
 
-async function blocked(db: Db, channel: Channel, address: string, messageClass: MessageClass, forOrder: boolean) {
+async function blocked(db: Db, channel: Channel, address: string, messageClass: MessageClass, forOrder: boolean, consented = false) {
   const { data: stopped, error } = await db.from("message_suppressions").select("reason,scope").eq("channel", channel).eq("address", address).is("released_at", null);
   if (error) return `Could not check the unsubscribe list, so nothing was sent: ${error.message}`;
   const stop = (stopped ?? []).find((s) => s.scope === "All" || messageClass === "Marketing");
   if (stop) return `${address} is on the do-not-contact list (${stop.reason}).`;
-  if (messageClass === "Marketing") {
+  // consented: the customer asked for this one message when they signed up for the offer.
+  if (messageClass === "Marketing" && !consented) {
     if (channel === "Email") {
       const { data } = await db.from("subscribers").select("id").ilike("email", address.replace(/[%_\\]/g, "\\$&")).not("confirmed_at", "is", null).limit(1);
       if (!data?.length) return `${address} hasn't confirmed a subscription, so marketing can't be sent to them.`;
@@ -279,7 +281,7 @@ export async function getDraft(db: Db, slug: string) {
   return data as (Draft & { id: string; slug: string; is_active: boolean }) | null;
 }
 
-export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: string; orderId?: string | null; isTest?: boolean; data?: Record<string, string> }): Promise<Result> {
+export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: string; orderId?: string | null; isTest?: boolean; consented?: boolean; data?: Record<string, string> }): Promise<Result> {
   const db = admin();
   if (!db) return { ok: false, error: "SUPABASE_SECRET_KEY is not set." };
   const template = opts.slug ? await getDraft(db, opts.slug) : null;
@@ -304,7 +306,7 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   if (!body.text.trim()) return { ok: false, error: "This message has no content." };
 
   const log = { template_id: template?.id ?? null, template_slug: template?.slug ?? "", channel: draft.channel, message_class: draft.message_class, order_id: opts.orderId ?? null, to_address: to, subject: subject.text, body: toText(body.text, summary), is_test: Boolean(opts.isTest) };
-  const stop = opts.isTest ? null : await blocked(db, draft.channel, to, draft.message_class, Boolean(opts.orderId));
+  const stop = opts.isTest ? null : await blocked(db, draft.channel, to, draft.message_class, Boolean(opts.orderId), opts.consented);
   if (stop) {
     await db.from("message_sends").insert({ ...log, status: "Suppressed", error: stop });
     return { ok: false, error: stop };

@@ -26,7 +26,7 @@ async function saveItems(client: Stripe, db: NonNullable<ReturnType<typeof admin
   const { error } = await db.from("order_items").insert(items.map((i) => {
     const product = i.price?.product as Stripe.Product | undefined;
     const quantity = i.quantity ?? 1;
-    return { order_id: orderId, product_id: product?.metadata?.product_id || null, sku: product?.metadata?.sku ?? "", name: i.description ?? product?.name ?? "", quantity, unit_price: i.amount_total / quantity / 100 };
+    return { order_id: orderId, product_id: product?.metadata?.product_id || null, sku: product?.metadata?.sku ?? "", name: i.description ?? product?.name ?? "", quantity, unit_price: i.amount_subtotal / quantity / 100 };
   }));
   if (error) throw error;
 }
@@ -62,7 +62,9 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   const total = (session.amount_total ?? 0) / 100;
   const delivery = (session.total_details?.amount_shipping ?? 0) / 100;
-  const { data: order, error } = await db.from("orders").insert({ customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total - delivery, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
+  const discount = (session.total_details?.amount_discount ?? 0) / 100;
+  const promoCode = session.metadata?.promo_code ?? "";
+  const { data: order, error } = await db.from("orders").insert({ customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total + discount - delivery, discount_total: discount, promo_code: promoCode, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
   if (error) {
     if (error.code === "23505") return; // Stripe delivered this event twice at once.
     throw error;
@@ -77,6 +79,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   }
 
 
+  if (promoCode) await db.from("promo_codes").update({ used_at: new Date().toISOString(), order_id: order.id, reserved_until: null }).eq("code", promoCode);
   if (session.metadata?.cart_session) await db.from("cart_items").update({ status: "Converted" }).eq("session_id", session.metadata.cart_session).eq("status", "In cart");
   if (userId) await db.from("cart_items").update({ status: "Converted" }).eq("auth_user_id", userId).eq("status", "In cart");
 

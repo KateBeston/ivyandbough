@@ -1,21 +1,24 @@
 import { defaultDesign, type ArticleDesign } from "./article-design";
+import { OFFER_COLUMNS, offerPrice, offerText } from "./pricing";
 import { supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number; is_featured: boolean; feature_order: number; seo_title: string; seo_description: string; page_intro: string; page_content: string };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number };
-export type Product = { id: string; sku: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; materials: string; dimensions: string; weight: string; height_cm: number | null; width_cm: number | null; depth_cm: number | null; weight_g: number | null; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; colours: string; category_id: string | null; theme_id: string | null; created_at: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
+export type Product = { id: string; sku: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; was_cents: number | null; sale_label: string; sale_kind: string; discount_type: string; discount_value: number | null; sale_starts_at: string | null; sale_ends_at: string | null; materials: string; dimensions: string; weight: string; height_cm: number | null; width_cm: number | null; depth_cm: number | null; weight_g: number | null; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; colours: string; category_id: string | null; theme_id: string | null; created_at: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
 export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string; parent_id: string | null };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
-const productSelect = "id,sku,slug,name,kind,description,price_cents,materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,care,seo_title,seo_description,colours,category_id,theme_id,created_at,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)";
+const productSelect = `id,sku,slug,name,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,care,seo_title,seo_description,colours,category_id,theme_id,created_at,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)`;
 
 function must<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
   return data as T;
 }
 
+// Every product leaves here carrying its live price, so a sale reaches the whole site at once.
 function sortImages(p: Product): Product {
-  return { ...p, product_images: [...p.product_images].sort((a, b) => a.sort_order - b.sort_order) };
+  const offer = offerPrice(p);
+  return { ...p, price_cents: offer.cents, was_cents: offer.wasCents, sale_label: offer.label, product_images: [...p.product_images].sort((a, b) => a.sort_order - b.sort_order) };
 }
 
 export async function getThemes(): Promise<Theme[]> {
@@ -126,6 +129,17 @@ export async function getDeliverySummary() {
   const over = data?.free_over === null || data?.free_over === undefined ? null : Number(data.free_over);
   const amount = over === null ? "" : new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: over % 1 ? 2 : 0 }).format(over);
   return `Delivery is calculated from your postcode${over === null ? "" : `, and standard items ship free on orders over ${amount}`}.`;
+}
+
+export async function getOfferLinks() {
+  const { data } = await supabase.from("products").select(`price_cents,${OFFER_COLUMNS}`).neq("sale_kind", "");
+  const live = new Set((data ?? []).map((p) => offerPrice(p).label).filter(Boolean));
+  return ["Sale", "Clearance"].filter((k) => live.has(k));
+}
+
+export async function getWelcomeOffer(trigger: "Account sign-up" | "Newsletter sign-up") {
+  const { data } = await supabase.from("promotions").select("discount_type,discount_value,min_order").eq("trigger", trigger).eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  return data ? offerText(data) : "";
 }
 
 export type Faq = { id: string; category: string; question: string; answer: string };

@@ -1,4 +1,6 @@
 // Delivery is always priced here, from the rates managed in the portal.
+import { OFFER_COLUMNS, offerPrice, type OfferFields } from "./pricing";
+
 type Db = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type Zone = { id: string; name: string; postcodes: string; rate: number; is_default: boolean; sort_order: number };
@@ -18,13 +20,14 @@ export function pickZone(zones: Zone[], postcode: string) {
   return [...zones].sort((a, b) => a.sort_order - b.sort_order).find((z) => !z.is_default && inZone(z, postcode)) ?? zones.find((z) => z.is_default) ?? null;
 }
 
-type Row = { id: string; name: string; price_cents: number | null; shipping_classes: { name: string; surcharge: number; free_delivery_applies: boolean } | null };
+type Row = OfferFields & { id: string; name: string; shipping_classes: { name: string; surcharge: number; free_delivery_applies: boolean } | null };
 
 export function price(rows: Row[], items: { id: string; quantity: number }[], zone: Zone, freeOver: number | null): Quote {
   const lines = items.flatMap((item) => {
     const row = rows.find((r) => r.id === item.id);
-    if (!row || row.price_cents === null) return [];
-    return [{ id: row.id, name: row.name, quantity: item.quantity, priceCents: row.price_cents, className: row.shipping_classes?.name ?? "Standard", surchargeCents: cents(row.shipping_classes?.surcharge) * item.quantity, eligible: row.shipping_classes?.free_delivery_applies ?? true }];
+    const live = row ? offerPrice(row).cents : null;
+    if (!row || live === null) return [];
+    return [{ id: row.id, name: row.name, quantity: item.quantity, priceCents: live, className: row.shipping_classes?.name ?? "Standard", surchargeCents: cents(row.shipping_classes?.surcharge) * item.quantity, eligible: row.shipping_classes?.free_delivery_applies ?? true }];
   });
   const subtotalCents = lines.reduce((n, l) => n + l.priceCents * l.quantity, 0);
   const freeOverCents = freeOver === null ? null : cents(freeOver);
@@ -37,7 +40,7 @@ export function price(rows: Row[], items: { id: string; quantity: number }[], zo
 export async function quoteDelivery(db: Db, items: { id: string; quantity: number }[], postcode: string) {
   if (!/^\d{4}$/.test(postcode)) throw new Error("Enter a 4-digit Australian postcode.");
   const [products, zones, settings] = await Promise.all([
-    db.from("products").select("id,name,price_cents,shipping_classes(name,surcharge,free_delivery_applies)").in("id", items.map((i) => i.id)),
+    db.from("products").select(`id,name,price_cents,${OFFER_COLUMNS},shipping_classes(name,surcharge,free_delivery_applies)`).in("id", items.map((i) => i.id)),
     db.from("delivery_zones").select("id,name,postcodes,rate,is_default,sort_order"),
     db.from("delivery_settings").select("free_over").maybeSingle(),
   ]);

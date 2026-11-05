@@ -4,7 +4,7 @@ import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 export type InvoiceData = {
   number: string; date: string; customerId: string; transaction: string; paymentMethod: string; billName: string; billEmail: string; deliverName: string; deliverAddress: string;
   items: { name: string; sku?: string; quantity: number; unitPrice: number }[];
-  subtotal: number; delivery: number; gst: number; total: number;
+  subtotal: number; discount?: number; promoCode?: string; delivery: number; gst: number; total: number;
 };
 
 const INK = rgb(0.184, 0.173, 0.153);
@@ -117,6 +117,7 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
     y -= strong ? 18 : 17;
   };
   total("Subtotal", money(data.subtotal));
+  if (data.discount) total(`Discount${data.promoCode ? ` (${data.promoCode})` : ""}`, `-${money(data.discount)}`);
   total("Delivery", data.delivery ? money(data.delivery) : "Free");
   y -= 3;
   page.drawLine({ start: { x: 340, y: y + 11 }, end: { x: WIDTH - MARGIN, y: y + 11 }, thickness: 0.8, color: GOLD });
