@@ -18,6 +18,8 @@ export function CategoryBar({ categories }: { categories: Category[] }) {
     return () => { window.removeEventListener("keydown", esc); document.removeEventListener("click", outside); };
   }, []);
 
+  if (!parents.length) return null;
+
   const mouse = (e: PointerEvent, id: string | null) => { if (e.pointerType === "mouse") setOpen(id); };
 
   return (

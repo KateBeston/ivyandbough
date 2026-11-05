@@ -61,6 +61,14 @@ export async function getCategories(): Promise<Category[]> {
   return must(data, error) as Category[];
 }
 
+// Only categories with products to show. A main category stays when any of its subcategories has stock.
+export async function getStockedCategories(): Promise<Category[]> {
+  const [categories, { data }] = await Promise.all([getCategories(), supabase.from("products").select("category_id").not("category_id", "is", null)]);
+  const used = new Set((data ?? []).map((p) => p.category_id as string));
+  for (const c of categories) if (c.parent_id && used.has(c.id)) used.add(c.parent_id);
+  return categories.filter((c) => used.has(c.id));
+}
+
 export async function getCategory(slug: string): Promise<Category | null> {
   const { data, error } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
   if (error) throw new Error(error.message);

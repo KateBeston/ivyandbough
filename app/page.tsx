@@ -10,7 +10,7 @@ import { Hero } from "@/components/Hero";
 import { ShopTheLook } from "@/components/ShopTheLook";
 import { SignupForm } from "@/components/SignupForm";
 import { ProductGrid } from "@/components/ProductGrid";
-import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getThemes, getWelcomeOffer } from "@/lib/catalogue";
+import { formatDate, getDeliveryDates, getOfferLinks, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: "Ivy & Bough | Elegant Christmas Decorations Australia", description: "Elegant, unique Christmas pieces for the table, the tree and the front door, delivered Australia-wide.", alternates: { canonical: "/" } };
@@ -26,7 +26,7 @@ const places = [
 ];
 
 export default async function HomePage() {
-  const [themes, categories, products, dates, offer, offers] = await Promise.all([getThemes(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks()]);
+  const [themes, categories, products, dates, offer, offers] = await Promise.all([getThemes(), getStockedCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks()]);
   return (
     <>
       <div className="window-bar"><Countdown /></div>
