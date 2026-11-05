@@ -8,6 +8,8 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { formatPrice } from "@/lib/catalogue";
 import { account } from "@/lib/account-client";
 import { useBasket } from "@/components/BasketProvider";
+import { Honeypot } from "@/components/Honeypot";
+import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { offerText } from "@/lib/pricing";
 
 type Item = { name: string; quantity: number; unit_price: number; shipping_status: string; carrier: string; tracking_number: string };
@@ -22,6 +24,8 @@ function AuthForm() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [offer, setOffer] = useState("");
+  const [token, setToken] = useState("");
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     account.from("promotions").select("discount_type,discount_value,min_order").eq("trigger", "Account sign-up").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => setOffer(data ? offerText(data) : ""));
@@ -33,13 +37,16 @@ function AuthForm() {
     setError("");
     setMsg("");
     const f = new FormData(e.currentTarget);
+    if (f.get("company")) { setBusy(false); return; }
     const email = String(f.get("email"));
     const password = String(f.get("password") ?? "");
     const origin = window.location.origin;
-    const res = mode === "in" ? await account.auth.signInWithPassword({ email, password })
-      : mode === "up" ? await account.auth.signUp({ email, password, options: { data: { full_name: String(f.get("name")), terms_version: LEGAL_VERSION, marketing_opt_in: f.get("marketing") === "on" }, emailRedirectTo: `${origin}/account` } })
-      : await account.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/account/reset` });
+    const captcha = token ? { captchaToken: token } : {};
+    const res = mode === "in" ? await account.auth.signInWithPassword({ email, password, options: captcha })
+      : mode === "up" ? await account.auth.signUp({ email, password, options: { ...captcha, data: { full_name: String(f.get("name")), terms_version: LEGAL_VERSION, marketing_opt_in: f.get("marketing") === "on" }, emailRedirectTo: `${origin}/account` } })
+      : await account.auth.resetPasswordForEmail(email, { ...captcha, redirectTo: `${origin}/account/reset` });
     setBusy(false);
+    setAttempt((n) => n + 1);
     if (res.error) return setError(mode === "in" ? "That email or password isn't right." : res.error.message);
     if (mode === "up") setMsg("If this email is new, check your inbox to confirm your account. If you already have an account, sign in instead.");
     if (mode === "reset") setMsg("If that email has an account, we've sent a reset link.");
@@ -50,6 +57,8 @@ function AuthForm() {
       <h1 className="heading">{mode === "in" ? "Sign in" : mode === "up" ? "Create an account" : "Reset your password"}</h1>
       {mode === "up" && offer && <p className="welcome-offer">Create an account for {offer}. We&apos;ll email your code once you confirm your address, along with an unsubscribe link.</p>}
       <form className="account-form" onSubmit={submit}>
+        <Honeypot />
+        <Turnstile onToken={setToken} resetKey={attempt} />
         {error && <p role="alert" className="form-error">{error}</p>}
         {msg && <p role="status">{msg}</p>}
         {mode === "up" && <label>Name<input name="name" required autoComplete="name" /></label>}
@@ -57,7 +66,7 @@ function AuthForm() {
         {mode !== "reset" && <label>Password<input name="password" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} /></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="marketing" /><span>Email me about new collections, offers and anything left in my basket. This is optional.</span></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="terms" required /><span>I agree to the <Link href="/account-terms">Account Terms</Link>, <Link href="/terms">Website Terms of Use</Link> and <Link href="/privacy">Privacy Policy</Link>.</span></label>}
-        <button className="solid" disabled={busy}>{mode === "in" ? "Sign in" : mode === "up" ? "Create account" : "Send reset link"}</button>
+        <button className="solid" disabled={busy || (TURNSTILE_ON && !token)}>{mode === "in" ? "Sign in" : mode === "up" ? "Create account" : "Send reset link"}</button>
       </form>
       <div className="account-links">
         {mode !== "in" && <button type="button" className="link-button" onClick={() => setMode("in")}>Sign in</button>}

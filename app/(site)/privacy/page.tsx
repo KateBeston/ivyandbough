@@ -48,7 +48,7 @@ export default function PrivacyPage() {
       <h2>Marketing</h2>
       <p>We only send marketing by email, SMS or MMS to people who have asked to receive it. You can unsubscribe at any time using the link in our emails or by contacting us. Order and account messages will still be sent where they are needed. We use email service data to see whether messages are delivered, and whether marketing emails are opened or their links are clicked.</p>
       <h2>Cookies</h2>
-      <p>Our <Link href="/cookies">Cookie Policy</Link> explains the cookies and similar technologies we use. If you choose Accept all, Google Analytics collects information about how you use the site, which may be processed outside Australia.</p>
+      <p>Our <Link href="/cookies">Cookie Policy</Link> explains the cookies and similar technologies we use. If you choose Accept all, Google Analytics collects information about how you use the site, which may be processed outside Australia. We use Cloudflare Turnstile to protect our forms and checkout from bots, which processes technical information about your browser and device.</p>
       <h2>Storage and security</h2>
       <p>We take reasonable steps to protect personal information from misuse, loss and unauthorised access, including access controls on our systems. No online service is completely secure. If a data breach is likely to cause you serious harm, we will notify you and, where required, the Office of the Australian Information Commissioner.</p>
       <p>We keep personal information only for as long as we need it for the purposes above. Order and financial records are generally kept for at least five years to meet tax and accounting requirements.</p>

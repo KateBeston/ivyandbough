@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isHuman } from "@/lib/guard";
 import { allowed } from "@/lib/limits";
 import { OFFER_COLUMNS, offerPrice, type OfferFields } from "@/lib/pricing";
 import { checkCode, reserveCode, type Checked } from "@/lib/promotions";
@@ -15,6 +16,8 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "Checkout isn't switched on yet." }, { status: 503 });
   if (!(await allowed(request, "checkout", 15, 600))) return NextResponse.json({ error: "Please try again in a few minutes." }, { status: 429 });
   const body = await request.json().catch(() => null);
+  if (body?.company) return NextResponse.json({ error: "That didn't go through. Please try again." }, { status: 400 });
+  if (!(await isHuman(body?.token, request))) return NextResponse.json({ error: "We couldn't confirm you're human. Please refresh the page and try again." }, { status: 403 });
   const items = cleanItems(body?.items);
   if (!items.length) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });
   const text = (value: unknown, max = 120) => String(value ?? "").trim().slice(0, max);

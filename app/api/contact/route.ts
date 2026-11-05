@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isHuman } from "@/lib/guard";
 import { allowed } from "@/lib/limits";
 import { admin } from "@/lib/server";
 
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
   if (!(await allowed(request, "contact", 5, 3600))) return NextResponse.json({ ok: false }, { status: 429 });
+  if (!(await isHuman(body?.token, request))) return NextResponse.json({ ok: false }, { status: 403 });
   const db = admin();
   const { error } = db ? await db.from("contact_messages").insert({ name, email, message }) : { error: true };
   if (error) return NextResponse.json({ ok: false }, { status: 500 });

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AddressLookup, type PickedAddress } from "@/components/AddressLookup";
 import { useBasket } from "@/components/BasketProvider";
+import { Honeypot } from "@/components/Honeypot";
 import { PaymentMarks } from "@/components/PaymentMarks";
 import { Price } from "@/components/Price";
+import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { formatPrice } from "@/lib/catalogue";
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
@@ -23,6 +25,9 @@ export default function BasketPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState("");
+  const [token, setToken] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const trap = useRef<HTMLDivElement>(null);
   const [promo, setPromo] = useState<Promo | null>(null);
   const [promoError, setPromoError] = useState("");
   const offerUsed = useRef(false);
@@ -84,7 +89,8 @@ export default function BasketPage() {
   async function pay() {
     setBusy(true);
     setError("");
-    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promo?.code);
+    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promo?.code, { token, company: trap.current?.querySelector("input")?.value ?? "" });
+    setAttempt((n) => n + 1);
     if (message) {
       setError(message);
       setBusy(false);
@@ -143,7 +149,9 @@ export default function BasketPage() {
               </form>
             )}
             {promoError && <p role="alert">{promoError}</p>}
-            <button type="button" className="solid" disabled={busy || !ready} onClick={pay}>Checkout</button>
+            <button type="button" className="solid" disabled={(busy || !ready) || (TURNSTILE_ON && !token)} onClick={pay}>Checkout</button>
+            <div ref={trap}><Honeypot /></div>
+            <Turnstile onToken={setToken} resetKey={attempt} />
             <PaymentMarks />
             {!ready && <p className="muted">Add your delivery details to continue.</p>}
             <p className="muted">By checking out, you agree to our <Link href="/terms-of-sale">Terms of Sale</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
