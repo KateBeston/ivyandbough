@@ -520,10 +520,10 @@ button{font:inherit;color:inherit}
 .category-bar{position:relative;z-index:20;background:#6B1F2B;color:#FFF6E8}
 .category-bar{padding:48px 0 34px;text-align:center}
 .category-bar .heading{margin:0 20px 26px;color:inherit}
-.category-bar>ul{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 18px;max-width:1360px;margin:0 auto;padding:0 40px;list-style:none;text-align:left}
+.category-bar>ul{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 12px;max-width:1360px;margin:0 auto;padding:0 40px;list-style:none;text-align:left}
 .category-bar>ul>li{position:relative}
 .category-top{display:flex;align-items:center;gap:7px;padding:16px 0}
-.category-top a{color:inherit;font-family:var(--serif);font-size:16px;letter-spacing:.11em;text-decoration:none;text-transform:uppercase;white-space:nowrap}
+.category-top a{color:inherit;font-family:var(--serif);font-size:15px;letter-spacing:.09em;text-decoration:none;text-transform:uppercase;white-space:nowrap}
 .category-top button{display:flex;padding:6px 3px;border:0;background:none;color:inherit;cursor:pointer}
 .category-top button[aria-expanded=true] svg{transform:rotate(180deg)}
 .category-drop{position:absolute;left:-16px;top:100%;min-width:220px;margin:0;padding:10px 0;background:var(--paper);color:var(--ink);list-style:none;box-shadow:0 16px 34px rgba(20,14,8,.22)}
