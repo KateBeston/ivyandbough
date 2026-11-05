@@ -14,7 +14,8 @@ async function paymentDetails(client: Stripe, intentId: string | null) {
     const charge = intent.latest_charge && typeof intent.latest_charge !== "string" ? intent.latest_charge : null;
     const card = charge?.payment_method_details?.card;
     const brand = card?.brand ? card.brand[0].toUpperCase() + card.brand.slice(1) : "Card";
-    return { chargeId: charge?.id ?? null, method: card?.last4 ? `${brand} ending ${card.last4}` : "" };
+    const other: Record<string, string> = { afterpay_clearpay: "Afterpay", zip: "Zip" };
+    return { chargeId: charge?.id ?? null, method: card?.last4 ? `${brand} ending ${card.last4}` : other[charge?.payment_method_details?.type ?? ""] ?? "" };
   } catch (e) {
     console.warn("Payment details unavailable", intentId, e);
     return { chargeId: null, method: "" };
