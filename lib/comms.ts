@@ -112,7 +112,12 @@ function paragraph(block: string) {
   return `<p style="margin:0 0 16px">${html}</p>`;
 }
 
+// Spam filters penalise very long HTML lines, so every tag starts on its own line.
 export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, body: string, summary?: OrderSummary | null) {
+  return emailHtml(draft, body, summary).replace(/></g, ">\n<");
+}
+
+function emailHtml(draft: Pick<Draft, "message_class" | "preheader">, body: string, summary?: OrderSummary | null) {
   const marketing = draft.message_class === "Marketing";
   let content = body.split(/\n\s*\n/).map(paragraph).join("");
   if (summary) content = content.replace(SUMMARY_MARK, summaryHtml(summary)).replace('<p style="margin:26px 0 8px">', '<p style="margin:30px 0 30px;text-align:center">');
