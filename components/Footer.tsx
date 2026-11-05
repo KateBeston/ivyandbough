@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="footer">
       <div className="footer-top">
         <div className="footer-brand">
-          <img src="/brand/stacked-cream.svg" alt="Ivy &amp; Bough" className="footer-logo" width={150} height={88} />
+          <Link href="/" className="footer-logo-link" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-cream.svg" alt="" className="footer-logo" width={150} height={88} /></Link>
           <ul className="footer-social">
             {SOCIAL_LINKS.map((s) => <li key={s.id}><a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`Ivy & Bough on ${s.name}`}><img src={`/social/${s.id}.svg`} alt="" width={20} height={20} /></a></li>)}
           </ul>

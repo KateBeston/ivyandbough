@@ -509,3 +509,5 @@ button{font:inherit;color:inherit}
 .footer-social{display:flex;gap:16px;margin:18px 0 0;padding:0;list-style:none}
 .footer-social a{display:block;padding:4px;opacity:.85}
 .footer-social a:hover{opacity:1}
+
+.footer-top a.footer-logo-link{display:block;width:150px;padding:0}
