@@ -3,6 +3,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SITE, SOCIALS } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
+import { CategoryBar } from "@/components/CategoryBar";
 import { Countdown } from "@/components/Countdown";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
@@ -41,6 +42,8 @@ export default async function HomePage() {
             <ProductGrid products={products} />
           </div>
         </section>
+
+        <CategoryBar categories={categories} />
 
         <section className="intro">
           <div>
