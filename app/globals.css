@@ -316,7 +316,7 @@ button{font:inherit;color:inherit}
 .nav-tools{gap:16px}
 .menu-toggle,.nav-tools a{letter-spacing:.16em}
 .footer-top{grid-template-columns:repeat(2,minmax(0,1fr))}
-.footer-logo{grid-column:1/-1}
+.footer-brand{grid-column:1/-1}
 }
 
 /* Shop window homepage */
@@ -504,3 +504,8 @@ button{font:inherit;color:inherit}
 /* Christmas countdown */
 .countdown{display:flex;flex-wrap:wrap;justify-content:center;gap:0 12px;font-variant-numeric:tabular-nums}
 .countdown span{white-space:nowrap}
+
+/* Social links */
+.footer-social{display:flex;gap:16px;margin:18px 0 0;padding:0;list-style:none}
+.footer-social a{display:block;padding:4px;opacity:.85}
+.footer-social a:hover{opacity:1}

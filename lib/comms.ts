@@ -1,3 +1,4 @@
+import { SOCIAL_LINKS } from "./seo";
 import { createClient } from "@supabase/supabase-js";
 import type { InvoiceData } from "./invoice";
 import { buildPdf, ensureReceipt } from "./receipts";
@@ -138,6 +139,7 @@ function emailHtml(draft: Pick<Draft, "message_class" | "preheader">, body: stri
 <tr><td style="padding:44px 36px 36px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.65;color:#2F2C27">${content}</td></tr>${marketing ? collections : ""}
 <tr><td align="center" style="padding:30px 28px 28px;background:#2B2925;font-family:Arial,Helvetica,sans-serif;color:#E9E3D8">
 <div style="padding-bottom:18px"><img src="${SITE_URL}/email/wordmark-cream.png" width="130" alt="Ivy &amp; Bough" style="display:inline-block;width:130px;height:auto;border:0"></div>
+<div style="padding-bottom:16px">${SOCIAL_LINKS.map((s) => `<a href="${s.url}" style="display:inline-block;padding:0 9px;text-decoration:none"><img src="${SITE_URL}/email/social-${s.id}.png" width="20" height="20" alt="${s.name}" style="display:inline-block;width:20px;height:20px;border:0"></a>`).join("")}</div>
 <div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
 <div style="height:1px;background:#4A463F;font-size:0;line-height:0">&nbsp;</div>
 <div style="font-size:11px;line-height:1.7;color:#B9B1A4;padding-top:16px">${why}<br>Ivy &amp; Bough is a trading name of Aurella Group Pty Ltd, ABN 70 649 742 423.<br><a href="mailto:hello@ivyandbough.com" style="color:#C4A265">hello@ivyandbough.com</a> &nbsp;&middot;&nbsp; <a href="${SITE_URL}/privacy" style="color:#C4A265">Privacy Policy</a>${unsubscribe}</div>

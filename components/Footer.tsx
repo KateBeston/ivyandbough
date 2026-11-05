@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { CookieSettingsLink } from "./CookieConsent";
+import { SOCIAL_LINKS } from "@/lib/seo";
 import { PaymentMarks } from "./PaymentMarks";
 
 export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-top">
-        <img src="/brand/stacked-cream.svg" alt="Ivy &amp; Bough" className="footer-logo" width={150} height={88} />
+        <div className="footer-brand">
+          <img src="/brand/stacked-cream.svg" alt="Ivy &amp; Bough" className="footer-logo" width={150} height={88} />
+          <ul className="footer-social">
+            {SOCIAL_LINKS.map((s) => <li key={s.id}><a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`Ivy & Bough on ${s.name}`}><img src={`/social/${s.id}.svg`} alt="" width={20} height={20} /></a></li>)}
+          </ul>
+        </div>
         <nav aria-label="Shop">
           <Link href="/#collections">Collections</Link>
           <Link href="/shop">Shop everything</Link>
