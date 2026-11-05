@@ -22,13 +22,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-AU" className={`${serif.variable} ${sans.variable}`}>
-      {/* Temporary, for checking the tag before launch. It ignores cookie consent, so it must be off at launch. */}
-      {process.env.NEXT_PUBLIC_GTM_TEST === "true" && process.env.NEXT_PUBLIC_GTM_ID && (
-        <head>
-          <script id="gtm" async src={`https://www.googletagmanager.com/gtm.js?id=${process.env.NEXT_PUBLIC_GTM_ID}`} />
-          <script dangerouslySetInnerHTML={{ __html: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});" }} />
-        </head>
-      )}
       <body><BasketProvider>{children}</BasketProvider><CookieConsent /><Analytics /></body>
     </html>
   );
