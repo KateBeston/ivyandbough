@@ -22,6 +22,7 @@ export function CategoryBar({ categories }: { categories: Category[] }) {
 
   return (
     <nav ref={bar} className="category-bar" aria-label="Shop by category">
+      <h2 className="heading">Explore all categories</h2>
       <ul>
         {parents.map((p) => {
           const kids = categories.filter((c) => c.parent_id === p.id);
