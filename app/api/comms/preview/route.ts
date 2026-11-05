@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { merge, renderEmail, requireAdmin, SAMPLE, SITE_URL, smsSegments, toText, type Draft } from "@/lib/comms";
+import { merge, renderEmail, requireAdmin, SAMPLE, SITE_URL, smsSegments, toText, withOptOut, type Draft } from "@/lib/comms";
 
 export async function POST(request: Request) {
   if (!(await requireAdmin(request))) return NextResponse.json({ error: "Not allowed." }, { status: 401 });
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const body = merge(String(draft.body ?? ""), values);
   const subject = merge(String(draft.subject ?? ""), values);
   const preheader = merge(String(draft.preheader ?? ""), values);
-  const text = toText(body.text);
+  const text = draft.channel === "SMS" ? withOptOut(toText(body.text), draft.message_class === "Marketing") : toText(body.text);
   return NextResponse.json({
     subject: subject.text, text, segments: smsSegments(text), missing: [...new Set([...body.missing, ...subject.missing, ...preheader.missing])],
     html: renderEmail({ message_class: draft.message_class, preheader: preheader.text }, body.text).replace("{{{ pm:unsubscribe }}}", "#"),

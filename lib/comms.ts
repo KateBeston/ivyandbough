@@ -14,7 +14,7 @@ const BROADCAST_STREAM = process.env.POSTMARK_BROADCAST_STREAM ?? "broadcast";
 
 export type Channel = "Email" | "SMS";
 export type MessageClass = "Transactional" | "Marketing";
-export type Draft = { channel: Channel; message_class: MessageClass; subject: string; preheader: string; body: string };
+export type Draft = { channel: Channel; message_class: MessageClass; subject: string; preheader: string; body: string; media_url?: string };
 type Db = NonNullable<ReturnType<typeof admin>>;
 type Result = { ok: true; id: string } | { ok: false; error: string };
 
@@ -184,15 +184,22 @@ const emailPayload = (to: string, subject: string, html: string, text: string, m
   MessageStream: marketing ? BROADCAST_STREAM : "outbound", TrackOpens: marketing, TrackLinks: marketing ? "HtmlOnly" : "None",
 });
 
-async function twilio(to: string, body: string): Promise<{ id?: string; error?: string }> {
+const OPT_OUT = "Reply STOP to opt out.";
+export const withOptOut = (text: string, marketing: boolean) => (marketing && !/reply stop/i.test(text) ? `${text.trim()} ${OPT_OUT}` : text);
+
+async function twilio(to: string, body: string, opts: { marketing?: boolean; mediaUrl?: string } = {}): Promise<{ id?: string; error?: string }> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   const service = process.env.TWILIO_MESSAGING_SERVICE_SID;
   const from = process.env.TWILIO_FROM_NUMBER;
   if (!sid || !token || (!service && !from)) return { error: "Texts aren't connected yet. The Twilio settings are not set." };
   const form = new URLSearchParams({ To: to, Body: body, StatusCallback: `${SITE_URL}/api/webhooks/twilio` });
-  if (service) form.set("MessagingServiceSid", service);
+  // Replies and pictures need a real Australian mobile number, not a sender name.
+  const needsNumber = opts.marketing || Boolean(opts.mediaUrl);
+  if (needsNumber && !from) return { error: "Marketing texts and MMS need an Australian Twilio mobile number. TWILIO_FROM_NUMBER is not set." };
+  if (service && !needsNumber) form.set("MessagingServiceSid", service);
   else form.set("From", from!);
+  if (opts.mediaUrl) form.set("MediaUrl", opts.mediaUrl);
   try {
     const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
       method: "POST",
@@ -207,7 +214,7 @@ async function twilio(to: string, body: string): Promise<{ id?: string; error?: 
 }
 
 export async function getDraft(db: Db, slug: string) {
-  const { data } = await db.from("message_templates").select("id,slug,channel,message_class,subject,preheader,body,is_active").eq("slug", slug).maybeSingle();
+  const { data } = await db.from("message_templates").select("id,slug,channel,message_class,subject,preheader,body,media_url,is_active").eq("slug", slug).maybeSingle();
   return data as (Draft & { id: string; slug: string; is_active: boolean }) | null;
 }
 
@@ -252,9 +259,10 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
       console.error("Receipt could not be attached", opts.orderId, e);
     }
   }
-  const plain = toText(body.text);
+  const marketing = draft.message_class === "Marketing";
+  const plain = draft.channel === "SMS" ? withOptOut(toText(body.text), marketing) : toText(body.text);
   const sent = draft.channel === "SMS"
-    ? await twilio(to, plain)
+    ? await twilio(to, plain, { marketing, mediaUrl: draft.media_url || undefined })
     : await postmark(to, title, renderEmail({ message_class: draft.message_class, preheader: preheader.text }, body.text), plain, draft.message_class === "Marketing", attachments);
   const { data: row, error } = await db.from("message_sends").insert({ ...log, status: sent.error ? "Failed" : "Sent", provider_id: sent.id ?? null, error: sent.error ?? null, segments: draft.channel === "SMS" ? smsSegments(plain) : null }).select("id").single();
   if (sent.error) return { ok: false, error: sent.error };
@@ -262,13 +270,50 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   return { ok: true, id: row?.id ?? error?.message ?? "" };
 }
 
+// Latest choice per mobile wins, so an opt-out always beats an earlier opt-in.
+export async function smsAudience(db: Db) {
+  const [{ data: consents }, { data: stopped }] = await Promise.all([
+    db.from("message_consents").select("address,granted").eq("channel", "SMS").eq("purpose", "Marketing").order("occurred_at", { ascending: false }).limit(50000),
+    db.from("message_suppressions").select("address").eq("channel", "SMS").is("released_at", null).limit(50000),
+  ]);
+  const stop = new Set((stopped ?? []).map((s) => String(s.address)));
+  const latest = new Map<string, boolean>();
+  for (const row of consents ?? []) if (!latest.has(row.address)) latest.set(row.address, row.granted);
+  return [...latest].filter(([address, granted]) => granted && !stop.has(address)).map(([address]) => address);
+}
+
+async function sendSmsCampaign(db: Db, template: Draft & { id: string; slug: string }) {
+  const hour = Number(new Intl.DateTimeFormat("en-AU", { timeZone: "Australia/Brisbane", hour: "numeric", hour12: false }).format(new Date()));
+  if (hour < 10 || hour >= 19) return { error: "Marketing texts can only be sent between 10am and 7pm Brisbane time, so they reach people in daytime hours across Australia." };
+  const body = merge(template.body, links());
+  if (body.missing.length) return { error: "Campaigns can't use customer or order fields yet." };
+  if (/\[[^\]]+\](?!\()/.test(body.text)) return { error: "This message still has bracketed placeholder text." };
+  if (!body.text.trim()) return { error: "This message has no content." };
+  const plain = withOptOut(toText(body.text), true);
+  const list = await smsAudience(db);
+  const campaignId = crypto.randomUUID();
+  let sent = 0;
+  let failed = 0;
+  for (let i = 0; i < list.length; i += 5) {
+    const part = list.slice(i, i + 5);
+    const results = await Promise.all(part.map((to) => twilio(to, plain, { marketing: true, mediaUrl: template.media_url || undefined })));
+    await db.from("message_sends").insert(part.map((to, n) => {
+      const error = results[n].error;
+      if (error) failed += 1; else sent += 1;
+      return { template_id: template.id, template_slug: template.slug, channel: "SMS", message_class: "Marketing", campaign_id: campaignId, to_address: to, body: plain, media_url: template.media_url ?? "", status: error ? "Failed" : "Sent", provider_id: results[n].id ?? null, error: error ?? null, segments: smsSegments(plain) };
+    }));
+  }
+  return { sent, failed };
+}
+
 export async function sendCampaign(templateId: string) {
   const db = admin();
-  const token = process.env.POSTMARK_SERVER_TOKEN;
   if (!db) return { error: "SUPABASE_SECRET_KEY is not set." };
+  const token = process.env.POSTMARK_SERVER_TOKEN ?? "";
+  const { data: template } = await db.from("message_templates").select("id,slug,channel,message_class,subject,preheader,body,media_url,is_active").eq("id", templateId).maybeSingle();
+  if (!template || template.message_class !== "Marketing") return { error: "Choose a marketing template." };
+  if (template.channel === "SMS") return sendSmsCampaign(db, template as Draft & { id: string; slug: string });
   if (!token) return { error: "Email isn't connected yet. POSTMARK_SERVER_TOKEN is not set." };
-  const { data: template } = await db.from("message_templates").select("id,slug,channel,message_class,subject,preheader,body,is_active").eq("id", templateId).maybeSingle();
-  if (!template || template.channel !== "Email" || template.message_class !== "Marketing") return { error: "Choose a marketing email template." };
   const subject = merge(template.subject, links());
   const preheader = merge(template.preheader, links());
   const body = merge(template.body, links());
