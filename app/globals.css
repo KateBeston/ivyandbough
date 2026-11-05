@@ -446,8 +446,9 @@ button{font:inherit;color:inherit}
 .cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:80;max-width:720px;margin:0 auto;padding:8px 10px 8px 14px;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 26px rgba(21,19,15,.16);font-size:13px}
 .cookie-banner p{margin:0}
 .cookie-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
-.cookie-actions{display:flex;flex:0 0 auto;gap:6px}
-.cookie-actions button{padding:6px 11px;border:1px solid var(--ink);background:none;color:var(--ink);font:inherit;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.cookie-actions{display:flex;flex:0 0 auto;align-items:center;gap:6px}
+.cookie-actions button,.cookie-actions button.solid{margin:0}
+.cookie-actions button{min-height:0;padding:6px 11px;border:1px solid var(--ink);background:none;color:var(--ink);font:inherit;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 .cookie-actions button.solid{background:var(--ink);color:#fff}
 .cookie-more-link{padding:0;border:0;background:none;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
 .cookie-lists{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px}
