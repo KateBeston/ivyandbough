@@ -14,7 +14,7 @@ const KEY = "ib-welcome-popup";
 const DELAY = 10000;
 const GAP = 14 * 86400000;
 const MAX_SHOWS = 3;
-const QUIET = /^\/(basket|account|order|subscribe|preview|privacy|terms|terms-of-sale|account-terms|cookies)(\/|$)/;
+const QUIET = /^\/(basket|account|order|subscribe|unsubscribe|preview|privacy|terms|terms-of-sale|account-terms|cookies)(\/|$)/;
 type Seen = { shows: number; last: string; joined?: boolean };
 type Offer = Promotion & { valid_days: number; applies_to_sale: boolean };
 

@@ -26,6 +26,23 @@ export function validSetup(email: string, given: string) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+const stopCode = (email: string) => createHmac("sha256", `unsubscribe:${process.env.SUPABASE_SECRET_KEY}`).update(email).digest("hex");
+
+export function validStop(email: string, given: string) {
+  const a = Buffer.from(stopCode(email));
+  const b = Buffer.from(given);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+// The link goes to the address itself, so nobody can unsubscribe someone else.
+export async function startUnsubscribe(email: string) {
+  const db = admin();
+  if (!db) return;
+  const { data } = await db.from("subscribers").select("id").eq("email", email).maybeSingle();
+  if (!data) return;
+  await sendMessage({ slug: "unsubscribe-confirm", to: email, data: { unsubscribe_url: `${SITE_URL}/unsubscribe?e=${encodeURIComponent(email)}&t=${stopCode(email)}` } });
+}
+
 // Nobody joins the list until they click the link sent to that address.
 export async function startSubscription(email: string, source: string) {
   const db = admin();
