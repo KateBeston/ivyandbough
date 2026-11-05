@@ -32,4 +32,4 @@ All images in `public/images/` are temporary Pexels stock photos used for design
 | theme-silver-gold.jpg | 9524007 |
 | theme-christmas-past.jpg | 245540 |
 | theme-merry-bright.jpg | 306864 |
-| popup-tree.jpg | 5686482 |
+| popup-tree.jpg | 14866350 |

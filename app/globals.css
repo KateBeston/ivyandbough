@@ -561,7 +561,7 @@ button{font:inherit;color:inherit}
 .welcome-pop-no{margin:12px 0 10px;font-size:12px}
 .welcome-pop-body p.welcome-pop-fine{margin:0;color:var(--brown);font-size:11px;line-height:1.5}
 .welcome-pop [role=status] .solid{margin-top:22px}
-@media (max-width:680px){.welcome-pop-card{grid-template-columns:1fr;min-height:0}.welcome-pop-image{height:128px}.welcome-pop-image>img:first-child{object-position:50% 42%}.welcome-pop-image::after{display:none}.welcome-pop-logo{display:none}.welcome-pop-body{padding:26px 22px 20px}.welcome-pop h2{font-size:54px}.welcome-pop h2 span{font-size:22px}.welcome-pop-close{color:#fff;top:-124px;right:4px}}
+@media (max-width:680px){.welcome-pop-card{grid-template-columns:1fr;min-height:0}.welcome-pop-image{height:128px}.welcome-pop-image>img:first-child{object-position:60% 30%}.welcome-pop-image::after{display:none}.welcome-pop-logo{display:none}.welcome-pop-body{padding:26px 22px 20px}.welcome-pop h2{font-size:54px}.welcome-pop h2 span{font-size:22px}.welcome-pop-close{color:#fff;top:-124px;right:4px}}
 .welcome-done{text-align:center}
 .welcome-code{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;margin:24px 0;padding:22px;border:1px solid var(--gold);background:var(--sand)}
 .welcome-code strong{font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:.06em}
