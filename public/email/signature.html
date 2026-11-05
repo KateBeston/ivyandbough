@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-AU"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Ivy &amp; Bough email signature</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:32px 16px;background:#F3EEE5;font-family:Arial,sans-serif;color:#2F2C27">
+<div style="max-width:540px;margin:0 auto 16px"><button id="copy" type="button" style="padding:14px 26px;border:0;background:#2F2C27;color:#fff;font-size:14px;cursor:pointer">Copy signature</button></div>
+<div id="sig" style="max-width:540px;margin:0 auto;padding:24px;background:#fff;box-sizing:border-box">
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#2F2C27">
+<tr>
+<td style="padding:2px 18px 2px 0;border-right:1px solid #C4A265;vertical-align:middle"><a href="https://ivyandbough.com"><img src="https://ivyandbough.com/email/signature-wordmark.png" alt="Ivy &amp; Bough" width="112" style="display:block;width:112px;height:auto;border:0"></a></td>
+<td style="padding:2px 0 2px 18px;vertical-align:middle">
+<div style="font-size:14px;line-height:20px;font-weight:bold;color:#2F2C27">The Ivy &amp; Bough team</div>
+<div style="font-size:13px;line-height:20px;padding-bottom:8px"><a href="mailto:hello@ivyandbough.com" style="color:#2F2C27;text-decoration:none">hello@ivyandbough.com</a><br><a href="https://ivyandbough.com" style="color:#2F2C27;text-decoration:none">ivyandbough.com</a></div>
+<div><a href="https://www.instagram.com/ivyandbough/"><img src="https://ivyandbough.com/email/signature-instagram.png" alt="Instagram" width="20" height="20" style="width:20px;height:20px;border:0"></a>&nbsp;&nbsp;&nbsp;<a href="https://www.facebook.com/profile.php?id=61596474291450"><img src="https://ivyandbough.com/email/signature-facebook.png" alt="Facebook" width="20" height="20" style="width:20px;height:20px;border:0"></a>&nbsp;&nbsp;&nbsp;<a href="https://www.pinterest.com/ivyandbough/"><img src="https://ivyandbough.com/email/signature-pinterest.png" alt="Pinterest" width="20" height="20" style="width:20px;height:20px;border:0"></a></div>
+</td>
+</tr>
+<tr><td colspan="2" style="padding:14px 0 0;font-size:11px;line-height:17px;color:#7A644F"><a href="https://ivyandbough.com/privacy" style="color:#7A644F">Privacy Policy</a> &nbsp;|&nbsp; <a href="https://ivyandbough.com/terms-of-sale" style="color:#7A644F">Terms of Sale</a> &nbsp;|&nbsp; <a href="https://ivyandbough.com/terms" style="color:#7A644F">Website Terms</a> &nbsp;|&nbsp; <a href="https://ivyandbough.com/unsubscribe" style="color:#7A644F">Unsubscribe</a><br>Ivy &amp; Bough is a trading name of Aurella Group Pty Ltd, ABN 70 649 742 423.</td></tr>
+</table>
+</div>
+<script>
+document.getElementById("copy").addEventListener("click",async function(){
+  var btn=this,box=document.getElementById("sig").querySelector("table");
+  try{await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([box.outerHTML],{type:"text/html"}),"text/plain":new Blob([box.innerText],{type:"text/plain"})})]);}
+  catch(e){var r=document.createRange();r.selectNode(box);var c=getSelection();c.removeAllRanges();c.addRange(r);document.execCommand("copy");c.removeAllRanges();}
+  btn.textContent="Copied. Now paste it into Gmail";
+});
+</script></body></html>
