@@ -12,18 +12,33 @@ import { Turnstile, TURNSTILE_ON } from "./Turnstile";
 
 const KEY = "ib-welcome-popup";
 const DELAY = 10000;
+const GAP = 14 * 86400000;
+const MAX_SHOWS = 3;
 const QUIET = /^\/(basket|account|order|subscribe|preview|privacy|terms|terms-of-sale|account-terms|cookies)(\/|$)/;
+type Seen = { shows: number; last: string; joined?: boolean };
 type Offer = Promotion & { valid_days: number; applies_to_sale: boolean };
 
-function remember() {
-  try { localStorage.setItem(KEY, new Date().toISOString()); } catch { /* it may show again on the next visit */ }
+function readSeen(): Seen {
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (!saved) return { shows: 0, last: "" };
+    // Earlier visits saved just the date of the one showing.
+    return saved.startsWith("{") ? JSON.parse(saved) as Seen : { shows: 1, last: saved };
+  } catch {
+    return { shows: MAX_SHOWS, last: "" };
+  }
 }
 
-function seen() {
-  try { return Boolean(localStorage.getItem(KEY)); } catch { return true; }
+function remember(seen: Seen) {
+  try { localStorage.setItem(KEY, JSON.stringify(seen)); } catch { /* it may show again on the next visit */ }
 }
 
-// Shows once, after the cookie choice, and never to someone already signed in.
+function due() {
+  const { shows, last, joined } = readSeen();
+  return !joined && shows < MAX_SHOWS && (!last || Date.now() - new Date(last).getTime() >= GAP);
+}
+
+// Shows after the cookie choice, up to three times 14 days apart. Stops once they join or sign in.
 export function WelcomePopup() {
   const path = usePathname();
   const box = useRef<HTMLDialogElement>(null);
@@ -34,14 +49,14 @@ export function WelcomePopup() {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (QUIET.test(path) || seen()) return;
+    if (QUIET.test(path) || !due()) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const show = async () => {
-      if (seen()) return;
+      if (!due()) return;
       const { data: auth } = await account.auth.getSession();
       if (auth.session) return;
       const { data } = await supabase.from("promotions").select("discount_type,discount_value,min_order,valid_days,applies_to_sale").eq("trigger", "Newsletter sign-up").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle();
-      if (data) { remember(); setOffer(data as Offer); }
+      if (data) { remember({ shows: readSeen().shows + 1, last: new Date().toISOString() }); setOffer(data as Offer); }
     };
     const arm = () => { if (readConsent() && !timer) timer = setTimeout(show, DELAY); };
     arm();
@@ -66,6 +81,7 @@ export function WelcomePopup() {
     const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: address, company: data.get("company"), token, source: "popup" }) }).catch(() => null);
     setAttempt((n) => n + 1);
     if (!res?.ok) return setState("error");
+    remember({ ...readSeen(), joined: true });
     setEmail(address);
     setState("done");
   }
