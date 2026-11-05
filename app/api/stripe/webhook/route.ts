@@ -49,8 +49,9 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   const { data: known } = await db.from("customers").select("id").ilike("email", email.replace(/[%_]/g, "\\$&")).maybeSingle();
   let customerId = known?.id as string | undefined;
   // Stripe does not verify a guest's email, so only a signed-in customer can change saved details.
-  if (customerId && userId) await db.from("customers").update({ address, phone, ...(userId ? { auth_user_id: userId } : {}) }).eq("id", customerId);
-  else {
+  if (customerId) {
+    if (userId) await db.from("customers").update({ address, phone, auth_user_id: userId }).eq("id", customerId);
+  } else {
     const { data: created, error } = await db.from("customers").insert({ name, email, phone, address, auth_user_id: userId }).select("id").single();
     if (error) throw error;
     customerId = created.id;
