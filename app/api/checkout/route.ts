@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isHuman } from "@/lib/guard";
 import { allowed } from "@/lib/limits";
+import { stripeCustomer } from "@/lib/payments";
 import { OFFER_COLUMNS, offerPrice, type OfferFields } from "@/lib/pricing";
 import { checkCode, reserveCode, type Checked } from "@/lib/promotions";
 import { admin, stripe, userFrom } from "@/lib/server";
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
   const payable = quote.subtotalCents - (promo?.discountCents ?? 0) + quote.deliveryCents;
 
   const user = await userFrom(request);
+  const customer = user ? await stripeCustomer(client, user).catch(() => null) : null;
   const session = await client.checkout.sessions.create({
     mode: "payment",
     currency: "aud",
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
     shipping_options: [{ shipping_rate_data: { display_name: quote.deliveryCents ? "Delivery" : "Free delivery", type: "fixed_amount", fixed_amount: { amount: quote.deliveryCents, currency: "aud" } } }],
     payment_intent_data: { shipping: { name: delivery.name, phone: delivery.phone, address: { line1: delivery.line1, line2: delivery.line2 || undefined, city: delivery.city, state: delivery.state, postal_code: delivery.postcode, country: "AU" } } },
     custom_text: { submit: { message: `Total includes GST of $${(payable / 1100).toFixed(2)}. By placing your order, you agree to the Ivy & Bough Terms of Sale and Privacy Policy.` } },
-    customer_email: user?.email,
+    ...(customer ? { customer, saved_payment_method_options: { payment_method_save: "enabled" as const } } : { customer_email: user?.email }),
     metadata: { user_id: user?.id ?? "", cart_session: cart, promo_code: promo?.code.code ?? "", ship_name: delivery.name, ship_phone: delivery.phone, ship_line1: delivery.line1, ship_line2: delivery.line2, ship_city: delivery.city, ship_state: delivery.state, ship_postcode: delivery.postcode, ship_zone: quote.zone, sms_updates: body?.delivery?.smsUpdates === true ? "yes" : "no", marketing: body?.delivery?.marketing === true ? "yes" : "no" },
     success_url: `${origin}/order/thanks`,
     cancel_url: `${origin}/basket`,

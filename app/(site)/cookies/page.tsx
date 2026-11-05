@@ -9,6 +9,7 @@ const rows = [
   ["ib-session", "A random code that links your basket to your visit", "Until cleared"],
   ["ib-account", "Keeps you signed in", "Until you sign out or it's cleared"],
   ["ib-consent", "Remembers your cookie choice", "Until cleared"],
+  ["ib-welcome-popup", "Remembers that you've seen our welcome offer", "Until cleared"],
 ];
 
 export default function CookiesPage() {

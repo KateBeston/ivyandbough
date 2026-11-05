@@ -6,7 +6,7 @@ import { LEGAL_VERSION } from "@/lib/legal";
 import type { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { formatPrice } from "@/lib/catalogue";
-import { account } from "@/lib/account-client";
+import { account, authHeader } from "@/lib/account-client";
 import { useBasket } from "@/components/BasketProvider";
 import { Honeypot } from "@/components/Honeypot";
 import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
@@ -174,12 +174,34 @@ function Addresses({ userId }: { userId: string }) {
   );
 }
 
+function PaymentMethods() {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function open() {
+    setBusy(true);
+    setError("");
+    const res = await fetch("/api/account/payment-methods", { method: "POST", headers: await authHeader() }).catch(() => null);
+    const data = await res?.json().catch(() => null);
+    if (data?.url) { window.location.href = data.url; return; }
+    setBusy(false);
+    setError(data?.error ?? "That didn't open. Please try again.");
+  }
+  return (
+    <div className="account-payments">
+      <p>Save a card at checkout for a faster order next time, then add, change or remove your cards here. Your card details are held securely by Stripe, never by Ivy &amp; Bough.</p>
+      {error && <p role="alert" className="form-error">{error}</p>}
+      <button type="button" className="solid" disabled={busy} onClick={open}>Manage payment methods</button>
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [tab, setTab] = useState("Orders");
   const { welcome } = useBasket();
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("tab") === "payment") setTab("Payment methods");
     account.auth.getSession().then(({ data }) => setSession(data.session));
     const { data } = account.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => data.subscription.unsubscribe();
@@ -195,11 +217,12 @@ export default function AccountPage() {
       </div>
       {welcome && <div className="welcome-offer"><p>Your welcome offer: {welcome.offer}.</p><strong>{welcome.code}</strong><p className="muted">{welcome.terms}</p></div>}
       <div className="pill-row account-tabs" role="tablist">
-        {["Orders", "Details", "Addresses"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
+        {["Orders", "Details", "Addresses", "Payment methods"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
       </div>
       {tab === "Orders" && <Orders />}
       {tab === "Details" && <Details email={session.user.email ?? ""} />}
       {tab === "Addresses" && <Addresses userId={session.user.id} />}
+      {tab === "Payment methods" && <PaymentMethods />}
     </main>
   );
 }

@@ -4,6 +4,7 @@ import { SITE, SITE_LIVE } from "@/lib/seo";
 import { Forum, Montserrat } from "next/font/google";
 import { BasketProvider } from "@/components/BasketProvider";
 import { CookieConsent } from "@/components/CookieConsent";
+import { WelcomePopup } from "@/components/WelcomePopup";
 import "./globals.css";
 
 const serif = Forum({ subsets: ["latin"], weight: "400", variable: "--font-serif" });
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-AU" className={`${serif.variable} ${sans.variable}`}>
-      <body><BasketProvider>{children}</BasketProvider><CookieConsent /><Analytics /></body>
+      <body><BasketProvider>{children}</BasketProvider><CookieConsent /><WelcomePopup /><Analytics /></body>
     </html>
   );
 }

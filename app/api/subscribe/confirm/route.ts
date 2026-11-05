@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { admin } from "@/lib/server";
 import { issueWelcome } from "@/lib/promotions";
-import { validToken } from "@/lib/subscribe";
+import { setupToken, validToken } from "@/lib/subscribe";
 
 export async function POST(request: Request) {
   const form = await request.formData();
@@ -12,5 +12,7 @@ export async function POST(request: Request) {
   const { data: confirmed } = await db.from("subscribers").update({ confirmed_at: new Date().toISOString() }).eq("email", email).is("confirmed_at", null).select("id");
   await db.from("message_consents").insert({ channel: "Email", address: email, granted: true, purpose: "Marketing", source: "Email confirmation link" });
   const offered = confirmed?.length ? await issueWelcome(email, "Newsletter sign-up").catch(() => false) : false;
-  return NextResponse.redirect(`${back}?status=${offered ? "offer" : "done"}`, 303);
+  const params = new URLSearchParams({ status: offered ? "offer" : "done", e: email, t: String(form.get("t")) });
+  if (confirmed?.length) params.set("s", setupToken(email));
+  return NextResponse.redirect(`${back}?${params}`, 303);
 }

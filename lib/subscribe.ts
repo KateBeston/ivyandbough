@@ -10,6 +10,22 @@ export function validToken(email: string, given: string) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+const setupCode = (email: string, expires: string) => createHmac("sha256", `setup:${process.env.SUPABASE_SECRET_KEY}`).update(`${email}:${expires}`).digest("hex");
+
+// Lasts 30 minutes from the first confirmation, so an old or forwarded email can't create an account.
+export function setupToken(email: string) {
+  const expires = String(Date.now() + 30 * 60000);
+  return `${expires}.${setupCode(email, expires)}`;
+}
+
+export function validSetup(email: string, given: string) {
+  const [expires, code] = given.split(".");
+  if (!code || Number(expires) < Date.now()) return false;
+  const a = Buffer.from(setupCode(email, expires));
+  const b = Buffer.from(code);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 // Nobody joins the list until they click the link sent to that address.
 export async function startSubscription(email: string, source: string) {
   const db = admin();

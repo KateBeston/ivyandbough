@@ -18,6 +18,11 @@ export type Promotion = { discount_type: string; discount_value: number | string
 
 const dollars = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: n % 1 ? 2 : 0 }).format(n);
 
+export function offerAmount(p: Promotion) {
+  const value = Number(p.discount_value);
+  return `${p.discount_type === "Percent" ? `${value}%` : dollars(value)} off`;
+}
+
 export function offerText(p: Promotion) {
   const value = Number(p.discount_value);
   const min = Number(p.min_order);
