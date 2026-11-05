@@ -37,7 +37,7 @@ export function normalise(channel: Channel, address: string) {
 
 export const SAMPLE: Record<string, string> = {
   first_name: "Sarah", customer_name: "Sarah Smith", order_number: "IB-1001", items: "1 x Dark velvet Christmas tree bow, $49.00", order_total: "$63.95", delivery_total: "$14.95", gst_total: "$5.81",
-  delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95",
+  delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95", dispatch_estimate: "Most items are dispatched within 3 business days.",
   basket_items: "1 x [Dark velvet Christmas tree bow](https://ivy-and-bough.vercel.app/shop)",
 };
 
@@ -57,7 +57,7 @@ export function merge(text: string, data: Record<string, string>) {
 
 export type OrderSummary = {
   number: string; date: string; payment: string; name: string; address: string;
-  items: { name: string; collection: string; quantity: number; amount: number; image: string }[];
+  items: { name: string; sku: string; collection: string; quantity: number; amount: number; image: string }[];
   subtotal: number; delivery: number; gst: number; total: number;
 };
 
@@ -68,32 +68,32 @@ const SANS = "Arial,Helvetica,sans-serif";
 export const SAMPLE_SUMMARY: OrderSummary = {
   number: "IB-1001", date: "5 Nov 2026", payment: "Visa ending 4242", name: "Sarah Smith", address: "1 Example Street, Brisbane QLD 4000",
   items: [
-    { name: "Dark velvet Christmas tree bow", collection: "Bordeaux Glamour", quantity: 1, amount: 49, image: `${SITE_URL}/email/collection-bordeaux-glamour.jpg` },
-    { name: "Gold leaf glass bauble set", collection: "Traditional", quantity: 2, amount: 179, image: `${SITE_URL}/email/collection-traditional.jpg` },
-    { name: "Frosted pine tabletop tree", collection: "Winter Wonderland", quantity: 1, amount: 89, image: `${SITE_URL}/email/collection-winter-wonderland.jpg` },
+    { name: "Dark velvet Christmas tree bow", sku: "IVB-10001", collection: "Bordeaux Glamour", quantity: 1, amount: 49, image: `${SITE_URL}/email/collection-bordeaux-glamour.jpg` },
+    { name: "Gold leaf glass bauble set", sku: "IVB-10002", collection: "Traditional", quantity: 2, amount: 179, image: `${SITE_URL}/email/collection-traditional.jpg` },
+    { name: "Frosted pine tabletop tree", sku: "IVB-10003", collection: "Winter Wonderland", quantity: 1, amount: 89, image: `${SITE_URL}/email/collection-winter-wonderland.jpg` },
   ],
   subtotal: 317, delivery: 0, gst: 28.82, total: 317,
 };
 
 export function summaryHtml(o: OrderSummary) {
   const stat = (label: string, value: string) => `<td style="padding:12px 14px;font-family:${SANS};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">${label}<div style="padding-top:3px;font-family:${SERIF};font-size:14px;letter-spacing:0;text-transform:none;color:#2F2C27">${esc(value)}</div></td>`;
-  const row = (i: OrderSummary["items"][number]) => `<tr><td width="52" valign="middle" style="padding:7px 0;border-bottom:1px solid #E0D8CC">${i.image ? `<img src="${esc(i.image)}" width="42" height="42" alt="" style="display:block;width:42px;height:42px;object-fit:cover;border:0">` : ""}</td><td valign="middle" style="padding:7px 8px 7px 0;border-bottom:1px solid #E0D8CC;font-family:${SERIF};font-size:13px;line-height:1.3;color:#2F2C27">${esc(i.name)}<div style="padding-top:2px;font-family:${SANS};font-size:11px;color:#6A6156">${i.collection ? `${esc(i.collection)} &middot; ` : ""}Qty ${i.quantity}</div></td><td align="right" valign="middle" style="padding:7px 0;border-bottom:1px solid #E0D8CC;font-family:${SANS};font-size:12px;color:#2F2C27;white-space:nowrap">${money(i.amount)}</td></tr>`;
+  const row = (i: OrderSummary["items"][number]) => `<tr><td width="52" valign="middle" style="padding:7px 0;border-bottom:1px solid #E0D8CC">${i.image ? `<img src="${esc(i.image)}" width="42" height="42" alt="" style="display:block;width:42px;height:42px;object-fit:cover;border:0">` : ""}</td><td valign="middle" style="padding:7px 8px 7px 0;border-bottom:1px solid #E0D8CC;font-family:${SERIF};font-size:13px;line-height:1.3;color:#2F2C27">${esc(i.name)}<div style="padding-top:2px;font-family:${SANS};font-size:11px;color:#6A6156">${i.sku ? `Item no. ${esc(i.sku)} &middot; ` : ""}${i.collection ? `${esc(i.collection)} &middot; ` : ""}Qty ${i.quantity}</div></td><td align="right" valign="middle" style="padding:7px 0;border-bottom:1px solid #E0D8CC;font-family:${SANS};font-size:12px;color:#2F2C27;white-space:nowrap">${money(i.amount)}</td></tr>`;
   const line = (label: string, value: string) => `<tr><td style="padding:4px 0;font-family:${SANS};font-size:14px;color:#2F2C27">${label}</td><td align="right" style="padding:4px 0;font-family:${SANS};font-size:14px;color:#2F2C27">${value}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE5;margin:6px 0 10px"><tr>${stat("Order", o.number)}${stat("Date", o.date)}${stat("Paid", o.payment || "Card")}</tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${o.items.map(row).join("")}</table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px"><tr><td width="42%"></td><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${line("Subtotal", money(o.subtotal))}${line("Delivery", o.delivery ? money(o.delivery) : "Free")}<tr><td colspan="2" style="padding:6px 0 4px"><div style="height:1px;background:#C4A265;font-size:0;line-height:0">&nbsp;</div></td></tr><tr><td style="padding:5px 0;font-family:${SERIF};font-size:20px;color:#2F2C27">Total paid</td><td align="right" style="padding:5px 0;font-family:${SERIF};font-size:20px;color:#2F2C27">${money(o.total)}</td></tr><tr><td colspan="2" align="right" style="font-family:${SANS};font-size:12px;color:#6A6156">Includes ${money(o.gst)} GST</td></tr></table></td></tr></table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 8px;border-top:1px solid #E0D8CC"><tr><td valign="top" width="46%" style="padding:16px 16px 0 0;font-family:${SANS};font-size:14px;line-height:1.6;color:#2F2C27"><div style="padding-bottom:5px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">Delivering to</div>${esc(o.name)}<br>${esc(o.address)}</td><td valign="top" style="padding-top:16px;font-family:${SANS};font-size:14px;line-height:1.6;color:#2F2C27"><div style="padding-bottom:5px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">Good to know</div>Some pieces ship directly from our suppliers, so your order may arrive in separate parcels.</td></tr></table>`;
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 22px;border-top:1px solid #E0D8CC"><tr><td valign="top" style="padding:16px 0 0;font-family:${SANS};font-size:14px;line-height:1.6;color:#2F2C27"><div style="padding-bottom:5px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">Delivering to</div>${esc(o.name)}<br>${esc(o.address)}</td></tr></table>`;
 }
 
 function summaryText(o: OrderSummary) {
-  return [`Order ${o.number}, ${o.date}`, ...o.items.map((i) => `${i.quantity} x ${i.name}, ${money(i.amount)}`), "", `Subtotal: ${money(o.subtotal)}`, `Delivery: ${o.delivery ? money(o.delivery) : "Free"}`, `Total paid: ${money(o.total)} (includes ${money(o.gst)} GST)`, "", `Delivering to: ${o.name}, ${o.address}`, "Some pieces ship directly from our suppliers, so your order may arrive in separate parcels."].join("\n");
+  return [`Order ${o.number}, ${o.date}`, ...o.items.map((i) => `${i.quantity} x ${i.name}${i.sku ? ` (${i.sku})` : ""}, ${money(i.amount)}`), "", `Subtotal: ${money(o.subtotal)}`, `Delivery: ${o.delivery ? money(o.delivery) : "Free"}`, `Total paid: ${money(o.total)} (includes ${money(o.gst)} GST)`, "", `Delivering to: ${o.name}, ${o.address}`].join("\n");
 }
 
 export const summaryValue = { order_details: SUMMARY_MARK };
 
 export function toText(body: string, summary?: OrderSummary | null) {
   if (summary) body = body.replace(SUMMARY_MARK, summaryText(summary));
-  return plainLinks(body).replace(/^# /gm, "");
+  return plainLinks(body.replace(/\[([^\]]+)\]\(mailto:[^)\s]+\)/g, "$1")).replace(/^#{1,2} /gm, "");
 }
 
 function plainLinks(body: string) {
@@ -102,10 +102,11 @@ function plainLinks(body: string) {
 
 function paragraph(block: string) {
   if (block.trim() === SUMMARY_MARK) return SUMMARY_MARK;
+  if (block.startsWith("## ")) return `<h2 style="margin:22px 0 6px;font-family:${SANS};font-size:11px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:#6A6156">${esc(block.slice(3).trim())}</h2>`;
   if (block.startsWith("# ")) return `<h1 style="margin:0 0 12px;font-family:${SERIF};font-size:28px;font-weight:400;line-height:1.25;color:#2F2C27">${esc(block.slice(2).trim())}</h1>`;
   const button = block.trim().match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
   if (button) return `<p style="margin:26px 0 8px"><a href="${esc(button[2])}" style="display:inline-block;padding:13px 24px;background:#2F2C27;color:#ffffff;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase">${esc(button[1])}</a></p>`;
-  const html = esc(block).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" style="color:#6B1F2B">$1</a>').replace(/\n/g, "<br>");
+  const html = esc(block).replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g, '<a href="$2" style="color:#6B1F2B">$1</a>').replace(/\n/g, "<br>");
   return `<p style="margin:0 0 16px">${html}</p>`;
 }
 
@@ -145,10 +146,11 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,quantity,unit_price,carrier,tracking_number,products(themes(name),product_images(url,sort_order)))").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,themes(name),product_images(url,sort_order)))").eq("id", orderId).single();
   if (!data) return null;
-  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
+  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; sku: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { dispatch_days: number | null; themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
   const name = order.customers?.name || order.shipping_name || "";
+  const dispatchDays = order.order_items.flatMap((i) => (i.products?.dispatch_days ? [i.products.dispatch_days] : []));
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
     const link = trackingUrl(i.carrier, i.tracking_number);
     return `${clean(i.name)}: ${[clean(i.carrier), link ? `[track your parcel](${link})` : `tracking ${clean(i.tracking_number)}`].filter(Boolean).join(", ")}`;
@@ -159,14 +161,14 @@ async function orderData(db: Db, orderId: string) {
     summary: {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "short", year: "numeric" }),
       payment: order.payment_method, name: order.shipping_name, address: order.shipping_address,
-      items: order.order_items.map((i) => ({ name: i.name, collection: i.products?.themes?.name ?? "", quantity: i.quantity, amount: Number(i.unit_price) * i.quantity, image: [...(i.products?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "" })),
+      items: order.order_items.map((i) => ({ name: i.name, sku: i.sku, collection: i.products?.themes?.name ?? "", quantity: i.quantity, amount: Number(i.unit_price) * i.quantity, image: [...(i.products?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "" })),
       subtotal: Number(order.subtotal), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
     } as OrderSummary,
     invoice: {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "long", year: "numeric" }),
       customerId: order.customers?.customer_number ?? "", transaction: order.payment_intent_id ?? "", paymentMethod: order.payment_method,
       billName: name, billEmail: order.customer_email, deliverName: order.shipping_name, deliverAddress: order.shipping_address,
-      items: order.order_items.map((i) => ({ name: i.name, quantity: i.quantity, unitPrice: Number(i.unit_price) })),
+      items: order.order_items.map((i) => ({ name: i.name, sku: i.sku, quantity: i.quantity, unitPrice: Number(i.unit_price) })),
       subtotal: Number(order.subtotal), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
     } as InvoiceData,
     data: {
@@ -175,6 +177,7 @@ async function orderData(db: Db, orderId: string) {
       order_total: money(Number(order.total)), delivery_total: Number(order.shipping_total) ? money(Number(order.shipping_total)) : "Free", gst_total: money(Number(order.gst_total)),
       delivery_name: order.shipping_name, delivery_address: order.shipping_address,
       tracking: tracked.join("\n") || "You can check your order in your account.",
+      dispatch_estimate: dispatchDays.length ? `Your order is usually dispatched within ${Math.max(...dispatchDays)} business ${Math.max(...dispatchDays) === 1 ? "day" : "days"}.` : "Dispatch times are shown on each product page.",
     } as Record<string, string>,
   };
 }

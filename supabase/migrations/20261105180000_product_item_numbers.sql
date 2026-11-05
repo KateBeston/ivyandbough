@@ -1,0 +1,2 @@
+-- Applied to production. products.sku gives every product an IVB- item number.
+-- order_items.sku keeps the number used at the time of sale.

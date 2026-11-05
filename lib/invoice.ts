@@ -3,7 +3,7 @@ import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 
 export type InvoiceData = {
   number: string; date: string; customerId: string; transaction: string; paymentMethod: string; billName: string; billEmail: string; deliverName: string; deliverAddress: string;
-  items: { name: string; quantity: number; unitPrice: number }[];
+  items: { name: string; sku?: string; quantity: number; unitPrice: number }[];
   subtotal: number; delivery: number; gst: number; total: number;
 };
 
@@ -93,7 +93,7 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
   head();
   for (const item of data.items) {
     const lines = wrap(item.name, regular, 9.5, qtyX - MARGIN - 50);
-    const need = lines.length * 13.5 + 27;
+    const need = lines.length * 13.5 + 27 + (item.sku ? 12 : 0);
     if (y - need < 170) {
       page = pdf.addPage([WIDTH, HEIGHT]);
       y = HEIGHT - MARGIN - 10;
@@ -103,7 +103,8 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
     right(String(item.quantity), qtyX, y);
     right(money(item.unitPrice), priceX, y);
     right(money(item.unitPrice * item.quantity), amountX - 10, y);
-    const rule = y - (lines.length - 1) * 13.5 - 10;
+    if (item.sku) text(`Item no. ${item.sku}`, MARGIN + 10, y - lines.length * 13.5 + 2, 7.5, regular, BROWN);
+    const rule = y - (lines.length - 1) * 13.5 - 10 - (item.sku ? 12 : 0);
     page.drawLine({ start: { x: MARGIN, y: rule }, end: { x: WIDTH - MARGIN, y: rule }, thickness: 0.5, color: LINE });
     y = rule - 17;
   }

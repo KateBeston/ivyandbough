@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { account, authHeader } from "@/lib/account-client";
 
 export type DeliveryDetails = { name: string; phone: string; line1: string; line2: string; city: string; state: string; postcode: string; smsUpdates: boolean; marketing: boolean };
-export type Line = { id: string; slug: string; name: string; price_cents: number; image: string; quantity: number };
+export type Line = { id: string; sku?: string; slug: string; name: string; price_cents: number; image: string; quantity: number };
 type Basket = { lines: Line[]; count: number; subtotal: number; add: (line: Line) => void; setQuantity: (id: string, quantity: number) => void; remove: (id: string) => void; clear: () => void; checkout: (delivery: DeliveryDetails) => Promise<string | null> };
 
 const BasketContext = createContext<Basket | null>(null);

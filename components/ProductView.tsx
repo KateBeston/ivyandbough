@@ -20,6 +20,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
               {theme && <div className="eyebrow">{theme}</div>}
               <h1>{product.name}</h1>
               <div className="price">{formatPrice(product.price_cents)}</div>
+              <div className="muted">Item no. {product.sku}</div>
               <div className="muted">{deliverySummary}</div>
               {!preview && <DeliveryCheck productId={product.id} />}
             </div>

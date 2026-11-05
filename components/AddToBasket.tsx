@@ -12,7 +12,7 @@ export function AddToBasket({ product, preview }: { product: Product; preview: b
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const off = preview || product.price_cents === null;
-  const line = (): Line => ({ id: product.id, slug: product.slug, name: product.name, price_cents: product.price_cents!, image: product.product_images[0]?.url ?? "", quantity });
+  const line = (): Line => ({ id: product.id, sku: product.sku, slug: product.slug, name: product.name, price_cents: product.price_cents!, image: product.product_images[0]?.url ?? "", quantity });
 
   // Delivery details are needed before payment, so express buyers go through the basket.
   function buyNow() {

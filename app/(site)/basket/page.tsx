@@ -65,6 +65,7 @@ export default function BasketPage() {
                 <div className="frame">{l.image && <Image src={l.image} alt="" fill sizes="110px" className="cover" />}</div>
                 <div>
                   <Link href={`/products/${l.slug}`} className="basket-name">{l.name}</Link>
+                  {l.sku && <div className="muted">Item no. {l.sku}</div>}
                   <div>{formatPrice(l.price_cents)}</div>
                   <button type="button" className="link-button" onClick={() => remove(l.id)}>Remove</button>
                 </div>
@@ -93,7 +94,7 @@ export default function BasketPage() {
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
             <div><span>Delivery</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : "Enter your postcode"}</span></div>
             <div className="total"><span>Total</span><span>{formatPrice(subtotal + (quote?.deliveryCents ?? 0))}</span></div>
-            <p className="muted">Prices include GST.</p>
+            <p className="muted">{quote ? `Total includes ${formatPrice(Math.round((subtotal + quote.deliveryCents) / 11))} GST.` : "Prices include GST."}</p>
             {quoteError && <p role="alert">{quoteError}</p>}
             <button type="button" className="solid" disabled={busy || !ready} onClick={pay}>Checkout</button>
             {!ready && <p className="muted">Add your delivery details to continue.</p>}

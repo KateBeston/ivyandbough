@@ -26,7 +26,7 @@ async function saveItems(client: Stripe, db: NonNullable<ReturnType<typeof admin
   const { error } = await db.from("order_items").insert(items.map((i) => {
     const product = i.price?.product as Stripe.Product | undefined;
     const quantity = i.quantity ?? 1;
-    return { order_id: orderId, product_id: product?.metadata?.product_id || null, name: i.description ?? product?.name ?? "", quantity, unit_price: i.amount_total / quantity / 100 };
+    return { order_id: orderId, product_id: product?.metadata?.product_id || null, sku: product?.metadata?.sku ?? "", name: i.description ?? product?.name ?? "", quantity, unit_price: i.amount_total / quantity / 100 };
   }));
   if (error) throw error;
 }
