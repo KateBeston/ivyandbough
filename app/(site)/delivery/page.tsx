@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { formatDate, getDeliveryDates, getDeliverySummary } from "@/lib/catalogue";
 
 export const revalidate = 60;
-export const metadata: Metadata = { title: "Delivery | Ivy & Bough" };
+export const metadata: Metadata = { title: "Delivery | Ivy & Bough", description: "Delivery costs, dispatch times and Christmas last order dates for Ivy & Bough orders across Australia.", alternates: { canonical: "/delivery" } };
 
 export default async function DeliveryPage() {
   const dates = await getDeliveryDates();

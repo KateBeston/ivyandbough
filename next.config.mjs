@@ -2,11 +2,11 @@ const supabase = "https://pexlozjdgwrygzwiaivm.supabase.co";
 const portal = "https://ivy-and-bough-portal.vercel.app";
 const csp = (frameAncestors) => [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com",
+  "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  `img-src 'self' data: blob: ${supabase} https://maps.googleapis.com https://maps.gstatic.com`,
+  `img-src 'self' data: blob: ${supabase} https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://*.google-analytics.com`,
   "font-src 'self' data: https://fonts.gstatic.com",
-  `connect-src 'self' ${supabase} https://maps.googleapis.com https://places.googleapis.com`,
+  `connect-src 'self' ${supabase} https://maps.googleapis.com https://places.googleapis.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

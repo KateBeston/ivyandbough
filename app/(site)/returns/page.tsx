@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Returns | Ivy & Bough" };
+export const metadata: Metadata = { title: "Returns | Ivy & Bough", description: "How to return an Ivy & Bough order, and what to do if something arrives damaged or isn't right.", alternates: { canonical: "/returns" } };
 
 export default function ReturnsPage() {
   return (

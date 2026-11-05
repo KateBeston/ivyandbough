@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getFaqs } from "@/lib/catalogue";
 
 export const revalidate = 60;
-export const metadata: Metadata = { title: "Frequently Asked Questions | Ivy & Bough", description: "Answers to common questions about ordering, delivery, returns and products at Ivy & Bough." };
+export const metadata: Metadata = { title: "Frequently Asked Questions | Ivy & Bough", description: "Answers to common questions about ordering, delivery, returns and products at Ivy & Bough.", alternates: { canonical: "/faq" } };
 
 export default async function FaqPage() {
   const faqs = await getFaqs();

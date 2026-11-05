@@ -3,7 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
+import { JsonLd } from "@/components/JsonLd";
 import { RichText } from "@/components/RichText";
+import { absolute } from "@/lib/seo";
 import { SignupForm } from "@/components/SignupForm";
 import { designStyle, ratio, type ArticleDesign } from "@/lib/article-design";
 import { formatPrice, getArticleDesign, getPost, getPosts, getProductsBySlugs, getWelcomeOffer, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
@@ -14,7 +16,8 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost((await params).slug);
-  return { title: post ? `${post.title} | Ivy & Bough` : "Ivy & Bough", description: post?.excerpt };
+  if (!post) return { title: "Ivy & Bough" };
+  return { title: `${post.title} | Ivy & Bough`, description: post.excerpt, alternates: { canonical: `/the-christmas-edit/${post.slug}` }, openGraph: { type: "article", title: post.title, description: post.excerpt, url: `/the-christmas-edit/${post.slug}`, publishedTime: post.published_at, images: post.image_url ? [post.image_url] : undefined } };
 }
 
 const longDate = new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", year: "numeric", timeZone: "Australia/Brisbane" });
@@ -106,6 +109,7 @@ export default async function PostPage({ params }: Props) {
       <section className={`post-hero ${design.heroSide === "left" ? "photo-left" : ""}`}>
         <div className="post-hero-copy">
           <Link href="/the-christmas-edit" className="eyebrow">{post.category}</Link>
+          <JsonLd data={{ "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, datePublished: post.published_at, image: post.image_url ? absolute(post.image_url) : undefined, author: { "@type": "Organization", name: "Ivy & Bough" }, publisher: { "@type": "Organization", name: "Ivy & Bough", logo: absolute("/icon.png") }, mainEntityOfPage: absolute(`/the-christmas-edit/${post.slug}`) }} />
           <h1>{post.title}</h1>
           <p>{post.excerpt}</p>
           <div className="post-meta">By {post.author} | Published: {longDate.format(new Date(post.published_at))}</div>

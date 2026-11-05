@@ -8,7 +8,7 @@ import { readConsent, saveConsent, type Consent } from "@/lib/consent";
 const OPEN = "ib-cookie-settings";
 const options: [string, string[]][] = [
   ["Essential only", ["Keeps your basket", "Keeps you signed in", "Secures checkout", "Remembers this choice"]],
-  ["Accept all", ["Everything in Essential only", "Analytics, to improve the site", "Marketing, to show relevant offers"]],
+  ["Accept all", ["Everything in Essential only", "Google Analytics, to improve the site", "Marketing, to show relevant offers"]],
 ];
 
 export function CookieConsent() {
@@ -37,7 +37,7 @@ export function CookieConsent() {
       {more && (
         <div className="cookie-lists">
           {options.map(([title, items]) => <div key={title}><h2>{title}</h2><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul></div>)}
-          <p>We don&apos;t use analytics or marketing cookies yet. Read our <Link href="/cookies">Cookie Policy</Link>.</p>
+          <p>You can change your choice at any time. Read our <Link href="/cookies">Cookie Policy</Link>.</p>
         </div>
       )}
     </section>

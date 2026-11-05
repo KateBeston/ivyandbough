@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getPosts } from "@/lib/catalogue";
 
 export const revalidate = 60;
-export const metadata: Metadata = { title: "The Christmas Edit | Ivy & Bough" };
+export const metadata: Metadata = { title: "The Christmas Edit | Ivy & Bough", description: "Christmas decorating ideas, styling guides and table inspiration from Ivy & Bough.", alternates: { canonical: "/the-christmas-edit" } };
 
 export default async function JournalPage() {
   const posts = await getPosts();

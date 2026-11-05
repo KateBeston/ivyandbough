@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getThemes } from "@/lib/catalogue";
 
 export const revalidate = 60;
-export const metadata: Metadata = { title: "Christmas Decorating Themes and Collections | Ivy & Bough", description: "Explore Christmas decorating collections from traditional and vintage to Australian native, minimalist and colourful. Delivered Australia-wide." };
+export const metadata: Metadata = { title: "Christmas Decorating Themes and Collections | Ivy & Bough", description: "Explore Christmas decorating collections from traditional and vintage to Australian native, minimalist and colourful. Delivered Australia-wide.", alternates: { canonical: "/collections" } };
 
 export default async function CollectionsPage() {
   const themes = await getThemes();

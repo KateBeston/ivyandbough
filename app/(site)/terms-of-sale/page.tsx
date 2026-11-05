@@ -4,7 +4,7 @@ import { LegalPage } from "@/components/LegalPage";
 import { getDeliverySummary } from "@/lib/catalogue";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Terms of Sale | Ivy & Bough" };
+export const metadata: Metadata = { title: "Terms of Sale | Ivy & Bough", description: "The terms that apply when you buy from Ivy & Bough, including payment, delivery and returns.", alternates: { canonical: "/terms-of-sale" } };
 
 export const revalidate = 60;
 

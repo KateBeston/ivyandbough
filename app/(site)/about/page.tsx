@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "About | Ivy & Bough" };
+export const metadata: Metadata = { title: "About | Ivy & Bough", description: "Ivy & Bough is an online Christmas store bringing together elegant pieces for the table, the tree and the front door.", alternates: { canonical: "/about" } };
 
 export default function AboutPage() {
   return (

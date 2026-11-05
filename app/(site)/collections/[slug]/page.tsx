@@ -14,7 +14,8 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTheme((await params).slug);
   if (!t) return { title: "Ivy & Bough" };
-  return { title: t.seo_title || `${t.name} | Ivy & Bough`, description: t.seo_description || t.line };
+  const description = t.seo_description || t.line;
+  return { title: t.seo_title || `${t.name} | Ivy & Bough`, description, alternates: { canonical: `/collections/${t.slug}` }, openGraph: { title: t.name, description, url: `/collections/${t.slug}`, images: [t.image_url] } };
 }
 
 export default async function CollectionPage({ params }: Props) {

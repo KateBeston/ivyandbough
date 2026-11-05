@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Website Terms of Use | Ivy & Bough" };
+export const metadata: Metadata = { title: "Website Terms of Use | Ivy & Bough", description: "The terms for using the Ivy & Bough website.", alternates: { canonical: "/terms" } };
 
 export default function TermsPage() {
   return (

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Account Terms | Ivy & Bough" };
+export const metadata: Metadata = { title: "Account Terms | Ivy & Bough", description: "The terms that apply to your Ivy & Bough customer account.", alternates: { canonical: "/account-terms" } };
 
 export default function AccountTermsPage() {
   return (
