@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CookieSettingsLink } from "./CookieConsent";
+import { PaymentMarks } from "./PaymentMarks";
 
 export function Footer() {
   return (
@@ -24,7 +25,7 @@ export function Footer() {
       </div>
       <div className="footer-bottom">
         <div>© 2026 Aurella Group Pty Ltd trading as Ivy &amp; Bough · ABN 70 649 742 423</div>
-        <div>Visa · Mastercard · American Express · Apple Pay · Google Pay</div>
+        <PaymentMarks />
       </div>
       <nav className="footer-legal" aria-label="Legal">
         <Link href="/privacy">Privacy Policy</Link>

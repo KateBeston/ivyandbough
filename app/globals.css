@@ -493,3 +493,10 @@ button{font:inherit;color:inherit}
 .welcome-offer strong{display:block;margin:4px 0;font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:.06em}
 .welcome-offer p{margin:0}
 .form-offer{margin:0 0 10px}
+
+/* Accepted payment methods */
+.pay-marks{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.pay-marks li{display:flex;align-items:center;justify-content:center;width:42px;height:27px;padding:2px 4px;background:#fff;border-radius:3px;overflow:hidden}
+.pay-marks img{display:block;max-width:100%;max-height:100%}
+.basket-summary .pay-marks{margin-top:12px}
+.basket-summary .pay-marks li{border:1px solid var(--line)}

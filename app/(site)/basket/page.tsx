@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AddressLookup, type PickedAddress } from "@/components/AddressLookup";
 import { useBasket } from "@/components/BasketProvider";
+import { PaymentMarks } from "@/components/PaymentMarks";
 import { Price } from "@/components/Price";
 import { formatPrice } from "@/lib/catalogue";
 
@@ -143,6 +144,7 @@ export default function BasketPage() {
             )}
             {promoError && <p role="alert">{promoError}</p>}
             <button type="button" className="solid" disabled={busy || !ready} onClick={pay}>Checkout</button>
+            <PaymentMarks />
             {!ready && <p className="muted">Add your delivery details to continue.</p>}
             <p className="muted">By checking out, you agree to our <Link href="/terms-of-sale">Terms of Sale</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
             {error && <p role="alert">{error}</p>}
