@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { allowed } from "@/lib/limits";
 import { admin, userFrom } from "@/lib/server";
 
 export async function POST(request: Request) {
@@ -7,6 +8,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const sessionId = String(body?.sessionId ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(sessionId)) return NextResponse.json({ ok: false }, { status: 400 });
+  if (!(await allowed(request, "cart", 120, 600))) return NextResponse.json({ ok: false }, { status: 429 });
   const lines = Array.isArray(body?.lines) ? (body.lines as { id: string; quantity: number }[]).slice(0, 50) : [];
   const user = await userFrom(request);
 

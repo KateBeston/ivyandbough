@@ -24,7 +24,7 @@ export function SignupForm() {
     <form onSubmit={submit}>
       <label>Email address<input name="email" type="email" required autoComplete="email" /></label>
       <button type="submit" disabled={state === "sending"}>Join</button>
-      {state === "done" && <div className="msg" role="status">You&apos;re on the list.</div>}
+      {state === "done" && <div className="msg" role="status">Nearly there. Please check your email to confirm.</div>}
       {state === "error" && <div className="msg" role="alert">That didn&apos;t go through. Please try again.</div>}
       <small className="form-note">By joining, you agree to receive marketing emails from Ivy &amp; Bough. You can unsubscribe at any time. See our <Link href="/privacy">Privacy Policy</Link>.</small>
     </form>

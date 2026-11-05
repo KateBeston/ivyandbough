@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { allowed } from "@/lib/limits";
 import { cleanItems, quoteDelivery } from "@/lib/shipping";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(request: Request) {
+  if (!(await allowed(request, "quote", 60, 600))) return NextResponse.json({ error: "Please try again in a few minutes." }, { status: 429 });
   const body = await request.json().catch(() => null);
   const items = cleanItems(body?.items);
   if (!items.length) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });

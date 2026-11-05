@@ -1,0 +1,3 @@
+-- Applied to production.
+-- is_portal_admin requires a confirmed account. The public key can only read public tables.
+-- Public forms go through rate-limited server routes. The email list uses double opt-in.

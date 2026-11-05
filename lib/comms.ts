@@ -100,9 +100,9 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,customers(name,phone,customer_number),order_items(name,quantity,unit_price,carrier,tracking_number)").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,quantity,unit_price,carrier,tracking_number)").eq("id", orderId).single();
   if (!data) return null;
-  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string }[] };
+  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string }[] };
   const name = order.customers?.name || order.shipping_name || "";
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
     const link = trackingUrl(i.carrier, i.tracking_number);
@@ -110,7 +110,7 @@ async function orderData(db: Db, orderId: string) {
   });
   return {
     email: order.customer_email,
-    phone: order.customers?.phone ?? "",
+    phone: order.shipping_phone || order.customers?.phone || "",
     invoice: {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "long", year: "numeric" }),
       customerId: order.customers?.customer_number ?? "", transaction: order.payment_intent_id ?? "", paymentMethod: order.payment_method,
@@ -135,8 +135,8 @@ async function blocked(db: Db, channel: Channel, address: string, messageClass: 
   if (stop) return `${address} is on the do-not-contact list (${stop.reason}).`;
   if (messageClass === "Marketing") {
     if (channel === "Email") {
-      const { data } = await db.from("subscribers").select("id").ilike("email", address.replace(/[%_\\]/g, "\\$&")).limit(1);
-      if (!data?.length) return `${address} hasn't subscribed, so marketing can't be sent to them.`;
+      const { data } = await db.from("subscribers").select("id").ilike("email", address.replace(/[%_\\]/g, "\\$&")).not("confirmed_at", "is", null).limit(1);
+      if (!data?.length) return `${address} hasn't confirmed a subscription, so marketing can't be sent to them.`;
     } else {
       const { data } = await db.from("message_consents").select("granted").eq("channel", "SMS").eq("address", address).eq("purpose", "Marketing").order("occurred_at", { ascending: false }).limit(1);
       if (!data?.[0]?.granted) return `${address} hasn't agreed to marketing texts.`;
@@ -322,7 +322,7 @@ export async function sendCampaign(templateId: string) {
   if (!subject.text.trim() || !body.text.trim()) return { error: "This email needs a subject and content." };
 
   const [{ data: people }, { data: stopped }] = await Promise.all([
-    db.from("subscribers").select("email").limit(50000),
+    db.from("subscribers").select("email").not("confirmed_at", "is", null).limit(50000),
     db.from("message_suppressions").select("address").eq("channel", "Email").is("released_at", null).limit(50000),
   ]);
   const stop = new Set((stopped ?? []).map((s) => String(s.address).toLowerCase()));

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { generateReceipt, sendMessage } from "@/lib/comms";
 import { admin, stripe } from "@/lib/server";
+import { startSubscription } from "@/lib/subscribe";
 
 type Address = { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null };
 const addressText = (a?: Address | null) => (a ? [a.line1, a.line2, [a.city, a.state, a.postal_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") : "");
@@ -47,7 +48,8 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   const { data: known } = await db.from("customers").select("id").ilike("email", email.replace(/[%_]/g, "\\$&")).maybeSingle();
   let customerId = known?.id as string | undefined;
-  if (customerId) await db.from("customers").update({ address, phone, ...(userId ? { auth_user_id: userId } : {}) }).eq("id", customerId);
+  // Stripe does not verify a guest's email, so only a signed-in customer can change saved details.
+  if (customerId && userId) await db.from("customers").update({ address, phone, ...(userId ? { auth_user_id: userId } : {}) }).eq("id", customerId);
   else {
     const { data: created, error } = await db.from("customers").insert({ name, email, phone, address, auth_user_id: userId }).select("id").single();
     if (error) throw error;
@@ -83,7 +85,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   if (ship.marketing === "yes") {
     if (phone) consents.push({ channel: "SMS", address: phone, granted: true, purpose: "Marketing", source });
     if (email) consents.push({ channel: "Email", address: email, granted: true, purpose: "Marketing", source });
-    if (email) await db.from("subscribers").insert({ email, source: "Checkout" }); // Already subscribed is fine.
+    if (email) await startSubscription(email.toLowerCase(), "Checkout").catch(() => null);
   }
   if (consents.length) await db.from("message_consents").insert(consents);
 

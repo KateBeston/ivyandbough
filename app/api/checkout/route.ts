@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { allowed } from "@/lib/limits";
 import { stripe, userFrom } from "@/lib/server";
 import { cleanItems, quoteDelivery } from "@/lib/shipping";
 import { supabase } from "@/lib/supabase";
@@ -10,6 +11,7 @@ const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 export async function POST(request: Request) {
   const client = stripe();
   if (!client) return NextResponse.json({ error: "Checkout isn't switched on yet." }, { status: 503 });
+  if (!(await allowed(request, "checkout", 15, 600))) return NextResponse.json({ error: "Please try again in a few minutes." }, { status: 429 });
   const body = await request.json().catch(() => null);
   const items = cleanItems(body?.items);
   if (!items.length) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });

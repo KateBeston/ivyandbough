@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { allowed } from "@/lib/limits";
+import { admin } from "@/lib/server";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -11,7 +12,9 @@ export async function POST(request: Request) {
   if (!name || name.length > 120 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 254 || !message || message.length > 4000) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
-  const { error } = await supabase.from("contact_messages").insert({ name, email, message });
+  if (!(await allowed(request, "contact", 5, 3600))) return NextResponse.json({ ok: false }, { status: 429 });
+  const db = admin();
+  const { error } = db ? await db.from("contact_messages").insert({ name, email, message }) : { error: true };
   if (error) return NextResponse.json({ ok: false }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
