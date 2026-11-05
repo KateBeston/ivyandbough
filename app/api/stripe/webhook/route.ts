@@ -101,7 +101,8 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
   try {
     event = client.webhooks.constructEvent(await request.text(), request.headers.get("stripe-signature") ?? "", secret);
-  } catch {
+  } catch (e) {
+    console.warn("Stripe webhook refused", { signatureSent: request.headers.has("stripe-signature"), reason: e instanceof Error ? e.message.slice(0, 120) : "unknown" });
     return NextResponse.json({ ok: false }, { status: 400 });
   }
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
