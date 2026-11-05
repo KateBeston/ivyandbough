@@ -44,7 +44,7 @@ export const SAMPLE: Record<string, string> = {
 const links = () => ({ site_url: SITE_URL, account_url: `${SITE_URL}/account` });
 
 // These two are built here from cleaned values, because they contain links.
-const RAW = new Set(["tracking", "basket_items"]);
+const RAW = new Set(["tracking", "basket_items", "order_details"]);
 
 export function merge(text: string, data: Record<string, string>) {
   const missing = new Set<string>();
@@ -55,19 +55,64 @@ export function merge(text: string, data: Record<string, string>) {
   return { text: out, missing: [...missing] };
 }
 
-export function toText(body: string) {
+export type OrderSummary = {
+  number: string; date: string; payment: string; name: string; address: string;
+  items: { name: string; collection: string; quantity: number; amount: number; image: string }[];
+  subtotal: number; delivery: number; gst: number; total: number;
+};
+
+const SUMMARY_MARK = "@@ORDER_DETAILS@@";
+const SERIF = "Georgia,'Times New Roman',serif";
+const SANS = "Arial,Helvetica,sans-serif";
+
+export const SAMPLE_SUMMARY: OrderSummary = {
+  number: "IB-1001", date: "5 Nov 2026", payment: "Visa ending 4242", name: "Sarah Smith", address: "1 Example Street, Brisbane QLD 4000",
+  items: [
+    { name: "Dark velvet Christmas tree bow", collection: "Bordeaux Glamour", quantity: 1, amount: 49, image: `${SITE_URL}/email/collection-bordeaux-glamour.jpg` },
+    { name: "Gold leaf glass bauble set", collection: "Traditional", quantity: 2, amount: 179, image: `${SITE_URL}/email/collection-traditional.jpg` },
+    { name: "Frosted pine tabletop tree", collection: "Winter Wonderland", quantity: 1, amount: 89, image: `${SITE_URL}/email/collection-winter-wonderland.jpg` },
+  ],
+  subtotal: 317, delivery: 0, gst: 28.82, total: 317,
+};
+
+export function summaryHtml(o: OrderSummary) {
+  const stat = (label: string, value: string) => `<td style="padding:12px 14px;font-family:${SANS};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">${label}<div style="padding-top:3px;font-family:${SERIF};font-size:14px;letter-spacing:0;text-transform:none;color:#2F2C27">${esc(value)}</div></td>`;
+  const row = (i: OrderSummary["items"][number]) => `<tr><td width="52" valign="middle" style="padding:7px 0;border-bottom:1px solid #E0D8CC">${i.image ? `<img src="${esc(i.image)}" width="42" height="42" alt="" style="display:block;width:42px;height:42px;object-fit:cover;border:0">` : ""}</td><td valign="middle" style="padding:7px 8px 7px 0;border-bottom:1px solid #E0D8CC;font-family:${SERIF};font-size:13px;line-height:1.3;color:#2F2C27">${esc(i.name)}<div style="padding-top:2px;font-family:${SANS};font-size:11px;color:#6A6156">${i.collection ? `${esc(i.collection)} &middot; ` : ""}Qty ${i.quantity}</div></td><td align="right" valign="middle" style="padding:7px 0;border-bottom:1px solid #E0D8CC;font-family:${SANS};font-size:12px;color:#2F2C27;white-space:nowrap">${money(i.amount)}</td></tr>`;
+  const line = (label: string, value: string) => `<tr><td style="padding:4px 0;font-family:${SANS};font-size:14px;color:#2F2C27">${label}</td><td align="right" style="padding:4px 0;font-family:${SANS};font-size:14px;color:#2F2C27">${value}</td></tr>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3EEE5;margin:6px 0 10px"><tr>${stat("Order", o.number)}${stat("Date", o.date)}${stat("Paid", o.payment || "Card")}</tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${o.items.map(row).join("")}</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px"><tr><td width="42%"></td><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${line("Subtotal", money(o.subtotal))}${line("Delivery", o.delivery ? money(o.delivery) : "Free")}<tr><td colspan="2" style="padding:6px 0 4px"><div style="height:1px;background:#C4A265;font-size:0;line-height:0">&nbsp;</div></td></tr><tr><td style="padding:5px 0;font-family:${SERIF};font-size:20px;color:#2F2C27">Total paid</td><td align="right" style="padding:5px 0;font-family:${SERIF};font-size:20px;color:#2F2C27">${money(o.total)}</td></tr><tr><td colspan="2" align="right" style="font-family:${SANS};font-size:12px;color:#6A6156">Includes ${money(o.gst)} GST</td></tr></table></td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 8px;border-top:1px solid #E0D8CC"><tr><td valign="top" width="46%" style="padding:16px 16px 0 0;font-family:${SANS};font-size:14px;line-height:1.6;color:#2F2C27"><div style="padding-bottom:5px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">Delivering to</div>${esc(o.name)}<br>${esc(o.address)}</td><td valign="top" style="padding-top:16px;font-family:${SANS};font-size:14px;line-height:1.6;color:#2F2C27"><div style="padding-bottom:5px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6A6156">Good to know</div>Some pieces ship directly from our suppliers, so your order may arrive in separate parcels.</td></tr></table>`;
+}
+
+function summaryText(o: OrderSummary) {
+  return [`Order ${o.number}, ${o.date}`, ...o.items.map((i) => `${i.quantity} x ${i.name}, ${money(i.amount)}`), "", `Subtotal: ${money(o.subtotal)}`, `Delivery: ${o.delivery ? money(o.delivery) : "Free"}`, `Total paid: ${money(o.total)} (includes ${money(o.gst)} GST)`, "", `Delivering to: ${o.name}, ${o.address}`, "Some pieces ship directly from our suppliers, so your order may arrive in separate parcels."].join("\n");
+}
+
+export const summaryValue = { order_details: SUMMARY_MARK };
+
+export function toText(body: string, summary?: OrderSummary | null) {
+  if (summary) body = body.replace(SUMMARY_MARK, summaryText(summary));
+  return plainLinks(body).replace(/^# /gm, "");
+}
+
+function plainLinks(body: string) {
   return body.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, "$1: $2");
 }
 
 function paragraph(block: string) {
+  if (block.trim() === SUMMARY_MARK) return SUMMARY_MARK;
+  if (block.startsWith("# ")) return `<h1 style="margin:0 0 12px;font-family:${SERIF};font-size:28px;font-weight:400;line-height:1.25;color:#2F2C27">${esc(block.slice(2).trim())}</h1>`;
   const button = block.trim().match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
   if (button) return `<p style="margin:26px 0 8px"><a href="${esc(button[2])}" style="display:inline-block;padding:13px 24px;background:#2F2C27;color:#ffffff;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase">${esc(button[1])}</a></p>`;
   const html = esc(block).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" style="color:#6B1F2B">$1</a>').replace(/\n/g, "<br>");
   return `<p style="margin:0 0 16px">${html}</p>`;
 }
 
-export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, body: string) {
+export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, body: string, summary?: OrderSummary | null) {
   const marketing = draft.message_class === "Marketing";
+  let content = body.split(/\n\s*\n/).map(paragraph).join("");
+  if (summary) content = content.replace(SUMMARY_MARK, summaryHtml(summary)).replace('<p style="margin:26px 0 8px">', '<p style="margin:24px 0 8px;text-align:center">');
   const link = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="color:#E9E3D8;text-decoration:none">${label}</a>`;
   const nav = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="display:inline-block;padding:2px 9px;color:#2F2C27;text-decoration:none">${label}</a>`;
   const tile = (name: string, slug: string) => `<td width="33.33%" valign="top" style="padding:0 5px"><a href="${SITE_URL}/collections/${slug}" style="color:#2F2C27;text-decoration:none"><img src="${SITE_URL}/email/collection-${slug}.jpg" width="170" alt="" style="display:block;width:100%;height:auto;border:0"><div style="padding-top:8px;font-family:Georgia,'Times New Roman',serif;font-size:13px;line-height:1.3;text-align:center">${name}</div></a></td>`;
@@ -81,7 +126,7 @@ export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, b
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#FBF8F2;border:1px solid #E0D8CC">
 <tr><td style="padding:0;background:#2B2925;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:5px;line-height:1.4;color:#FBF8F2;text-align:center"><a href="${SITE_URL}" style="color:#FBF8F2;text-decoration:none"><img src="${SITE_URL}/email/header-banner.jpg" width="600" alt="Ivy &amp; Bough" style="display:block;width:100%;max-width:600px;height:auto;border:0"></a></td></tr>
 <tr><td align="center" style="padding:13px 12px;border-bottom:1px solid #E0D8CC;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase">${nav("Shop", "/shop")}${nav("Collections", "/collections")}${nav("The Christmas Edit", "/the-christmas-edit")}</td></tr>
-<tr><td style="padding:28px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${body.split(/\n\s*\n/).map(paragraph).join("")}</td></tr>${marketing ? collections : ""}
+<tr><td style="padding:28px 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2F2C27">${content}</td></tr>${marketing ? collections : ""}
 <tr><td align="center" style="padding:30px 28px 28px;background:#2B2925;font-family:Arial,Helvetica,sans-serif;color:#E9E3D8">
 <div style="padding-bottom:18px"><img src="${SITE_URL}/email/wordmark-cream.png" width="130" alt="Ivy &amp; Bough" style="display:inline-block;width:130px;height:auto;border:0"></div>
 <div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
@@ -100,9 +145,9 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,quantity,unit_price,carrier,tracking_number)").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,quantity,unit_price,carrier,tracking_number,products(themes(name),product_images(url,sort_order)))").eq("id", orderId).single();
   if (!data) return null;
-  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string }[] };
+  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
   const name = order.customers?.name || order.shipping_name || "";
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
     const link = trackingUrl(i.carrier, i.tracking_number);
@@ -111,6 +156,12 @@ async function orderData(db: Db, orderId: string) {
   return {
     email: order.customer_email,
     phone: order.shipping_phone || order.customers?.phone || "",
+    summary: {
+      number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "short", year: "numeric" }),
+      payment: order.payment_method, name: order.shipping_name, address: order.shipping_address,
+      items: order.order_items.map((i) => ({ name: i.name, collection: i.products?.themes?.name ?? "", quantity: i.quantity, amount: Number(i.unit_price) * i.quantity, image: [...(i.products?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "" })),
+      subtotal: Number(order.subtotal), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
+    } as OrderSummary,
     invoice: {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "long", year: "numeric" }),
       customerId: order.customers?.customer_number ?? "", transaction: order.payment_intent_id ?? "", paymentMethod: order.payment_method,
@@ -232,7 +283,8 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   const to = normalise(draft.channel, opts.to || (draft.channel === "SMS" ? order?.phone : order?.email) || "");
   if (!to) return { ok: false, error: draft.channel === "SMS" ? "There's no valid mobile number for this message." : "There's no valid email address for this message." };
 
-  const values = { ...(opts.isTest ? SAMPLE : {}), ...links(), ...(order?.data ?? {}), ...(opts.data ?? {}) };
+  const summary = order?.summary ?? (opts.isTest ? SAMPLE_SUMMARY : null);
+  const values = { ...(opts.isTest ? SAMPLE : {}), ...links(), ...(order?.data ?? {}), ...(summary ? summaryValue : {}), ...(opts.data ?? {}) };
   const subject = merge(draft.subject, values);
   const preheader = merge(draft.preheader, values);
   const body = merge(draft.body, values);
@@ -241,7 +293,7 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   if (draft.channel === "Email" && !subject.text.trim()) return { ok: false, error: "This email needs a subject." };
   if (!body.text.trim()) return { ok: false, error: "This message has no content." };
 
-  const log = { template_id: template?.id ?? null, template_slug: template?.slug ?? "", channel: draft.channel, message_class: draft.message_class, order_id: opts.orderId ?? null, to_address: to, subject: subject.text, body: toText(body.text), is_test: Boolean(opts.isTest) };
+  const log = { template_id: template?.id ?? null, template_slug: template?.slug ?? "", channel: draft.channel, message_class: draft.message_class, order_id: opts.orderId ?? null, to_address: to, subject: subject.text, body: toText(body.text, summary), is_test: Boolean(opts.isTest) };
   const stop = opts.isTest ? null : await blocked(db, draft.channel, to, draft.message_class, Boolean(opts.orderId));
   if (stop) {
     await db.from("message_sends").insert({ ...log, status: "Suppressed", error: stop });
@@ -260,10 +312,10 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
     }
   }
   const marketing = draft.message_class === "Marketing";
-  const plain = draft.channel === "SMS" ? withOptOut(toText(body.text), marketing) : toText(body.text);
+  const plain = draft.channel === "SMS" ? withOptOut(toText(body.text, summary), marketing) : toText(body.text, summary);
   const sent = draft.channel === "SMS"
     ? await twilio(to, plain, { marketing, mediaUrl: draft.media_url || undefined })
-    : await postmark(to, title, renderEmail({ message_class: draft.message_class, preheader: preheader.text }, body.text), plain, draft.message_class === "Marketing", attachments);
+    : await postmark(to, title, renderEmail({ message_class: draft.message_class, preheader: preheader.text }, body.text, summary), plain, draft.message_class === "Marketing", attachments);
   const { data: row, error } = await db.from("message_sends").insert({ ...log, status: sent.error ? "Failed" : "Sent", provider_id: sent.id ?? null, error: sent.error ?? null, segments: draft.channel === "SMS" ? smsSegments(plain) : null }).select("id").single();
   if (sent.error) return { ok: false, error: sent.error };
   if (attachments?.length && opts.orderId && !opts.isTest) await db.from("order_receipts").update({ emailed_at: new Date().toISOString(), emailed_to: to }).eq("order_id", opts.orderId);
