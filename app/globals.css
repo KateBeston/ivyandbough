@@ -468,3 +468,8 @@ button{font:inherit;color:inherit}
 .delivery-check input{width:130px;height:42px}
 .delivery-check button{height:42px;padding:0 16px;border:1px solid var(--ink);background:none;font:inherit;font-size:12px;cursor:pointer}
 .delivery-check p{flex:1 1 100%;margin:0}
+.mobile-field{display:flex}
+.mobile-field>span{display:flex;align-items:center;padding:0 12px;border:1px solid #B9AE9E;border-right:0;background:var(--sand);font-size:16px}
+.mobile-field input{flex:1;min-width:0}
+.delivery-consents{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.delivery-consents .check-line input{flex:0 0 auto;width:16px;height:16px;margin:3px 0 0;padding:0}

@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   if (!items.length) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });
   const text = (value: unknown, max = 120) => String(value ?? "").trim().slice(0, max);
   const delivery = { name: text(body?.delivery?.name), phone: text(body?.delivery?.phone, 30), line1: text(body?.delivery?.line1, 200), line2: text(body?.delivery?.line2, 200), city: text(body?.delivery?.city), state: text(body?.delivery?.state, 3), postcode: text(body?.delivery?.postcode, 4) };
-  if (!delivery.name || !delivery.line1 || !delivery.city || !STATES.includes(delivery.state) || !/^\d{4}$/.test(delivery.postcode) || delivery.phone.replace(/\D/g, "").length < 8) return NextResponse.json({ error: "Please check your delivery details." }, { status: 400 });
+  if (!delivery.name || !delivery.line1 || !delivery.city || !STATES.includes(delivery.state) || !/^\d{4}$/.test(delivery.postcode) || !/^\+614\d{8}$/.test(delivery.phone)) return NextResponse.json({ error: "Please check your delivery details." }, { status: 400 });
 
   // Prices always come from the database, never from the browser.
   const { data, error } = await supabase.from("products").select("id,name,price_cents,product_images(url,sort_order)").in("id", items.map((i) => String(i.id)));
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     payment_intent_data: { shipping: { name: delivery.name, phone: delivery.phone, address: { line1: delivery.line1, line2: delivery.line2 || undefined, city: delivery.city, state: delivery.state, postal_code: delivery.postcode, country: "AU" } } },
     custom_text: { submit: { message: "By placing your order, you agree to the Ivy & Bough Terms of Sale and Privacy Policy." } },
     customer_email: user?.email,
-    metadata: { user_id: user?.id ?? "", cart_session: String(body?.sessionId ?? "").slice(0, 60), ship_name: delivery.name, ship_phone: delivery.phone, ship_line1: delivery.line1, ship_line2: delivery.line2, ship_city: delivery.city, ship_state: delivery.state, ship_postcode: delivery.postcode, ship_zone: quote.zone },
+    metadata: { user_id: user?.id ?? "", cart_session: String(body?.sessionId ?? "").slice(0, 60), ship_name: delivery.name, ship_phone: delivery.phone, ship_line1: delivery.line1, ship_line2: delivery.line2, ship_city: delivery.city, ship_state: delivery.state, ship_postcode: delivery.postcode, ship_zone: quote.zone, sms_updates: body?.delivery?.smsUpdates === true ? "yes" : "no", marketing: body?.delivery?.marketing === true ? "yes" : "no" },
     success_url: `${origin}/order/thanks`,
     cancel_url: `${origin}/basket`,
   });

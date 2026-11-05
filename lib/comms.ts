@@ -128,7 +128,7 @@ async function orderData(db: Db, orderId: string) {
   };
 }
 
-async function blocked(db: Db, channel: Channel, address: string, messageClass: MessageClass) {
+async function blocked(db: Db, channel: Channel, address: string, messageClass: MessageClass, forOrder: boolean) {
   const { data: stopped, error } = await db.from("message_suppressions").select("reason,scope").eq("channel", channel).eq("address", address).is("released_at", null);
   if (error) return `Could not check the unsubscribe list, so nothing was sent: ${error.message}`;
   const stop = (stopped ?? []).find((s) => s.scope === "All" || messageClass === "Marketing");
@@ -138,9 +138,13 @@ async function blocked(db: Db, channel: Channel, address: string, messageClass: 
       const { data } = await db.from("subscribers").select("id").ilike("email", address.replace(/[%_\\]/g, "\\$&")).limit(1);
       if (!data?.length) return `${address} hasn't subscribed, so marketing can't be sent to them.`;
     } else {
-      const { data } = await db.from("message_consents").select("granted").eq("channel", "SMS").eq("address", address).order("occurred_at", { ascending: false }).limit(1);
+      const { data } = await db.from("message_consents").select("granted").eq("channel", "SMS").eq("address", address).eq("purpose", "Marketing").order("occurred_at", { ascending: false }).limit(1);
       if (!data?.[0]?.granted) return `${address} hasn't agreed to marketing texts.`;
     }
+  }
+  if (channel === "SMS" && messageClass === "Transactional" && forOrder) {
+    const { data } = await db.from("message_consents").select("granted").eq("channel", "SMS").eq("address", address).eq("purpose", "Service").order("occurred_at", { ascending: false }).limit(1);
+    if (!data?.[0]?.granted) return `${address} hasn't agreed to order updates by text.`;
   }
   return null;
 }
@@ -231,7 +235,7 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   if (!body.text.trim()) return { ok: false, error: "This message has no content." };
 
   const log = { template_id: template?.id ?? null, template_slug: template?.slug ?? "", channel: draft.channel, message_class: draft.message_class, order_id: opts.orderId ?? null, to_address: to, subject: subject.text, body: toText(body.text), is_test: Boolean(opts.isTest) };
-  const stop = opts.isTest ? null : await blocked(db, draft.channel, to, draft.message_class);
+  const stop = opts.isTest ? null : await blocked(db, draft.channel, to, draft.message_class, Boolean(opts.orderId));
   if (stop) {
     await db.from("message_sends").insert({ ...log, status: "Suppressed", error: stop });
     return { ok: false, error: stop };

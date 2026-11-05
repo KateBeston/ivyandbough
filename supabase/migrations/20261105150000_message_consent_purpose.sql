@@ -1,0 +1,1 @@
+-- Applied to production. message_consents.purpose separates order update texts from marketing.

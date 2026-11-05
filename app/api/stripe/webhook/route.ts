@@ -59,7 +59,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   const total = (session.amount_total ?? 0) / 100;
   const delivery = (session.total_details?.amount_shipping ?? 0) / 100;
-  const { data: order, error } = await db.from("orders").insert({ customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total - delivery, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id").single();
+  const { data: order, error } = await db.from("orders").insert({ customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total - delivery, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
   if (error) {
     if (error.code === "23505") return; // Stripe delivered this event twice at once.
     throw error;
@@ -76,6 +76,16 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   if (session.metadata?.cart_session) await db.from("cart_items").update({ status: "Converted" }).eq("session_id", session.metadata.cart_session).eq("status", "In cart");
   if (userId) await db.from("cart_items").update({ status: "Converted" }).eq("auth_user_id", userId).eq("status", "In cart");
+
+  const consents: { channel: string; address: string; granted: boolean; purpose: string; source: string }[] = [];
+  const source = `Checkout ${order.order_number}`;
+  if (phone && ship.sms_updates) consents.push({ channel: "SMS", address: phone, granted: ship.sms_updates === "yes", purpose: "Service", source });
+  if (ship.marketing === "yes") {
+    if (phone) consents.push({ channel: "SMS", address: phone, granted: true, purpose: "Marketing", source });
+    if (email) consents.push({ channel: "Email", address: email, granted: true, purpose: "Marketing", source });
+    if (email) await db.from("subscribers").insert({ email, source: "Checkout" }); // Already subscribed is fine.
+  }
+  if (consents.length) await db.from("message_consents").insert(consents);
 
   // The order is safe by this point. Either step can be repeated from the portal.
   await generateReceipt(order.id).catch((e) => console.error("Receipt could not be created", order.id, e));

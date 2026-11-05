@@ -8,7 +8,8 @@ import { useBasket } from "@/components/BasketProvider";
 import { formatPrice } from "@/lib/catalogue";
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
-const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "" };
+const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "", smsUpdates: false, marketing: false };
+const mobileDigits = (value: string) => value.replace(/\D/g, "").replace(/^61/, "").replace(/^0/, "");
 type Quote = { deliveryCents: number; free: boolean; zone: string };
 
 export default function BasketPage() {
@@ -18,6 +19,7 @@ export default function BasketPage() {
   const [quoteError, setQuoteError] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const validMobile = /^4\d{8}$/.test(mobileDigits(details.phone));
   const set = (patch: Partial<typeof blank>) => setDetails((d) => ({ ...d, ...patch }));
   const pick = (a: PickedAddress) => set({ ...a, state: STATES.includes(a.state) ? a.state : "" });
   const basketKey = useMemo(() => lines.map((l) => `${l.id}:${l.quantity}`).join(","), [lines]);
@@ -38,12 +40,12 @@ export default function BasketPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details.postcode, basketKey]);
 
-  const ready = quote && details.name.trim() && details.phone.trim() && details.line1.trim() && details.city.trim() && details.state;
+  const ready = quote && details.name.trim() && validMobile && details.line1.trim() && details.city.trim() && details.state;
 
   async function pay() {
     setBusy(true);
     setError("");
-    const message = await checkout(details);
+    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` });
     if (message) {
       setError(message);
       setBusy(false);
@@ -74,12 +76,16 @@ export default function BasketPage() {
               <AddressLookup onPick={pick} />
               <div className="delivery-grid">
                 <label className="wide">Full name<input autoComplete="name" value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>
-                <label className="wide">Mobile<input type="tel" autoComplete="tel" value={details.phone} onChange={(e) => set({ phone: e.target.value })} /></label>
+                <label className="wide">Mobile<span className="mobile-field"><span aria-hidden="true">+61</span><input type="tel" autoComplete="tel-national" placeholder="412 345 678" aria-label="Mobile number, Australia plus 61" value={details.phone} onChange={(e) => set({ phone: e.target.value })} /></span></label>
                 <label className="wide">Address<input autoComplete="address-line1" value={details.line1} onChange={(e) => set({ line1: e.target.value })} /></label>
                 <label className="wide">Apartment, unit or building (optional)<input autoComplete="address-line2" value={details.line2} onChange={(e) => set({ line2: e.target.value })} /></label>
                 <label className="wide">Suburb<input autoComplete="address-level2" value={details.city} onChange={(e) => set({ city: e.target.value })} /></label>
                 <label>State<select autoComplete="address-level1" value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
                 <label>Postcode<input inputMode="numeric" maxLength={4} autoComplete="postal-code" value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
+              </div>
+              <div className="delivery-consents">
+                <label className="check-line"><input type="checkbox" checked={details.smsUpdates} onChange={(e) => set({ smsUpdates: e.target.checked })} /><span>I agree to receive updates about my order by SMS and MMS.</span></label>
+                <label className="check-line"><input type="checkbox" checked={details.marketing} onChange={(e) => set({ marketing: e.target.checked })} /><span>I&apos;d like to receive news, offers and basket reminders from Ivy &amp; Bough by email, SMS and MMS. You can opt out at any time.</span></label>
               </div>
             </section>
           </div>

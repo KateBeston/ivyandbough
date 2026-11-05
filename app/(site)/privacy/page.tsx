@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <li>To process, deliver and support your orders.</li>
         <li>To run your account and show your order history.</li>
         <li>To respond to questions, returns and complaints.</li>
-        <li>To send order updates by email or text message.</li>
+        <li>To send order updates by email, and by SMS or MMS if you agree to them.</li>
         <li>To send marketing emails, including basket reminders, if you have asked to receive them.</li>
         <li>To keep the site secure and working properly.</li>
         <li>To meet our legal, tax and accounting obligations.</li>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
       <h2>Overseas disclosure</h2>
       <p>Stripe, Vercel, Cloudflare, Supabase, Postmark, Twilio and Google are international providers and may handle information outside Australia, most likely in the United States and other countries where they or their service providers operate.</p>
       <h2>Marketing</h2>
-      <p>We only send marketing emails to people who have asked to receive them. You can unsubscribe at any time using the link in our emails or by contacting us. Order and account messages will still be sent where they are needed. We use email service data to see whether messages are delivered, and whether marketing emails are opened or their links are clicked.</p>
+      <p>We only send marketing by email, SMS or MMS to people who have asked to receive it. You can unsubscribe at any time using the link in our emails or by contacting us. Order and account messages will still be sent where they are needed. We use email service data to see whether messages are delivered, and whether marketing emails are opened or their links are clicked.</p>
       <h2>Cookies</h2>
       <p>Our <Link href="/cookies">Cookie Policy</Link> explains the cookies and similar technologies we use.</p>
       <h2>Storage and security</h2>
