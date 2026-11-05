@@ -4,7 +4,7 @@ export const SITE_LIVE = process.env.NEXT_PUBLIC_SITE_LIVE === "true";
 export const SOCIAL_LINKS = [
   { id: "facebook", name: "Facebook", url: "https://www.facebook.com/profile.php?id=61596474291450" },
   { id: "instagram", name: "Instagram", url: "https://www.instagram.com/ivyandbough/" },
-  { id: "pinterest", name: "Pinterest", url: "https://www.pinterest.com/0bm0gcefyzar5u1c31v8h9mmgfr05o/" },
+  { id: "pinterest", name: "Pinterest", url: "https://www.pinterest.com/ivyandbough/" },
 ];
 export const SOCIALS = SOCIAL_LINKS.map((s) => s.url);
 export const absolute = (path: string) => (path.startsWith("http") ? path : `${SITE}${path}`);
