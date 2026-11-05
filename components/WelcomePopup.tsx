@@ -73,7 +73,7 @@ export function WelcomePopup() {
   return (
     <dialog ref={box} tabIndex={-1} className="welcome-pop" aria-labelledby="welcome-pop-title" onClose={() => setOffer(null)} onClick={(e) => { if (e.target === box.current) close(); }}>
       <div className="welcome-pop-card">
-        <div className="welcome-pop-image"><img src="/images/hero-traditional.jpg" alt="" /><img src="/brand/stacked-cream.svg" alt="" className="welcome-pop-logo" /></div>
+        <div className="welcome-pop-image"><img src="/images/popup-tree.jpg" alt="" /><img src="/brand/stacked-cream.svg" alt="" className="welcome-pop-logo" /></div>
         <div className="welcome-pop-body">
           <button type="button" className="welcome-pop-close" aria-label="Close" onClick={close}>&times;</button>
           {state === "done" ? (

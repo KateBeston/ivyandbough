@@ -541,13 +541,13 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){.welcome-pop[open]{animation:none}}
 .welcome-pop-card{display:grid;grid-template-columns:44% 56%;min-height:540px}
 .welcome-pop-image{position:relative;background:#1d1620;overflow:hidden}
-.welcome-pop-image>img:first-child{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:64% 50%}
-.welcome-pop-image::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(21,19,15,.72),rgba(21,19,15,0) 42%)}
+.welcome-pop-image>img:first-child{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+.welcome-pop-image::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(21,19,15,.88),rgba(21,19,15,0) 40%)}
 .welcome-pop-logo{position:absolute;z-index:1;left:50%;bottom:28px;width:104px;height:auto;transform:translateX(-50%)}
 .welcome-pop-body{position:relative;padding:44px 44px 28px;text-align:center}
 .welcome-pop-close{position:absolute;top:8px;right:10px;width:36px;height:36px;border:0;background:none;color:var(--brown);font-size:26px;line-height:1;cursor:pointer}
 .welcome-pop-eyebrow{margin:0 0 14px;color:var(--brown);font-size:11px;font-weight:500;letter-spacing:.24em;text-transform:uppercase}
-.welcome-pop h2{margin:0 0 14px;color:#6B1F2B;font-family:var(--serif);font-size:68px;font-weight:400;line-height:1}
+.welcome-pop h2{margin:0 0 14px;color:var(--ink);font-family:var(--serif);font-size:68px;font-weight:400;line-height:1}
 .welcome-pop h2 span{display:block;margin-top:8px;color:var(--ink);font-size:25px;line-height:1.2}
 .welcome-pop h2.welcome-pop-small{font-size:40px}
 .welcome-pop-body p{margin:0 0 18px;font-size:14px;line-height:1.6}
@@ -556,12 +556,12 @@ button{font:inherit;color:inherit}
 .welcome-pop-email input{display:block;box-sizing:border-box;width:100%;height:46px;margin-top:6px;padding:0 12px;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:15px;font-weight:400}
 .welcome-pop .check-line{margin-bottom:14px;font-size:12px}
 .welcome-pop .check-line input{flex:0 0 auto;width:16px;height:16px;margin:2px 0 0;padding:0}
-.welcome-pop .solid{display:block;width:100%;min-height:50px;margin:0;background:#6B1F2B}
+.welcome-pop .solid{display:block;width:100%;min-height:50px;margin:0;background:var(--ink)}
 .welcome-pop .form-error{margin:0 0 10px}
 .welcome-pop-no{margin:12px 0 10px;font-size:12px}
 .welcome-pop-body p.welcome-pop-fine{margin:0;color:var(--brown);font-size:11px;line-height:1.5}
 .welcome-pop [role=status] .solid{margin-top:22px}
-@media (max-width:680px){.welcome-pop-card{grid-template-columns:1fr;min-height:0}.welcome-pop-image{height:128px}.welcome-pop-image>img:first-child{object-position:70% 62%}.welcome-pop-image::after{display:none}.welcome-pop-logo{display:none}.welcome-pop-body{padding:26px 22px 20px}.welcome-pop h2{font-size:54px}.welcome-pop h2 span{font-size:22px}.welcome-pop-close{color:#fff;top:-124px;right:4px}}
+@media (max-width:680px){.welcome-pop-card{grid-template-columns:1fr;min-height:0}.welcome-pop-image{height:128px}.welcome-pop-image>img:first-child{object-position:50% 42%}.welcome-pop-image::after{display:none}.welcome-pop-logo{display:none}.welcome-pop-body{padding:26px 22px 20px}.welcome-pop h2{font-size:54px}.welcome-pop h2 span{font-size:22px}.welcome-pop-close{color:#fff;top:-124px;right:4px}}
 .welcome-done{text-align:center}
 .welcome-code{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;margin:24px 0;padding:22px;border:1px solid var(--gold);background:var(--sand)}
 .welcome-code strong{font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:.06em}
