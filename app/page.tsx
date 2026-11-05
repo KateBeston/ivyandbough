@@ -12,7 +12,7 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getThemes, getWelcomeOffer } from "@/lib/catalogue";
 
 export const revalidate = 60;
-export const metadata: Metadata = { title: "Ivy & Bough | Elegant Christmas Decorations, Delivered Australia-Wide", description: "Elegant, unique Christmas pieces for the table, the tree and the front door, delivered Australia-wide.", alternates: { canonical: "/" } };
+export const metadata: Metadata = { title: "Ivy & Bough | Elegant Christmas Decorations Australia", description: "Elegant, unique Christmas pieces for the table, the tree and the front door, delivered Australia-wide.", alternates: { canonical: "/" } };
 const organisation = { "@context": "https://schema.org", "@graph": [
   { "@type": "OnlineStore", "@id": `${SITE}/#store`, name: "Ivy & Bough", legalName: "Aurella Group Pty Ltd", url: SITE, logo: `${SITE}/icon.png`, email: "hello@ivyandbough.com", sameAs: SOCIALS, areaServed: "AU" },
   { "@type": "WebSite", "@id": `${SITE}/#website`, name: "Ivy & Bough", url: SITE, publisher: { "@id": `${SITE}/#store` }, inLanguage: "en-AU", potentialAction: { "@type": "SearchAction", target: `${SITE}/search?q={search_term_string}`, "query-input": "required name=search_term_string" } },
