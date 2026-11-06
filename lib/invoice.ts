@@ -35,15 +35,18 @@ export async function buildInvoice(data: InvoiceData, load: (file: string) => Pr
   pdf.registerFontkit(fontkit);
   pdf.setTitle(`Tax invoice ${data.number}`);
   pdf.setAuthor("Ivy & Bough");
-  const [forumBytes, regularBytes, semiBytes, bannerBytes] = await Promise.all(["forum.ttf", "montserrat-regular.ttf", "montserrat-semibold.ttf", "banner.jpg"].map(load));
+  const [forumBytes, regularBytes, semiBytes, logoBytes] = await Promise.all(["forum.ttf", "montserrat-regular.ttf", "montserrat-semibold.ttf", "logo.png"].map(load));
   const forum = await pdf.embedFont(forumBytes, { subset: true });
   const regular = await pdf.embedFont(regularBytes, { subset: true });
   const semi = await pdf.embedFont(semiBytes, { subset: true });
-  const banner = await pdf.embedJpg(bannerBytes);
+  const logo = await pdf.embedPng(logoBytes);
 
   let page: PDFPage = pdf.addPage([WIDTH, HEIGHT]);
-  const bannerHeight = WIDTH / 4;
-  page.drawImage(banner, { x: 0, y: HEIGHT - bannerHeight, width: WIDTH, height: bannerHeight });
+  // Logo only, no photo banner, so the invoice prints with little ink.
+  const logoWidth = 120;
+  const logoHeight = logoWidth * (logo.height / logo.width);
+  const bannerHeight = 40 + logoHeight + 16;
+  page.drawImage(logo, { x: (WIDTH - logoWidth) / 2, y: HEIGHT - 40 - logoHeight, width: logoWidth, height: logoHeight });
 
   const text = (t: string, x: number, y: number, size = 9.5, font = regular, color = INK) => page.drawText(t, { x, y, size, font, color });
   const right = (t: string, x: number, y: number, size = 9.5, font = regular, color = INK) => page.drawText(t, { x: x - font.widthOfTextAtSize(t, size), y, size, font, color });
