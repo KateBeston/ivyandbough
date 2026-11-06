@@ -44,7 +44,11 @@ export function HelpChat() {
     window.addEventListener(CONSENT_EVENT, check);
     return () => window.removeEventListener(CONSENT_EVENT, check);
   }, []);
-  useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight }); }, [turns, busy]);
+  useEffect(() => {
+    const box = log.current?.querySelector<HTMLElement>(".help-form");
+    if (box) log.current?.scrollTo({ top: box.offsetTop - log.current.offsetTop });
+    else log.current?.scrollTo({ top: log.current.scrollHeight });
+  }, [turns, busy, form, sent]);
 
   if (!ready || path.startsWith("/preview") || path.startsWith("/sign")) return null;
 
