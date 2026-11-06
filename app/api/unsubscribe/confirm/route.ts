@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { allowed } from "@/lib/limits";
 import { admin } from "@/lib/server";
 import { validStop } from "@/lib/subscribe";
 
 export async function POST(request: Request) {
+  if (!(await allowed(request, "unsubscribe-confirm", 20, 600))) return NextResponse.redirect(new URL("/unsubscribe?status=invalid", request.url), 303);
   const form = await request.formData();
   const email = String(form.get("e") ?? "").toLowerCase();
   const db = admin();

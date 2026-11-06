@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { allowed } from "@/lib/limits";
 import { admin } from "@/lib/server";
 import { issueWelcome } from "@/lib/promotions";
 import { setupToken, validToken } from "@/lib/subscribe";
 
 export async function POST(request: Request) {
+  if (!(await allowed(request, "subscribe-confirm", 20, 600))) return NextResponse.redirect(new URL("/subscribe/confirm?status=invalid", request.url), 303);
   const form = await request.formData();
   const email = String(form.get("e") ?? "").toLowerCase();
   const db = admin();

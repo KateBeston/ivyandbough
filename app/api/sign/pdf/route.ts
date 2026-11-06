@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { allowed } from "@/lib/limits";
 import { admin } from "@/lib/server";
 import { findRequest } from "@/lib/signing";
 
 export async function GET(request: Request) {
+  if (!(await allowed(request, "sign-pdf", 30, 600))) return NextResponse.json({ error: "Please try again in a few minutes." }, { status: 429 });
   const token = new URL(request.url).searchParams.get("t") ?? "";
   const r = await findRequest(token);
   const db = admin();
