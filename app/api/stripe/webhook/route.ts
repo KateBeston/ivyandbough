@@ -10,17 +10,18 @@ type Address = { line1?: string | null; line2?: string | null; city?: string | n
 const addressText = (a?: Address | null) => (a ? [a.line1, a.line2, [a.city, a.state, a.postal_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") : "");
 
 async function paymentDetails(client: Stripe, intentId: string | null) {
-  if (!intentId) return { chargeId: null, method: "" };
+  if (!intentId) return { chargeId: null, method: "", fee: null };
   try {
-    const intent = await client.paymentIntents.retrieve(intentId, { expand: ["latest_charge"] });
+    const intent = await client.paymentIntents.retrieve(intentId, { expand: ["latest_charge.balance_transaction"] });
     const charge = intent.latest_charge && typeof intent.latest_charge !== "string" ? intent.latest_charge : null;
     const card = charge?.payment_method_details?.card;
     const brand = card?.brand ? card.brand[0].toUpperCase() + card.brand.slice(1) : "Card";
     const other: Record<string, string> = { afterpay_clearpay: "Afterpay", zip: "Zip" };
-    return { chargeId: charge?.id ?? null, method: card?.last4 ? `${brand} ending ${card.last4}` : other[charge?.payment_method_details?.type ?? ""] ?? "" };
+    const balance = charge?.balance_transaction && typeof charge.balance_transaction !== "string" ? charge.balance_transaction : null;
+    return { fee: balance ? balance.fee / 100 : null, chargeId: charge?.id ?? null, method: card?.last4 ? `${brand} ending ${card.last4}` : other[charge?.payment_method_details?.type ?? ""] ?? "" };
   } catch (e) {
     console.warn("Payment details unavailable", intentId, e);
-    return { chargeId: null, method: "" };
+    return { chargeId: null, method: "", fee: null };
   }
 }
 
@@ -67,7 +68,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   const delivery = (session.total_details?.amount_shipping ?? 0) / 100;
   const discount = (session.total_details?.amount_discount ?? 0) / 100;
   const promoCode = session.metadata?.promo_code ?? "";
-  const { data: order, error } = await db.from("orders").insert({ terms_version: await publishedVersionId("TERMS-OF-SALE"), customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total + discount - delivery, discount_total: discount, promo_code: promoCode, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
+  const { data: order, error } = await db.from("orders").insert({ terms_version: await publishedVersionId("TERMS-OF-SALE"), customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, stripe_fee: payment.fee, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total + discount - delivery, discount_total: discount, promo_code: promoCode, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
   if (error) {
     if (error.code === "23505") return; // Stripe delivered this event twice at once.
     throw error;
