@@ -11,7 +11,7 @@ export const revalidate = 60;
 export default async function TermsOfSalePage() {
   const summary = await getDeliverySummary();
   return (
-    <LegalPage title="Terms of Sale">
+    <LegalPage code="TERMS-OF-SALE" title="Terms of Sale">
       <p>These terms apply when you buy from {COMPANY}. By placing an order, you agree to them. You must be 18 or over, or have permission from a parent or guardian, to place an order.</p>
       <h2>Orders</h2>
       <p>Your order is an offer to buy. A contract is formed when we confirm your order after payment. We may cancel an order if an item is unavailable, a price or description was clearly wrong, or we reasonably suspect fraud. If we do, we&apos;ll tell you and refund what you paid for the cancelled items.</p>

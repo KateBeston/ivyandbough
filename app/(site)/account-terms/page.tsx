@@ -3,11 +3,12 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
+export const revalidate = 60;
 export const metadata: Metadata = { title: "Account Terms | Ivy & Bough", description: "The terms that apply to your Ivy & Bough customer account.", alternates: { canonical: "/account-terms" } };
 
 export default function AccountTermsPage() {
   return (
-    <LegalPage title="Account Terms">
+    <LegalPage code="ACCOUNT-TERMS" title="Account Terms">
       <p>These terms apply if you create an account with {COMPANY}. You don&apos;t need an account to place an order.</p>
       <h2>Your account</h2>
       <p>You must be 18 or over to create an account. Please give accurate details and keep them up to date. Each account is for one person.</p>

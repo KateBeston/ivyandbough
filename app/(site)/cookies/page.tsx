@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 import { CookieSettingsLink } from "@/components/CookieConsent";
 
+export const revalidate = 60;
 export const metadata: Metadata = { title: "Cookie Policy | Ivy & Bough", description: "How Ivy & Bough uses cookies and similar technologies, and how to change your choice.", alternates: { canonical: "/cookies" } };
 
 const rows = [
@@ -14,7 +15,7 @@ const rows = [
 
 export default function CookiesPage() {
   return (
-    <LegalPage title="Cookie Policy">
+    <LegalPage code="COOKIES" title="Cookie Policy">
       <p>Cookies and similar technologies, such as browser storage, are small pieces of information saved on your device. This policy explains how Ivy &amp; Bough uses them.</p>
       <h2>Essential storage</h2>
       <p>The site needs these to work, so they can&apos;t be switched off here. They are kept in your browser&apos;s storage.</p>

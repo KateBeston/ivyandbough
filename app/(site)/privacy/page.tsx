@@ -3,11 +3,12 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
+export const revalidate = 60;
 export const metadata: Metadata = { title: "Privacy Policy | Ivy & Bough", description: "How Ivy & Bough collects, uses and protects your personal information.", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy">
+    <LegalPage code="PRIVACY" title="Privacy Policy">
       <p>This policy explains how {COMPANY} collects, uses and shares personal information through ivyandbough.com. We handle personal information in line with the Privacy Act 1988 (Cth) and the Australian Privacy Principles.</p>
       <h2>What we collect</h2>
       <ul>

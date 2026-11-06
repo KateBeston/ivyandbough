@@ -3,11 +3,12 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { COMPANY, CONTACT_EMAIL } from "@/lib/legal";
 
+export const revalidate = 60;
 export const metadata: Metadata = { title: "Website Terms of Use | Ivy & Bough", description: "The terms for using the Ivy & Bough website.", alternates: { canonical: "/terms" } };
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Website Terms of Use">
+    <LegalPage code="WEBSITE-TERMS" title="Website Terms of Use">
       <p>These terms apply when you use ivyandbough.com, which is operated by {COMPANY}. By using the site, you agree to them. If you don&apos;t agree, please don&apos;t use the site.</p>
       <p>Purchases are covered by our <Link href="/terms-of-sale">Terms of Sale</Link>, and accounts are covered by our <Link href="/account-terms">Account Terms</Link>.</p>
       <h2>Using the site</h2>

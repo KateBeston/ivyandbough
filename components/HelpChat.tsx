@@ -37,7 +37,7 @@ export function HelpChat() {
   }, []);
   useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight }); }, [turns, busy]);
 
-  if (!ready || path.startsWith("/preview")) return null;
+  if (!ready || path.startsWith("/preview") || path.startsWith("/sign")) return null;
 
   async function ask(text: string) {
     const question = text.trim();
