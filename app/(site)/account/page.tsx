@@ -2,7 +2,7 @@
 
 import { trackingUrl } from "@/lib/tracking";
 import Link from "next/link";
-import { LEGAL_VERSION } from "@/lib/legal";
+import { publishedVersionId } from "@/lib/legal";
 import type { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { formatPrice } from "@/lib/catalogue";
@@ -43,7 +43,7 @@ function AuthForm() {
     const origin = window.location.origin;
     const captcha = token ? { captchaToken: token } : {};
     const res = mode === "in" ? await account.auth.signInWithPassword({ email, password, options: captcha })
-      : mode === "up" ? await account.auth.signUp({ email, password, options: { ...captcha, data: { full_name: String(f.get("name")), terms_version: LEGAL_VERSION, marketing_opt_in: f.get("marketing") === "on" }, emailRedirectTo: `${origin}/account` } })
+      : mode === "up" ? await account.auth.signUp({ email, password, options: { ...captcha, data: { full_name: String(f.get("name")), terms_version: await publishedVersionId("ACCOUNT-TERMS"), marketing_opt_in: f.get("marketing") === "on" }, emailRedirectTo: `${origin}/account` } })
       : await account.auth.resetPasswordForEmail(email, { ...captcha, redirectTo: `${origin}/account/reset` });
     setBusy(false);
     setAttempt((n) => n + 1);

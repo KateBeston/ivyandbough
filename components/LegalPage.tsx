@@ -1,15 +1,17 @@
-import type { ReactNode } from "react";
-import { LEGAL_UPDATED } from "@/lib/legal";
-import { publishedVersionId } from "@/lib/legal-register";
+import { getDeliverySummary } from "@/lib/catalogue";
+import { publishedVersion } from "@/lib/legal";
+import { LegalText } from "./LegalText";
 
-export async function LegalPage({ title, code, children }: { title: string; code: string; children: ReactNode }) {
-  const version = await publishedVersionId(code).catch(() => "");
+const date = (value: string) => new Intl.DateTimeFormat("en-AU", { dateStyle: "long", timeZone: "Australia/Brisbane" }).format(new Date(value));
+
+export async function LegalPage({ title, code }: { title: string; code: string }) {
+  const version = await publishedVersion(code);
+  const body = version?.body.includes("{{delivery_summary}}") ? version.body.replaceAll("{{delivery_summary}}", await getDeliverySummary()) : version?.body;
   return (
     <main className="prose legal-page">
       <h1>{title}</h1>
-      <p className="muted">Last updated {LEGAL_UPDATED}</p>
-      {version && <p className="muted legal-version">Version {version}</p>}
-      {children}
+      {version && <p className="muted">Last updated {date(version.published_at)}. Version {version.version_id}</p>}
+      {body ? <LegalText text={body} /> : <p>This page is being updated. Please contact us if you need a copy.</p>}
     </main>
   );
 }

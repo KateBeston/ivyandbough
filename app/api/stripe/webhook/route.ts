@@ -1,4 +1,4 @@
-import { LEGAL_VERSION } from "@/lib/legal";
+import { publishedVersionId } from "@/lib/legal";
 import { draftPurchaseOrders } from "@/lib/purchasing";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
@@ -67,7 +67,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   const delivery = (session.total_details?.amount_shipping ?? 0) / 100;
   const discount = (session.total_details?.amount_discount ?? 0) / 100;
   const promoCode = session.metadata?.promo_code ?? "";
-  const { data: order, error } = await db.from("orders").insert({ terms_version: LEGAL_VERSION, customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total + discount - delivery, discount_total: discount, promo_code: promoCode, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
+  const { data: order, error } = await db.from("orders").insert({ terms_version: await publishedVersionId("TERMS-OF-SALE"), customer_id: customerId, customer_email: email, auth_user_id: userId, stripe_session_id: session.id, payment_intent_id: intentId, payment_charge_id: payment.chargeId, payment_method: payment.method, paid_at: new Date().toISOString(), status: "Paid", total, subtotal: total + discount - delivery, discount_total: discount, promo_code: promoCode, shipping_total: delivery, gst_total: Math.round((total / 11) * 100) / 100, shipping_name: name, shipping_address: address, shipping_phone: phone, delivery_zone: ship.ship_zone ?? "" }).select("id,order_number").single();
   if (error) {
     if (error.code === "23505") return; // Stripe delivered this event twice at once.
     throw error;
