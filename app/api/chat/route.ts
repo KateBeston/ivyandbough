@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { formatDate, formatPrice, getDeliveryDates, getDeliverySummary, getFaqs, getProducts, getStockedCategories, getThemes } from "@/lib/catalogue";
+import { publishedVersion } from "@/lib/legal";
 import { allowed } from "@/lib/limits";
 
 export const maxDuration = 30;
@@ -8,15 +9,15 @@ type Turn = { role: "user" | "assistant"; content: string };
 const BUSY = "I can't answer right now. Please use our [contact page](/contact) or email hello@ivyandbough.com and the team will help.";
 
 async function knowledge() {
-  const [faqs, dates, summary, categories, themes, products] = await Promise.all([getFaqs(), getDeliveryDates(), getDeliverySummary(), getStockedCategories(), getThemes(), getProducts()]);
+  const [faqs, dates, summary, categories, themes, products, returns] = await Promise.all([getFaqs(), getDeliveryDates(), getDeliverySummary(), getStockedCategories(), getThemes(), getProducts(), publishedVersion("RETURNS")]);
   const items = products.filter((p) => p.price_cents && !p.name.startsWith("[")).slice(0, 80);
   return [
     `FAQS\n${faqs.map((f) => `Q: ${f.question}\nA: ${f.answer}`).join("\n")}`,
     `DELIVERY\nWe deliver Australia-wide to addresses our couriers can reach. A small number of remote locations may cost more or may not be serviceable, particularly for large items. If we can't deliver to an address, we let the customer know and give a full refund. ${summary} During busy periods, including the lead-up to Christmas, deliveries may be delayed. Some pieces ship directly from suppliers, so an order may arrive in separate parcels.`,
     `LAST ORDER DATES FOR CHRISTMAS\n${dates.map((d) => `${d.region}: ${formatDate(d.last_order_date)}`).join("\n")}`,
-    "RETURNS\nOur goods come with guarantees that cannot be excluded under the Australian Consumer Law. If an item arrives faulty, damaged or incorrect, the customer emails hello@ivyandbough.com with their order number and a photo, and we explain the next steps and cover reasonable return postage. For change of mind returns, ask them to contact us.",
+    `RETURNS\n${returns && !returns.body.includes("[Add ") ? returns.body : "Our goods come with guarantees that cannot be excluded under the Australian Consumer Law. If an item arrives faulty, damaged or incorrect, the customer emails hello@ivyandbough.com with their order number and a photo, and we explain the next steps and cover reasonable return postage. For change of mind returns, ask them to contact us."}`,
     `PAGES\nShop everything /shop\nCollections /collections\nDelivery /delivery\nReturns /returns\nFAQs /faq\nContact /contact\nYour account and orders /account\n${categories.map((c) => `${c.name} /shop/${c.slug}`).join("\n")}\n${themes.map((t) => `${t.name} collection /collections/${t.slug}`).join("\n")}`,
-    `PRODUCTS\n${items.length ? items.map((p) => `${p.name}, ${formatPrice(p.price_cents as number)}, /products/${p.slug}`).join("\n") : "Our range is still being added."}`,
+    `PRODUCTS\n${items.length ? items.map((p) => `${p.name}, ${formatPrice(p.price_cents as number)}, /products/${p.slug}${p.returns_note ? `, returns: ${p.returns_note}` : ""}`).join("\n") : "Our range is still being added."}`,
   ].join("\n\n");
 }
 

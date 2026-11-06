@@ -30,6 +30,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
             <AddToBasket product={product} preview={preview} />
             <div className="spec">
               {size && <div><h2>Materials and size</h2><p>{size}</p></div>}
+              {product.returns_note && <div><h2>Returns for this item</h2><p>{product.returns_note}</p></div>}
               <div><h2>Delivery</h2><p>{product.dispatch_days !== null && <>Dispatches in {product.dispatch_days} business days. </>}See our <Link href="/delivery">Christmas last order dates</Link>.</p></div>
               {product.care && <div><h2>Care and storage</h2><p>{product.care}</p></div>}
             </div>
