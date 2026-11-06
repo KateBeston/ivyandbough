@@ -9,7 +9,8 @@ export function offerPrice(row: OfferFields, now = new Date()) {
   if (row.price_cents === null || !row.sale_kind || !value) return plain;
   if (row.sale_starts_at && new Date(row.sale_starts_at) > now) return plain;
   if (row.sale_ends_at && new Date(row.sale_ends_at) <= now) return plain;
-  const cents = row.discount_type === "Amount" ? row.price_cents - Math.round(value * 100) : Math.round(row.price_cents * (1 - value / 100));
+  // Price means the sale price was set by hand, rather than worked out from a discount.
+  const cents = row.discount_type === "Price" ? Math.round(value * 100) : row.discount_type === "Amount" ? row.price_cents - Math.round(value * 100) : Math.round(row.price_cents * (1 - value / 100));
   if (cents <= 0 || cents >= row.price_cents) return plain;
   return { cents, wasCents: row.price_cents, label: row.sale_kind };
 }
