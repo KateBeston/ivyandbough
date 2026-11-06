@@ -20,7 +20,8 @@ export default async function TermsOfSalePage() {
       <h2>Sales and promotional codes</h2>
       <p>Sale and clearance prices apply while the offer runs and stock lasts. Promotional codes can be used once, have the conditions stated when they are issued, can&apos;t be exchanged for cash, and only one code can be used on an order. Welcome offers are limited to one per person, for a first order.</p>
       <h2>Delivery</h2>
-      <p>We deliver within Australia only. {summary}</p>
+      <p>We deliver within Australia only, to addresses our couriers can reach. A small number of remote locations may cost more or may not be serviceable, particularly for large items. If we can&apos;t deliver to your address, we&apos;ll let you know and give you a full refund. {summary}</p>
+      <p>During busy periods, including the lead-up to Christmas, deliveries may be delayed. We&apos;ll always do our best to get your order to you as quickly as possible.</p>
       <p>Some items ship directly from our suppliers, so one order may arrive in separate parcels. Dispatch times and Christmas last order dates are estimates and can be affected by carriers, weather and peak periods. If your order is delayed, we&apos;ll let you know and work with you on a fair outcome, which may include a refund.</p>
       <p>Please check your delivery details before paying. Contact us as soon as possible if they&apos;re wrong. Risk in the goods passes to you on delivery, and ownership passes once we have received full payment.</p>
       <h2>Consumer guarantees</h2>
