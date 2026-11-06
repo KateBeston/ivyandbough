@@ -49,9 +49,9 @@ export async function searchProducts(query: string): Promise<Product[]> {
   return (must(data, error) as unknown as Product[]).map(sortImages);
 }
 
-export async function getProductPreview(token: string): Promise<Product | null> {
+export async function getProductPreview(token: string, db: typeof supabase): Promise<Product | null> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) return null;
-  const { data, error } = await supabase.rpc("product_preview", { token });
+  const { data, error } = await db.rpc("product_preview", { token });
   if (error) throw new Error(error.message);
   return data ? sortImages(data as Product) : null;
 }
