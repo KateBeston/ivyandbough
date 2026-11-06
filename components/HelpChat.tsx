@@ -8,12 +8,12 @@ import { CONSENT_EVENT, readConsent } from "@/lib/consent";
 type Turn = { role: "user" | "assistant"; content: string };
 const STARTERS = ["When do I need to order for Christmas?", "How much is delivery?", "What if something arrives damaged?"];
 
-// Only links to this site's own pages become clickable.
+// Only this site's own pages and our email address become clickable.
 function withLinks(text: string) {
   const parts: ReactNode[] = [];
   let last = 0;
-  for (const m of text.matchAll(/\[([^\]]+)\]\((\/[a-z0-9/-]*)\)/gi)) {
-    parts.push(text.slice(last, m.index), <Link key={m.index} href={m[2]}>{m[1]}</Link>);
+  for (const m of text.matchAll(/\[([^\]]+)\]\((\/[a-z0-9/-]*|mailto:hello@ivyandbough\.com)\)/gi)) {
+    parts.push(text.slice(last, m.index), m[2].startsWith("/") ? <Link key={m.index} href={m[2]}>{m[1]}</Link> : <a key={m.index} href={m[2]}>{m[1]}</a>);
     last = m.index + m[0].length;
   }
   parts.push(text.slice(last));
