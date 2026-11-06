@@ -19,7 +19,7 @@ const cents = (n: number) => formatPrice(Math.round(Number(n) * 100));
 const states = ["QLD", "NSW", "VIC", "TAS", "SA", "WA", "NT", "ACT"];
 
 function AuthForm() {
-  const [mode, setMode] = useState<"in" | "up" | "reset">("in");
+  const [mode, setMode] = useState<"in" | "up" | "reset">(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "up" ? "up" : "in"));
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -202,8 +202,11 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("tab") === "payment") setTab("Payment methods");
-    account.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = account.auth.onAuthStateChange((_e, s) => setSession(s));
+    // After signing in from the basket, go straight back to checkout.
+    const next = new URLSearchParams(window.location.search).get("next") ?? "";
+    const back = (s: Session | null) => { if (s && /^\/[a-z]/.test(next)) window.location.replace(next); };
+    account.auth.getSession().then(({ data }) => { setSession(data.session); back(data.session); });
+    const { data } = account.auth.onAuthStateChange((e, s) => { setSession(s); if (e === "SIGNED_IN") back(s); });
     return () => data.subscription.unsubscribe();
   }, []);
 

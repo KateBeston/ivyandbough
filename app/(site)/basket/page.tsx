@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AddressLookup, type PickedAddress } from "@/components/AddressLookup";
+import { CheckoutAccount } from "@/components/CheckoutAccount";
 import { useBasket } from "@/components/BasketProvider";
 import { Honeypot } from "@/components/Honeypot";
 import { PaymentMarks } from "@/components/PaymentMarks";
@@ -119,6 +120,7 @@ export default function BasketPage() {
             ))}
             <section className="delivery-details" aria-labelledby="delivery-details">
               <h2 id="delivery-details">Delivery details</h2>
+              <CheckoutAccount onFill={(d) => set({ ...d, ...(d.state !== undefined ? { state: STATES.includes(d.state) ? d.state : "" } : {}) })} />
               <AddressLookup onPick={pick} />
               <div className="delivery-grid">
                 <label className="wide">Full name<input autoComplete="name" value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>

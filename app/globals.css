@@ -596,3 +596,7 @@ button{font:inherit;color:inherit}
 .help-form .link-button{align-self:center;font-size:12px}
 .help-form .form-error{margin:0;padding:0;background:none;max-width:none}
 .help-more{display:block;margin:2px 0 6px;font-size:12px;text-align:left}
+.checkout-account{margin:0 0 18px;padding:14px 16px;background:var(--sand)}
+.checkout-account p{margin:0}
+.checkout-address{display:block;margin-top:12px;max-width:360px}
+.checkout-address select{display:block;width:100%;margin-top:6px}
