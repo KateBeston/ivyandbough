@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/JsonLd";
+import { breadcrumbs } from "@/lib/seo";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +12,7 @@ export default async function CollectionsPage() {
   const themes = await getThemes();
   return (
     <main className="collection-body">
+      <JsonLd data={breadcrumbs([{ name: "Home", path: "" }, { name: "Collections", path: "/collections" }])} />
       <div className="collections-head">
         <h1 className="heading">All collections</h1>
         <p>However you like to do Christmas, there&apos;s a look here for it. Browse every collection, then choose the one that suits your home.</p>

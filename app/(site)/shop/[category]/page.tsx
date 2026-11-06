@@ -5,7 +5,7 @@ import { CollectionHero } from "@/components/CollectionHero";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductGrid } from "@/components/ProductGrid";
 import { breadcrumbs } from "@/lib/seo";
-import { getCategories, getCategory, getProductsInCategories } from "@/lib/catalogue";
+import { getCategories, getCategory, getProductsInCategories, getStockedCategories } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
@@ -14,7 +14,11 @@ type Props = { params: Promise<{ category: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = await getCategory((await params).category);
   if (!c) return { title: "Ivy & Bough" };
-  return { title: `${c.name} | Ivy & Bough`, description: c.intro, alternates: { canonical: `/shop/${c.slug}` }, openGraph: { title: c.name, description: c.intro, url: `/shop/${c.slug}`, images: c.image_url ? [c.image_url] : undefined } };
+  const stocked = (await getStockedCategories()).some((s) => s.id === c.id);
+  const title = c.seo_title || `${c.name} | Ivy & Bough`;
+  const description = c.seo_description || c.intro;
+  // Empty categories stay out of Google until they have products.
+  return { title, description, alternates: { canonical: `/shop/${c.slug}` }, ...(stocked ? {} : { robots: { index: false, follow: true } }), openGraph: { title: c.name, description, url: `/shop/${c.slug}`, images: c.image_url ? [c.image_url] : undefined } };
 }
 
 export default async function CategoryPage({ params }: Props) {
@@ -32,6 +36,7 @@ export default async function CategoryPage({ params }: Props) {
     <main>
       <JsonLd data={breadcrumbs(crumbs)} />
       <CollectionHero title={category.name} intro={category.intro} src={category.image_url} alt={category.image_alt} position={category.image_position} />
+      {category.page_intro && <div className="collection-intro"><p>{category.page_intro}</p></div>}
       <div className="collection-body">
         <nav aria-label={`${parent.name} categories`} className="pill-row">
           <Link href={`/shop/${parent.slug}`} className={parent.id === category.id ? "on" : ""}>All {parent.name}</Link>

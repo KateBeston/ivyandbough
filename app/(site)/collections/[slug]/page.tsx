@@ -3,9 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CollectionHero } from "@/components/CollectionHero";
+import { JsonLd } from "@/components/JsonLd";
 import { ProductGrid } from "@/components/ProductGrid";
 import { RichText } from "@/components/RichText";
 import { getPosts, getProductsByTheme, getTheme, getThemes } from "@/lib/catalogue";
+import { breadcrumbs } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -27,6 +29,7 @@ export default async function CollectionPage({ params }: Props) {
   const related = [0, 1, 2].map((n) => others[(start + n) % others.length]);
   return (
     <main>
+      <JsonLd data={breadcrumbs([{ name: "Home", path: "" }, { name: "Collections", path: "/collections" }, { name: theme.name, path: `/collections/${theme.slug}` }])} />
       <CollectionHero title={theme.name} intro={theme.line} src={theme.image_url} alt={theme.image_alt} position={theme.hero_position} />
       {theme.page_intro && <div className="collection-intro"><p>{theme.page_intro}</p></div>}
       <div className="collection-body">
