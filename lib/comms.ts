@@ -37,6 +37,7 @@ export function normalise(channel: Channel, address: string) {
 }
 
 export const SAMPLE: Record<string, string> = {
+  flags: "Below Winter Wares' $300 minimum (this order is $120.00)", portal_url: "https://ivy-and-bough-portal.vercel.app",
   po_number: "PO-1001", po_items: "2 x Velvet Bow (IVB-10001), $18.00 each", delivery_phone: "+61 400 000 000", po_notes: "",
   first_name: "Sarah", customer_name: "Sarah Smith", order_number: "IB-1001", items: "1 x Dark velvet Christmas tree bow, $49.00", order_total: "$63.95", delivery_total: "$14.95", gst_total: "$5.81",
   delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95", dispatch_estimate: "Most items are dispatched within 3 business days.",
