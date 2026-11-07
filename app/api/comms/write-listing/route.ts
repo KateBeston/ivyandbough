@@ -52,11 +52,12 @@ export async function POST(request: Request) {
         description: "Save the drafted listing.",
         input_schema: {
           type: "object",
-          required: ["name", "kind", "description", "materials", "colours", "care", "dimensions", "height_cm", "width_cm", "depth_cm", "weight_g", "category_id", "collection_id", "seo_title", "seo_description", "social_caption", "pinterest_description", "image_alt", "needs_checking"],
+          required: ["name", "kind", "description", "pack_quantity", "materials", "colours", "care", "dimensions", "height_cm", "width_cm", "depth_cm", "weight_g", "category_id", "collection_id", "seo_title", "seo_description", "social_caption", "pinterest_description", "image_alt", "needs_checking"],
           properties: {
             name: str("Product name, 2 to 7 words, title case, no brand names unless in the supplier details"),
             kind: str("Short product type shown above the name on cards, such as Bauble, Wreath, Table runner"),
             description: str("2 to 4 sentences, 40 to 90 words, about the look and how to style it"),
+            pack_quantity: num("How many pieces come in one pack, only if stated in the supplier details or clearly shown as a set in the photos; 1 if clearly a single piece; otherwise null"),
             materials: str("Materials, only if visible beyond doubt or stated; otherwise empty"),
             colours: str("Main colours, comma separated, such as Ivory, Gold"),
             care: str("Care and storage, only if stated or obvious and safe (such as wipe with a dry cloth, store in a cool dry place); otherwise empty"),
