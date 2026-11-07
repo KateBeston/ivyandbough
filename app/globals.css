@@ -321,8 +321,8 @@ button{font:inherit;color:inherit}
 
 /* Shop window homepage */
 .window-bar{padding:14px 16px 13px;background:#6B1F2B;color:#FFF6E8;text-align:center}
-.window-tagline{margin:0 0 6px;font-family:var(--serif);font-size:20px;letter-spacing:.04em;line-height:1.25;color:#FFFFFF}
-@media (max-width:760px){.window-tagline{font-size:17px}}
+.window-tagline{margin:0 0 6px;font-family:var(--font-script),cursive;font-size:34px;font-weight:400;letter-spacing:0;line-height:1.2;color:#FFFFFF}
+@media (max-width:760px){.window-tagline{font-size:26px}}
 .window-bar .eyebrow{color:inherit}
 .edit-inner{padding-top:64px;padding-bottom:72px}
 .heading{color:#6B1F2B}
