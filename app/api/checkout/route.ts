@@ -27,14 +27,14 @@ export async function POST(request: Request) {
   if (!delivery.name || !delivery.line1 || !delivery.city || !STATES.includes(delivery.state) || !/^\d{4}$/.test(delivery.postcode) || !/^\+614\d{8}$/.test(delivery.phone)) return NextResponse.json({ error: "Please check your delivery details." }, { status: 400 });
 
   // Prices always come from the database, never from the browser.
-  const { data, error } = await supabase.from("products").select(`id,sku,name,price_cents,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
+  const { data, error } = await supabase.from("products").select(`id,sku,name,price_cents,availability,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
   if (error) return NextResponse.json({ error: "Checkout isn't available right now." }, { status: 500 });
   const rows = (data ?? []) as Row[];
   const origin = new URL(request.url).origin;
   const lines = items.flatMap((item) => {
     const row = rows.find((r) => r.id === item.id);
     const offer = row ? offerPrice(row) : null;
-    return row && offer?.cents ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "" }] : [];
+    return row && offer?.cents && (row as { availability?: string }).availability !== "Sold out" ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "" }] : [];
   });
   if (lines.length !== items.length) return NextResponse.json({ error: "Something in your basket is no longer available." }, { status: 400 });
 

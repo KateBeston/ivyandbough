@@ -25,7 +25,8 @@ export async function ProductView({ product, preview = false }: { product: Produ
     product.care && ["Care and storage", product.care],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, string][];
-  const more = related.filter((p) => p.id !== product.id && p.price_cents).slice(0, 4);
+  const more = related.filter((p) => p.id !== product.id && p.price_cents && p.availability !== "Sold out").slice(0, 4);
+  const soldOut = product.availability === "Sold out";
   const dispatch = product.dispatch_days !== null ? `Dispatches within ${product.dispatch_days} business ${product.dispatch_days === 1 ? "day" : "days"}` : "Ready to dispatch";
 
   return (
@@ -40,10 +41,10 @@ export async function ProductView({ product, preview = false }: { product: Produ
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
             <div className="muted price-note">GST included</div>
-            <div className="stock-line"><span aria-hidden="true" className="stock-dot" />Available to order. {dispatch}.</div>
+            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
           <p className="lede">{product.description}</p>
-          <AddToBasket product={product} preview={preview} />
+          {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : <AddToBasket product={product} preview={preview} />}
 
           <div className="delivery-box">
             <ul>
