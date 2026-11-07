@@ -51,7 +51,7 @@ export const SAMPLE: Record<string, string> = {
 const links = () => ({ site_url: SITE_URL, account_url: `${SITE_URL}/account` });
 
 // These two are built here from cleaned values, because they contain links.
-const RAW = new Set(["tracking", "basket_items", "order_details"]);
+const RAW = new Set(["tracking", "basket_items", "order_details", "request_link"]);
 
 export function merge(text: string, data: Record<string, string>) {
   const missing = new Set<string>();

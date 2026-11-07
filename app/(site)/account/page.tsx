@@ -11,6 +11,7 @@ import { useBasket } from "@/components/BasketProvider";
 import { Honeypot } from "@/components/Honeypot";
 import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { offerText } from "@/lib/pricing";
+import { MyRequests } from "@/components/MyRequests";
 
 type Item = { name: string; quantity: number; unit_price: number; shipping_status: string; carrier: string; tracking_number: string };
 type Order = { id: string; order_number: string; status: string; placed_on: string; total: number; subtotal: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; items: Item[] };
@@ -201,7 +202,9 @@ export default function AccountPage() {
   const { welcome } = useBasket();
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("tab") === "payment") setTab("Payment methods");
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t === "payment") setTab("Payment methods");
+    if (t === "requests") setTab("Returns and disputes");
     // After signing in from the basket, go straight back to checkout.
     const next = new URLSearchParams(window.location.search).get("next") ?? "";
     const back = (s: Session | null) => { if (s && /^\/[a-z]/.test(next)) window.location.replace(next); };
@@ -220,9 +223,10 @@ export default function AccountPage() {
       </div>
       {welcome && <div className="welcome-offer"><p>Your welcome offer: {welcome.offer}.</p><strong>{welcome.code}</strong><p className="muted">{welcome.terms}</p></div>}
       <div className="pill-row account-tabs" role="tablist">
-        {["Orders", "Details", "Addresses", "Payment methods"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
+        {["Orders", "Returns and disputes", "Details", "Addresses", "Payment methods"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
       </div>
       {tab === "Orders" && <Orders />}
+      {tab === "Returns and disputes" && <MyRequests />}
       {tab === "Details" && <Details email={session.user.email ?? ""} />}
       {tab === "Addresses" && <Addresses userId={session.user.id} />}
       {tab === "Payment methods" && <PaymentMethods />}
