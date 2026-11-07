@@ -667,3 +667,4 @@ button{font:inherit;color:inherit}
 .request-overview dd{margin:0}
 .request-status{font-weight:500}
 @media (max-width:600px){.request-dialog{padding:20px 16px;width:100%;max-width:100%;max-height:100dvh;margin:0}.request-overview{grid-template-columns:1fr;gap:2px}.request-overview dd{margin-bottom:8px}.request-item{grid-template-columns:auto 52px 1fr}.request-item img,.request-item-blank{width:52px;height:52px}}
+.delivery-note{margin:14px 0 0;font-size:12px}.delivery-instructions{display:flex;flex-direction:column;gap:6px;margin-top:12px;font-size:13px}

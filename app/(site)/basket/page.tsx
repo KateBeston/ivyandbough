@@ -13,7 +13,7 @@ import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { formatPrice } from "@/lib/catalogue";
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
-const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "", smsUpdates: false, marketing: false };
+const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "", smsUpdates: false, marketing: false, authorityToLeave: false, instructions: "" };
 const mobileDigits = (value: string) => value.replace(/\D/g, "").replace(/^61/, "").replace(/^0/, "");
 type Quote = { deliveryCents: number; free: boolean; zone: string };
 type Promo = { code: string; discountCents: number; label: string };
@@ -132,6 +132,11 @@ export default function BasketPage() {
                 <label>State<select autoComplete="address-level1" value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
                 <label>Postcode<input inputMode="numeric" maxLength={4} autoComplete="postal-code" value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
               </div>
+              <p className="muted delivery-note">We deliver to street addresses, PO boxes and parcel lockers. Large or heavy items need a street address.</p>
+              <div className="delivery-consents">
+                <label className="check-line"><input type="checkbox" checked={details.authorityToLeave} onChange={(e) => set({ authorityToLeave: e.target.checked })} /><span>Leave my parcel in a safe place if no one is home. Once it&apos;s left as asked, it counts as delivered.</span></label>
+              </div>
+              <label className="delivery-instructions">Delivery instructions (optional)<input maxLength={200} placeholder="For example, leave at the side gate" value={details.instructions} onChange={(e) => set({ instructions: e.target.value })} /></label>
               <div className="delivery-consents">
                 <label className="check-line"><input type="checkbox" checked={details.smsUpdates} onChange={(e) => set({ smsUpdates: e.target.checked })} /><span>I agree to receive updates about my order by SMS and MMS.</span></label>
                 <label className="check-line"><input type="checkbox" checked={details.marketing} onChange={(e) => set({ marketing: e.target.checked })} /><span>I&apos;d like to receive news, offers and basket reminders from Ivy &amp; Bough by email, SMS and MMS. You can opt out at any time.</span></label>

@@ -12,6 +12,7 @@ import { Honeypot } from "@/components/Honeypot";
 import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { offerText } from "@/lib/pricing";
 import { MyRequests } from "@/components/MyRequests";
+import { AddressLookup } from "@/components/AddressLookup";
 
 type Item = { name: string; quantity: number; unit_price: number; shipping_status: string; carrier: string; tracking_number: string };
 type Order = { id: string; order_number: string; status: string; placed_on: string; total: number; subtotal: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; items: Item[] };
@@ -162,6 +163,7 @@ function Addresses({ userId }: { userId: string }) {
       ))}
       <form className="account-form" onSubmit={add}>
         {error && <p role="alert" className="form-error">{error}</p>}
+        <AddressLookup onPick={(a) => setForm((f) => ({ ...f, line1: a.line1, suburb: a.city, state: states.includes(a.state) ? a.state : f.state, postcode: a.postcode }))} />
         {input("label", "Label, such as Home")}
         {input("name", "Name", true)}
         {input("line1", "Address", true)}
