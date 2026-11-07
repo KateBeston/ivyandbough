@@ -100,6 +100,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   // The order is safe by this point. Either step can be repeated from the portal.
   await generateReceipt(order.id).catch((e) => console.error("Receipt could not be created", order.id, e));
   await sendMessage({ slug: "order-confirmation", orderId: order.id, to: email }).catch(() => null);
+  if (phone && ship.sms_updates === "yes") await sendMessage({ slug: "order-confirmation-sms", orderId: order.id }).catch(() => null);
   await draftPurchaseOrders(db, order.id, order.order_number).catch((e) => console.error("Purchase orders could not be drafted", order.id, e));
 }
 
