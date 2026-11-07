@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const collections = (body?.collections ?? []).slice(0, 100).map((c) => `${c.id} | ${c.name}`).join("\n");
 
   const content: unknown[] = images.map((url) => ({ type: "image", source: { type: "url", url } }));
-  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nWrite the listing with write_listing. Choose the most specific category id from the list (a subcategory where one fits) and a collection id only if the piece clearly suits one.` });
+  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits) and a collection id only if the piece clearly suits one.` });
 
   const str = (description: string) => ({ type: "string", description });
   const num = (description: string) => ({ type: ["number", "null"], description });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5",
       max_tokens: 2500,
       system: VOICE,
-      tool_choice: { type: "tool", name: "write_listing" },
+      tool_choice: { type: "auto" },
       tools: [{
         name: "write_listing",
         description: "Save the drafted listing.",
