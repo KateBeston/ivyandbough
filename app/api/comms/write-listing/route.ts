@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { requireAdmin } from "@/lib/comms";
 
 export const maxDuration = 120;
@@ -25,7 +26,15 @@ export async function POST(request: Request) {
   const categories = (body?.categories ?? []).slice(0, 200).map((c) => `${c.id} | ${c.parent ? `${c.parent} > ` : ""}${c.name}`).join("\n");
   const collections = (body?.collections ?? []).slice(0, 100).map((c) => `${c.id} | ${c.name}`).join("\n");
 
-  const content: unknown[] = images.map((url) => ({ type: "image", source: { type: "url", url } }));
+  // Every photo is fetched and turned into a JPEG the model can read, whatever format it was saved in.
+  const content: unknown[] = [];
+  for (const url of images) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) }).catch(() => null);
+    if (!res?.ok) continue;
+    const data = await sharp(Buffer.from(await res.arrayBuffer()), { failOn: "none" }).rotate().resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer().catch(() => null);
+    if (data) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: data.toString("base64") } });
+  }
+  if (!content.length) return NextResponse.json({ error: "The photos couldn't be opened. Try uploading them again as JPEG or PNG." }, { status: 400 });
   content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits) and a collection id only if the piece clearly suits one.` });
 
   const str = (description: string) => ({ type: "string", description });
