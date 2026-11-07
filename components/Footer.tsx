@@ -14,7 +14,7 @@ export function Footer() {
           </ul>
         </div>
         <nav aria-label="Shop">
-          <Link href="/#collections">Collections</Link>
+          <Link href="/#collections">Shop the collection</Link>
           <Link href="/shop">Shop everything</Link>
           <Link href="/#home">Around the home</Link>
         </nav>

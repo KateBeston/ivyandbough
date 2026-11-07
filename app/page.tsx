@@ -58,7 +58,7 @@ export default async function HomePage() {
 
         <section id="collections" className="magazine">
           <div className="magazine-head">
-            <h2 className="heading">Find your Christmas</h2>
+            <h2 className="heading">Shop the collection</h2>
             <Link href="/collections" className="text-link">Explore all collections</Link>
           </div>
           <div className="magazine-grid">
