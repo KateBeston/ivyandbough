@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CollectionHero } from "@/components/CollectionHero";
 import { JsonLd } from "@/components/JsonLd";
-import { ProductGrid } from "@/components/ProductGrid";
+import { ProductList } from "@/components/ProductList";
 import { RichText } from "@/components/RichText";
 import { getPosts, getProductsByTheme, getTheme, getThemes } from "@/lib/catalogue";
 import { breadcrumbs } from "@/lib/seo";
@@ -33,7 +33,7 @@ export default async function CollectionPage({ params }: Props) {
       <CollectionHero title={theme.name} intro={theme.line} src={theme.image_url} alt={theme.image_alt} position={theme.hero_position} />
       {theme.page_intro && <div className="collection-intro"><p>{theme.page_intro}</p></div>}
       <div className="collection-body">
-        {products.length ? <ProductGrid products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
+        {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
       {theme.page_content && <section className="collection-copy"><RichText text={theme.page_content} /></section>}
       <section className="collection-more">

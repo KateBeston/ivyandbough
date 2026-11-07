@@ -1,4 +1,4 @@
-import { ProductGrid } from "@/components/ProductGrid";
+import { ProductList } from "@/components/ProductList";
 import { getProducts, type Product } from "@/lib/catalogue";
 
 export const PRICE_BANDS = [25, 50, 100] as const;
@@ -10,7 +10,7 @@ export async function ShopList({ title, intro, pick }: { title: string; intro: s
     <main className="shop-page">
       <h1 className="heading">{title}</h1>
       <p className="lede" style={{ marginTop: 8 }}>{intro}</p>
-      <div className="offer-grid">{products.length ? <ProductGrid products={products} /> : <p className="empty">New pieces are on their way. <a href="/shop">Shop everything</a></p>}</div>
+      <div className="offer-grid">{products.length ? <ProductList products={products} /> : <p className="empty">New pieces are on their way. <a href="/shop">Shop everything</a></p>}</div>
     </main>
   );
 }

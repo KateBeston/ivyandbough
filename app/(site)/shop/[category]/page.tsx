@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CollectionHero } from "@/components/CollectionHero";
 import { JsonLd } from "@/components/JsonLd";
-import { ProductGrid } from "@/components/ProductGrid";
+import { ProductList } from "@/components/ProductList";
 import { breadcrumbs } from "@/lib/seo";
 import { getCategories, getCategory, getProductsInCategories, getStockedCategories } from "@/lib/catalogue";
 
@@ -42,7 +42,7 @@ export default async function CategoryPage({ params }: Props) {
           <Link href={`/shop/${parent.slug}`} className={parent.id === category.id ? "on" : ""}>All {parent.name}</Link>
           {family.map((c) => <Link key={c.id} href={`/shop/${c.slug}`} className={c.id === category.id ? "on" : ""}>{c.name}</Link>)}
         </nav>
-        {products.length ? <ProductGrid products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
+        {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
     </main>
   );

@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Category, Product, Theme } from "@/lib/catalogue";
 import { ProductGrid } from "./ProductGrid";
+import { SIZES, SORTS, sizeOf, sortProducts } from "@/lib/sizes";
 
-type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; material: string[]; price: string[]; offer: string[] };
-const blank: Filters = { q: "", sort: "featured", category: [], collection: [], colour: [], material: [], price: [], offer: [] };
-const lists = ["category", "collection", "colour", "material", "price", "offer"] as const;
-const sorts = [["featured", "Featured"], ["newest", "Newest"], ["low", "Price: low to high"], ["high", "Price: high to low"], ["az", "Name: A to Z"]];
+type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; size: string[]; material: string[]; price: string[]; offer: string[] };
+const blank: Filters = { q: "", sort: "featured", category: [], collection: [], colour: [], size: [], material: [], price: [], offer: [] };
+const lists = ["category", "collection", "colour", "size", "material", "price", "offer"] as const;
+const sorts = SORTS;
 const prices: [string, string, number, number][] = [["under50", "Under $50", 0, 5000], ["50-100", "$50 to $100", 5000, 10000], ["100-200", "$100 to $200", 10000, 20000], ["200", "$200 and over", 20000, Infinity]];
 const colourList = ["Red", "Burgundy", "Green", "Gold", "Silver", "White", "Ivory", "Champagne", "Blush", "Pink", "Blue", "Black", "Brown", "Natural", "Multicolour"];
 const split = (s: string) => s.split(",").map((v) => v.trim()).filter(Boolean);
@@ -51,6 +52,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
       if (f.category.length && !(cat && (f.category.includes(cat.slug) || f.category.includes(byId.get(cat.parent_id ?? "")?.slug ?? "")))) return false;
       if (f.collection.length && !f.collection.includes(p.themes?.slug ?? "")) return false;
       if (f.colour.length && !split(p.colours).some((c) => f.colour.includes(c))) return false;
+      if (f.size.length && !f.size.includes(sizeOf(p))) return false;
       if (f.material.length && !split(p.materials).some((m) => f.material.includes(m))) return false;
       if (f.offer.length && !f.offer.includes(p.sale_label)) return false;
       if (f.price.length) {
@@ -59,12 +61,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
       }
       return true;
     });
-    const money = (p: Product, none: number) => p.price_cents ?? none;
-    if (f.sort === "newest") list.sort((a, b) => b.created_at.localeCompare(a.created_at));
-    if (f.sort === "low") list.sort((a, b) => money(a, Infinity) - money(b, Infinity));
-    if (f.sort === "high") list.sort((a, b) => money(b, -1) - money(a, -1));
-    if (f.sort === "az") list.sort((a, b) => a.name.localeCompare(b.name));
-    return list;
+    return sortProducts(list, f.sort);
   }, [products, byId, f]);
 
   const check = (key: (typeof lists)[number], value: string, label: string) => (
@@ -90,6 +87,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
             </Group>
             <Group title="Collection">{themes.map((t) => check("collection", t.slug, t.name))}</Group>
             <Group title="Colour">{colourList.map((c) => check("colour", c, c))}</Group>
+            <Group title="Size">{SIZES.map(([id, label]) => check("size", id, label))}</Group>
             {materials.length > 0 && <Group title="Material">{materials.map((m) => check("material", m, m))}</Group>}
             <Group title="Price">{prices.map(([id, label]) => check("price", id, label))}</Group>
             {offers.length > 0 && <Group title="Offers">{offers.map((o) => check("offer", o, o))}</Group>}

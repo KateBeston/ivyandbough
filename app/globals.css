@@ -621,3 +621,6 @@ button{font:inherit;color:inherit}
 .related{margin-top:56px}
 .related .heading{margin-bottom:18px}
 .stock-line.sold-out .stock-dot{background:#8E2A20}
+.list-toolbar{flex-wrap:wrap;gap:10px}
+.list-controls{display:flex;flex-wrap:wrap;gap:10px 16px}
+.list-controls label{display:flex;align-items:center;gap:6px;font-size:13px}
