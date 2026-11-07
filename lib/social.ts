@@ -10,7 +10,7 @@ export const PORTAL_URL = process.env.PORTAL_URL ?? "https://ivy-and-bough-porta
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION ?? "v26.0";
 const GRAPH = `https://graph.facebook.com/${GRAPH_VERSION}`;
 const PINTEREST = "https://api.pinterest.com/v5";
-const META_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "business_management", ...(process.env.META_INSTAGRAM_SCOPES ?? "instagram_basic,instagram_content_publish").split(",").map((s) => s.trim()).filter(Boolean)].join(",");
+const META_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "business_management", "ads_management", "ads_read", ...(process.env.META_INSTAGRAM_SCOPES ?? "instagram_basic,instagram_content_publish").split(",").map((s) => s.trim()).filter(Boolean)].join(",");
 const PINTEREST_SCOPES = "boards:read,pins:read,pins:write,user_accounts:read";
 
 export const redirectUri = (platform: "meta" | "pinterest") => `${SITE_URL}/api/social/callback/${platform}`;
