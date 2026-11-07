@@ -40,6 +40,7 @@ export const SAMPLE: Record<string, string> = {
   flags: "Below Winter Wares' $300 minimum (this order is $120.00)", portal_url: "https://ivy-and-bough-portal.vercel.app",
   reference: "SR-1001", support_message: "My order hasn't arrived yet.", topic: "Delivery", customer_email: "sarah@example.com", customer_order: "IB-1001", page_url: "/delivery", message_id: "sample",
   document_title: "Supplier Terms of Purchase", signer_name: "Sarah", supplier_name: "Winter Wares", sign_url: "https://ivyandbough.com/sign/sample", expires_on: "5 December 2026", version_id: "SUPPLIER-TERMS-v1", signed_on: "6 November 2026", pdf_url: "https://ivyandbough.com/api/sign/pdf", request_number: "SIG-1001",
+  parcel_status: "Delivery attempt failed", carrier: "Australia Post", tracking_number: "123456789",
   po_number: "PO-1001", po_items: "2 x Velvet Bow (IVB-10001), $18.00 each", delivery_phone: "+61 400 000 000", po_notes: "",
   first_name: "Sarah", customer_name: "Sarah Smith", order_number: "IB-1001", items: "1 x Dark velvet Christmas tree bow, $49.00", order_total: "$63.95", delivery_total: "$14.95", gst_total: "$5.81",
   delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95", dispatch_estimate: "Most items are dispatched within 3 business days.",
