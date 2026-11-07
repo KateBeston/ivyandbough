@@ -84,6 +84,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
                 {categories.filter((c) => c.parent_id === m.id).map((c) => <Link key={c.id} href={`/shop/${c.slug}`} onClick={closeAll}>{c.name}</Link>)}
               </div>
             ))}
+            <div><span className="shop-menu-title">Shop by</span><Link href="/shop/new-arrivals" onClick={closeAll}>New arrivals</Link><Link href="/shop/gifts-under-25" onClick={closeAll}>Gifts under $25</Link><Link href="/shop/gifts-under-50" onClick={closeAll}>Gifts under $50</Link><Link href="/shop/gifts-under-100" onClick={closeAll}>Gifts under $100</Link></div>
             {offers.length > 0 && <div><span className="shop-menu-title">Offers</span>{offers.map((o) => <Link key={o} href={`/shop/${o.toLowerCase()}`} onClick={closeAll}>{o}</Link>)}</div>}
           </div>
           <div className="themes-menu-all"><Link href="/collections" onClick={closeAll}>Explore all collections</Link></div>

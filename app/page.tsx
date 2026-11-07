@@ -29,7 +29,7 @@ export default async function HomePage() {
   const [themes, categories, allCategories, products, dates, offer, offers] = await Promise.all([getThemes(), getStockedCategories(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks()]);
   return (
     <>
-      <div className="window-bar"><Countdown /></div>
+      <div className="window-bar"><p className="window-tagline">It&apos;s beginning to look a lot like Christmas&hellip;</p><Countdown /></div>
       <JsonLd data={organisation} />
       <Hero themes={themes} categories={categories} offers={offers} />
       <main>

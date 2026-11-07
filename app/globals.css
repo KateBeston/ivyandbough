@@ -320,13 +320,15 @@ button{font:inherit;color:inherit}
 }
 
 /* Shop window homepage */
-.window-bar{padding:9px 16px;background:#6B1F2B;color:#FFF6E8;text-align:center}
+.window-bar{padding:14px 16px 13px;background:#6B1F2B;color:#FFF6E8;text-align:center}
+.window-tagline{margin:0 0 6px;font-family:var(--serif);font-size:20px;letter-spacing:.04em;line-height:1.25;color:#FFFFFF}
+@media (max-width:760px){.window-tagline{font-size:17px}}
 .window-bar .eyebrow{color:inherit}
 .edit-inner{padding-top:64px;padding-bottom:72px}
 .heading{color:#6B1F2B}
 .moment .heading,.signup .heading{color:inherit}
 .eyebrow{font-size:14px;font-weight:400;letter-spacing:.01em;text-transform:none}
-.window-bar .eyebrow{font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
+.window-bar .eyebrow{font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
 .product-card small{font-size:13px;font-weight:400;letter-spacing:.01em;text-transform:none}
 .intro .heading,.centre .heading,.home .heading,.look-copy .heading{margin-top:0}
 
