@@ -74,7 +74,8 @@ export async function POST(request: Request) {
   const listing = json?.content?.find((c) => c.type === "tool_use")?.input;
   if (!res?.ok || !listing) {
     console.error("Listing writer failed", res?.status, json?.error?.message);
-    return NextResponse.json({ error: "The listing couldn't be written. Please try again." }, { status: 502 });
+    const photo = /image|file format/i.test(json?.error?.message ?? "");
+    return NextResponse.json({ error: photo ? "One of the photos is in a format that can't be read. Remove it and upload it again (the portal now converts photos automatically)." : "The listing couldn't be written. Please try again." }, { status: 502 });
   }
   return NextResponse.json({ listing });
 }
