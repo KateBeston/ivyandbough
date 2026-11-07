@@ -601,3 +601,20 @@ button{font:inherit;color:inherit}
 .checkout-address{display:block;margin-top:12px;max-width:360px}
 .checkout-address select{display:block;width:100%;margin-top:6px}
 .checkout-terms{margin:4px 0 12px;font-size:13px}
+.price-note{margin-top:2px;font-size:11px}
+.stock-line{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px}
+.stock-dot{width:8px;height:8px;border-radius:50%;background:#3B7A3E}
+.delivery-box{margin:18px 0;padding:14px 16px;border:1px solid var(--line);font-size:13px}
+.delivery-box ul{margin:0;padding-left:18px}
+.delivery-box li{margin:0 0 6px}
+.delivery-box details{margin-top:8px}
+.delivery-box summary{cursor:pointer;font-size:12px;text-decoration:underline}
+.delivery-box details[open] summary{margin-bottom:10px}
+.from-collection{margin:0 0 18px;font-size:13px}
+.from-collection a{text-decoration:underline;text-underline-offset:3px}
+.spec-head{padding-top:16px;margin-bottom:8px;font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--brown)}
+.detail-list{margin:0 0 16px;padding:0;list-style:none;font-size:13px}
+.detail-list li{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.detail-list li span{color:var(--brown)}
+.related{margin-top:56px}
+.related .heading{margin-bottom:18px}
