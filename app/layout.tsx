@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@/components/Analytics";
 import { SITE, SITE_LIVE } from "@/lib/seo";
-import { Forum, Great_Vibes, Montserrat } from "next/font/google";
+import { Forum, Pinyon_Script, Montserrat } from "next/font/google";
 import { BasketProvider } from "@/components/BasketProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { HelpChat } from "@/components/HelpChat";
@@ -9,7 +9,7 @@ import { WelcomePopup } from "@/components/WelcomePopup";
 import "./globals.css";
 
 const serif = Forum({ subsets: ["latin"], weight: "400", variable: "--font-serif" });
-const script = Great_Vibes({ subsets: ["latin"], weight: "400", variable: "--font-script" });
+const script = Pinyon_Script({ subsets: ["latin"], weight: "400", variable: "--font-script" });
 const sans = Montserrat({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
