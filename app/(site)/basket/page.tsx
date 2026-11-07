@@ -25,6 +25,7 @@ export default function BasketPage() {
   const [quoteError, setQuoteError] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [code, setCode] = useState("");
   const [token, setToken] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -90,7 +91,7 @@ export default function BasketPage() {
   async function pay() {
     setBusy(true);
     setError("");
-    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promo?.code, { token, company: trap.current?.querySelector("input")?.value ?? "" });
+    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promo?.code, { token, company: trap.current?.querySelector("input")?.value ?? "", terms: agreed });
     setAttempt((n) => n + 1);
     if (message) {
       setError(message);
@@ -151,12 +152,13 @@ export default function BasketPage() {
               </form>
             )}
             {promoError && <p role="alert">{promoError}</p>}
-            <button type="button" className="solid" disabled={(busy || !ready) || (TURNSTILE_ON && !token)} onClick={pay}>Checkout</button>
+            <label className="check-line checkout-terms"><input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} required /><span>I agree to the <Link href="/terms-of-sale" target="_blank">Terms of Sale</Link> and have read the <Link href="/privacy" target="_blank">Privacy Policy</Link>.</span></label>
+            <button type="button" className="solid" disabled={(busy || !ready || !agreed) || (TURNSTILE_ON && !token)} onClick={pay}>Checkout</button>
             <div ref={trap}><Honeypot /></div>
             <Turnstile onToken={setToken} resetKey={attempt} />
             <PaymentMarks />
             {!ready && <p className="muted">Add your delivery details to continue.</p>}
-            <p className="muted">By checking out, you agree to our <Link href="/terms-of-sale">Terms of Sale</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
+            {ready && !agreed && <p className="muted">Tick the box above to agree to the Terms of Sale and continue.</p>}
             {error && <p role="alert">{error}</p>}
           </aside>
         </div>
