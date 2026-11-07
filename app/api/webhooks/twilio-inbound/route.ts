@@ -31,6 +31,9 @@ export async function POST(request: Request) {
   }
   if (word === "HELP" || word === "INFO") return xml(twilioReplied ? "" : "Ivy &amp; Bough: Email hello@ivyandbough.com for help. Reply STOP to opt out.");
 
-  await db.from("contact_messages").insert({ name: `Text from ${from}`, email: "", message: body.slice(0, 2000) });
+  // Match the number to a customer so the text shows under their name.
+  const local = from.replace(/^\+61/, "0");
+  const { data: known } = await db.from("customers").select("name,email").or(`phone.eq.${from},phone.eq.${local}`).limit(1).maybeSingle();
+  await db.from("contact_messages").insert({ name: known?.name ? `${known.name} (text)` : `Text from ${from}`, email: known?.email ?? "", phone: from, source: "SMS", topic: "Text message", message: body.slice(0, 2000) });
   return xml("");
 }
