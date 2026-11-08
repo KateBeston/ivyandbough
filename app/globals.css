@@ -676,3 +676,9 @@ button{font:inherit;color:inherit}
 .notify-consent{font-size:12px}
 .notify-done{margin:0;padding:12px 14px;background:var(--sand);font-size:14px}
 .card-soon{display:block;margin-top:4px;font-style:normal;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--brown)}
+.versions{display:flex;flex-direction:column;gap:8px;margin:4px 0 6px}
+.versions-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
+.versions-list{display:flex;flex-wrap:wrap;gap:8px}
+.version{padding:8px 14px;border:1px solid var(--line);font-size:13px;color:var(--ink);text-decoration:none;background:#fff}
+.version:hover{border-color:var(--gold)}
+.version.on{border-color:var(--ink);background:var(--ink);color:var(--paper)}

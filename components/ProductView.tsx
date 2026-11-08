@@ -12,10 +12,12 @@ const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", c
 
 export async function ProductView({ product, preview = false }: { product: Product; preview?: boolean }) {
   const theme = product.themes;
-  const [{ data: settings }, related] = await Promise.all([
+  const [{ data: settings }, related, { data: versions }] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
+    product.range_name ? supabase.from("products").select("id,slug,name,version_name,availability").eq("range_name", product.range_name).eq("status", "active").order("version_name") : Promise.resolve({ data: [] as { id: string; slug: string; name: string; version_name: string; availability: string }[] }),
   ]);
+  const others = (versions ?? []) as { id: string; slug: string; name: string; version_name: string; availability: string }[];
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const details = [
@@ -29,7 +31,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
     product.care && ["Care and storage", product.care],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, string][];
-  const more = related.filter((p) => p.id !== product.id && p.price_cents && p.availability !== "Sold out").slice(0, 4);
+  const more = related.filter((p) => p.id !== product.id && (!product.range_name || p.range_name !== product.range_name) && p.price_cents && p.availability !== "Sold out").slice(0, 4);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
   const dispatch = product.dispatch_days !== null ? `Dispatches within ${product.dispatch_days} business ${product.dispatch_days === 1 ? "day" : "days"}` : "Ready to dispatch";
@@ -48,6 +50,14 @@ export async function ProductView({ product, preview = false }: { product: Produ
             <div className="muted price-note">GST included</div>
             <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
+          {others.length > 1 && (
+            <div className="versions">
+              <span className="versions-label">Also available in</span>
+              <div className="versions-list">{others.map((v) => v.id === product.id
+                ? <span key={v.id} className="version on" aria-current="true">{v.version_name || v.name}</span>
+                : <Link key={v.id} href={`/products/${v.slug}`} className="version">{v.version_name || v.name}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
+            </div>
+          )}
           <p className="lede">{product.description}</p>
           {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : comingSoon ? (preview ? <button type="button" className="solid" disabled>Notify me</button> : <NotifyMe productId={product.id} />) : <AddToBasket product={product} preview={preview} />}
 
