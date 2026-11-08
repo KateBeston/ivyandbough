@@ -6,6 +6,7 @@ import { DeliveryCheck } from "./DeliveryCheck";
 import { AddToBasket } from "./AddToBasket";
 import { Gallery } from "./Gallery";
 import { NotifyMe } from "./NotifyMe";
+import { HeartButton } from "./HeartButton";
 import { ShipTo } from "./ShipTo";
 import { ProductGrid } from "./ProductGrid";
 
@@ -48,7 +49,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
-            <h1>{product.name}</h1>
+            <div className="title-row"><h1>{product.name}</h1>{!preview && <HeartButton productId={product.id} name={product.name} className="page-heart" />}</div>
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
             <div className="muted price-note">GST included</div>

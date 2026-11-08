@@ -12,6 +12,7 @@ import { Honeypot } from "@/components/Honeypot";
 import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { offerText } from "@/lib/pricing";
 import { MyRequests } from "@/components/MyRequests";
+import { SavedItems } from "@/components/SavedItems";
 import { AddressLookup } from "@/components/AddressLookup";
 
 type Item = { name: string; quantity: number; unit_price: number; shipping_status: string; carrier: string; tracking_number: string };
@@ -21,13 +22,14 @@ const cents = (n: number) => formatPrice(Math.round(Number(n) * 100));
 const states = ["QLD", "NSW", "VIC", "TAS", "SA", "WA", "NT", "ACT"];
 
 function AuthForm() {
-  const [mode, setMode] = useState<"in" | "up" | "reset">(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "up" ? "up" : "in"));
+  const [mode, setMode] = useState<"in" | "up" | "reset" | "code">(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "up" ? "up" : "in"));
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [offer, setOffer] = useState("");
   const [token, setToken] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [codeFor, setCodeFor] = useState("");
 
   useEffect(() => {
     account.from("promotions").select("discount_type,discount_value,min_order").eq("trigger", "Account sign-up").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => setOffer(data ? offerText(data) : ""));
@@ -44,6 +46,21 @@ function AuthForm() {
     const password = String(f.get("password") ?? "");
     const origin = window.location.origin;
     const captcha = token ? { captchaToken: token } : {};
+    if (mode === "code") {
+      if (!codeFor) {
+        const sent = await account.auth.signInWithOtp({ email, options: { ...captcha, shouldCreateUser: false } });
+        setBusy(false);
+        setAttempt((n) => n + 1);
+        if (sent.error && !/signups not allowed|user not found/i.test(sent.error.message)) return setError(sent.error.message);
+        setCodeFor(email);
+        return setMsg(`If ${email} has an account, we've emailed a sign-in code. It lasts for one hour.`);
+      }
+      const code = String(f.get("code") ?? "").replace(/\D/g, "");
+      const ok = await account.auth.verifyOtp({ email: codeFor, token: code, type: "email" });
+      setBusy(false);
+      if (ok.error) return setError("That code isn't right or has expired. Check the latest email, or send a new code.");
+      return;
+    }
     const res = mode === "in" ? await account.auth.signInWithPassword({ email, password, options: captcha })
       : mode === "up" ? await account.auth.signUp({ email, password, options: { ...captcha, data: { full_name: String(f.get("name")), terms_version: await publishedVersionId("ACCOUNT-TERMS"), marketing_opt_in: f.get("marketing") === "on" }, emailRedirectTo: `${origin}/account` } })
       : await account.auth.resetPasswordForEmail(email, { ...captcha, redirectTo: `${origin}/account/reset` });
@@ -56,7 +73,7 @@ function AuthForm() {
 
   return (
     <main className="shop-page account-narrow">
-      <h1 className="heading">{mode === "in" ? "Sign in" : mode === "up" ? "Create an account" : "Reset your password"}</h1>
+      <h1 className="heading">{mode === "in" ? "Sign in" : mode === "up" ? "Create an account" : mode === "code" ? "Sign in with a code" : "Reset your password"}</h1>
       {mode === "up" && offer && <p className="welcome-offer">Create an account for {offer}. We&apos;ll email your code once you confirm your address, along with an unsubscribe link.</p>}
       <form className="account-form" onSubmit={submit}>
         <Honeypot />
@@ -64,14 +81,17 @@ function AuthForm() {
         {error && <p role="alert" className="form-error">{error}</p>}
         {msg && <p role="status">{msg}</p>}
         {mode === "up" && <label>Name<input name="name" required autoComplete="name" /></label>}
-        <label>Email<input name="email" type="email" required autoComplete="email" /></label>
-        {mode !== "reset" && <label>Password<input name="password" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} /></label>}
+        {!(mode === "code" && codeFor) && <label>Email<input name="email" type="email" required autoComplete="email" /></label>}
+        {mode === "code" && codeFor && <label>Code from your email<input name="code" inputMode="numeric" autoComplete="one-time-code" required pattern="[0-9 ]{6,10}" maxLength={10} placeholder="123456" /></label>}
+        {mode !== "reset" && mode !== "code" && <label>Password<input name="password" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} /></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="marketing" /><span>Email me about new collections, offers and anything left in my basket. This is optional.</span></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="terms" required /><span>I agree to the <Link href="/account-terms">Account Terms</Link>, <Link href="/terms">Website Terms of Use</Link> and <Link href="/privacy">Privacy Policy</Link>.</span></label>}
-        <button className="solid" disabled={busy || (TURNSTILE_ON && !token)}>{mode === "in" ? "Sign in" : mode === "up" ? "Create account" : "Send reset link"}</button>
+        <button className="solid" disabled={busy || (TURNSTILE_ON && !token && !(mode === "code" && codeFor))}>{mode === "in" ? "Sign in" : mode === "up" ? "Create account" : mode === "code" ? (codeFor ? "Sign in" : "Email me a code") : "Send reset link"}</button>
       </form>
       <div className="account-links">
-        {mode !== "in" && <button type="button" className="link-button" onClick={() => setMode("in")}>Sign in</button>}
+        {mode === "code" && codeFor && <button type="button" className="link-button" onClick={() => { setCodeFor(""); setMsg(""); setError(""); }}>Send a new code</button>}
+        {mode !== "in" && <button type="button" className="link-button" onClick={() => { setMode("in"); setCodeFor(""); }}>Sign in with a password</button>}
+        {mode !== "code" && <button type="button" className="link-button" onClick={() => { setMode("code"); setMsg(""); setError(""); }}>Email me a code instead</button>}
         {mode !== "up" && <button type="button" className="link-button" onClick={() => setMode("up")}>Create an account</button>}
         {mode !== "reset" && <button type="button" className="link-button" onClick={() => setMode("reset")}>Forgot your password?</button>}
       </div>
@@ -226,9 +246,10 @@ export default function AccountPage() {
       </div>
       {welcome && <div className="welcome-offer"><p>Your welcome offer: {welcome.offer}.</p><strong>{welcome.code}</strong><p className="muted">{welcome.terms}</p></div>}
       <div className="pill-row account-tabs" role="tablist">
-        {["Orders", "Returns and disputes", "Details", "Addresses", "Payment methods"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
+        {["Orders", "Saved items", "Returns and disputes", "Details", "Addresses", "Payment methods"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
       </div>
       {tab === "Orders" && <Orders />}
+      {tab === "Saved items" && <SavedItems />}
       {tab === "Returns and disputes" && <MyRequests />}
       {tab === "Details" && <Details email={session.user.email ?? ""} />}
       {tab === "Addresses" && <Addresses userId={session.user.id} />}

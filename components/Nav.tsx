@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
 import type { Category, Theme } from "@/lib/catalogue";
 import { useBasket } from "./BasketProvider";
+import { useWishlist } from "./WishlistProvider";
 
 type Panel = "themes" | "shop" | null;
 
 export function Nav({ themes, categories, offers = [], solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; offers?: string[]; solid?: boolean; showLogo?: boolean }) {
   const { count } = useBasket();
+  const saved = useWishlist();
   const [panel, setPanel] = useState<Panel>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   // A new page can load under a resting cursor. The menu waits until the cursor has
@@ -60,6 +62,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
         <div className="nav-tools">
           <form action="/search" role="search" className="nav-search"><input type="search" name="q" placeholder="Search" aria-label="Search the site" /><button type="submit">Go</button></form>
           <Link href="/account">Account</Link>
+          <Link href="/saved" className="nav-saved" aria-label={`Saved items (${saved?.count ?? 0})`}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.1A4.4 4.4 0 0 1 12 7.6a4.4 4.4 0 0 1 7.5 2.8c0 5.5-7.5 10.1-7.5 10.1z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>{saved?.count ? <span className="nav-count">{saved.count}</span> : null}</Link>
           <Link href="/basket">Basket ({count})</Link>
         </div>
       </header>
