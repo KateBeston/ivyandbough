@@ -1,5 +1,6 @@
 "use client";
 
+import { fullName } from "@/lib/product-name";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { account, authHeader } from "@/lib/account-client";
 
@@ -15,7 +16,7 @@ const read = (key: string) => { try { return localStorage.getItem(key); } catch 
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* the basket still works for this visit */ } };
 const clamp = (n: number) => Math.min(20, Math.max(1, Math.round(n) || 1));
 
-type SavedRow = { quantity: number; products: { id: string; slug: string; name: string; price_cents: number | null; product_images: { url: string; sort_order: number }[] } | null };
+type SavedRow = { quantity: number; products: { id: string; slug: string; name: string; version_name: string; price_cents: number | null; product_images: { url: string; sort_order: number }[] } | null };
 
 function merge(current: Line[], extra: Line[]) {
   const out = [...current];
@@ -48,8 +49,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       if (event !== "SIGNED_IN" || !auth) return;
       setTimeout(async () => {
         await account.rpc("link_customer", { full_name: String(auth.user.user_metadata?.full_name ?? "") });
-        const { data: saved } = await account.from("cart_items").select("quantity,products(id,slug,name,price_cents,product_images(url,sort_order))").eq("status", "In cart");
-        const restored = ((saved ?? []) as unknown as SavedRow[]).flatMap((r) => (r.products && r.products.price_cents !== null ? [{ id: r.products.id, slug: r.products.slug, name: r.products.name, price_cents: r.products.price_cents, image: [...r.products.product_images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "", quantity: r.quantity }] : []));
+        const { data: saved } = await account.from("cart_items").select("quantity,products(id,slug,name,version_name,price_cents,product_images(url,sort_order))").eq("status", "In cart");
+        const restored = ((saved ?? []) as unknown as SavedRow[]).flatMap((r) => (r.products && r.products.price_cents !== null ? [{ id: r.products.id, slug: r.products.slug, name: fullName(r.products), price_cents: r.products.price_cents, image: [...r.products.product_images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "", quantity: r.quantity }] : []));
         if (restored.length) setLines((l) => merge(l, restored));
       }, 0);
     });
