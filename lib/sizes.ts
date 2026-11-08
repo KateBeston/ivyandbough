@@ -8,7 +8,10 @@ export const SIZES: [string, string, number, number][] = [
   ["xl", "Extra large (100 cm and over)", 100, Infinity],
 ];
 
+const LABELS: Record<string, string> = { "Extra small": "small", Small: "small", Medium: "medium", Large: "large", "Extra large": "xl" };
+
 export function sizeOf(p: Product) {
+  if (p.size_label && LABELS[p.size_label]) return LABELS[p.size_label];
   const biggest = Math.max(p.height_cm ?? 0, p.width_cm ?? 0, p.depth_cm ?? 0);
   if (!biggest) return "";
   return SIZES.find(([, , lo, hi]) => biggest >= lo && biggest < hi)?.[0] ?? "";

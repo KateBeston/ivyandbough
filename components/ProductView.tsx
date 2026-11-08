@@ -21,7 +21,8 @@ export async function ProductView({ product, preview = false }: { product: Produ
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const details = [
-    product.net_quantity && ["Size", `${Number(product.net_quantity)} ${product.net_unit}`],
+    product.size_label && ["Size", product.size_label],
+    product.net_quantity && ["Contents", `${Number(product.net_quantity)} ${product.net_unit}`],
     product.pack_quantity && ["Quantity", product.pack_quantity === 1 ? "Sold individually" : `Pack of ${product.pack_quantity}`],
     product.materials && ["Materials", product.materials],
     (measured || product.dimensions) && ["Size", measured ? `${measured} cm` : product.dimensions],
@@ -33,6 +34,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, string][];
   const more = related.filter((p) => p.id !== product.id && (!product.range_name || p.range_name !== product.range_name) && p.price_cents && p.availability !== "Sold out").slice(0, 4);
+  const qualities = ["Packaging", "Production", "Materials", "Certifications"].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
   const dispatch = product.dispatch_days !== null ? `Dispatches within ${product.dispatch_days} business ${product.dispatch_days === 1 ? "day" : "days"}` : "Ready to dispatch";
@@ -81,6 +83,16 @@ export async function ProductView({ product, preview = false }: { product: Produ
             <div className="spec">
               <h2 className="spec-head">Details</h2>
               <ul className="detail-list">{details.map(([k, v]) => <li key={k}><span>{k}</span>{v}</li>)}</ul>
+            </div>
+          )}
+          {qualities.length > 0 && (
+            <div className="spec qualities">
+              {qualities.map(([group, list]) => (
+                <div key={group} className="quality-group">
+                  <h2 className="spec-head">{group}</h2>
+                  <ul className="quality-pills">{list.map((q) => <li key={q} className="quality-pill">{q}</li>)}</ul>
+                </div>
+              ))}
             </div>
           )}
         </div>
