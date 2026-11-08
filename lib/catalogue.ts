@@ -4,11 +4,16 @@ import { supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number; is_featured: boolean; feature_order: number; seo_title: string; seo_description: string; page_intro: string; page_content: string };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number; media_type?: string };
-export type Product = { product_themes?: { themes: { slug: string; name: string } | null }[]; ships_from: string; size_label: string; qualities: Record<string, string[]> | null; made_in: string; product_media?: ProductImage[]; range_name: string; version_name: string; net_quantity: number | null; net_unit: string; brand: string; pack_quantity: number | null; availability: string; returns_note: string; id: string; sku: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; was_cents: number | null; sale_label: string; sale_kind: string; discount_type: string; discount_value: number | null; sale_starts_at: string | null; sale_ends_at: string | null; materials: string; dimensions: string; weight: string; height_cm: number | null; width_cm: number | null; depth_cm: number | null; weight_g: number | null; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; colours: string; category_id: string | null; theme_id: string | null; created_at: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
+export type Product = { listing_id?: string; listing_type?: string; option_label?: string; variants?: Product[]; price_from_cents?: number | null; swatch?: string; status?: string; product_themes?: { themes: { slug: string; name: string } | null }[]; ships_from: string; size_label: string; qualities: Record<string, string[]> | null; made_in: string; product_media?: ProductImage[]; range_name: string; version_name: string; net_quantity: number | null; net_unit: string; brand: string; pack_quantity: number | null; availability: string; returns_note: string; id: string; sku: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; was_cents: number | null; sale_label: string; sale_kind: string; discount_type: string; discount_value: number | null; sale_starts_at: string | null; sale_ends_at: string | null; materials: string; dimensions: string; weight: string; height_cm: number | null; width_cm: number | null; depth_cm: number | null; weight_g: number | null; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; colours: string; category_id: string | null; theme_id: string | null; created_at: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
 export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string; parent_id: string | null; seo_title: string; seo_description: string; page_intro: string };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
-const productSelect = `id,sku,slug,name,brand,ships_from,made_in,size_label,qualities,range_name,version_name,net_quantity,net_unit,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,availability,pack_quantity,care,returns_note,seo_title,seo_description,colours,category_id,theme_id,created_at,themes!products_theme_id_fkey(name,slug),product_themes(themes(slug,name)),categories(name,slug),product_images(url,alt,position,sort_order,media_type)`;
+// What customers see is a listing. A listing holds one product, a group of versions (such as bow colours) or, later, a bundle.
+// Each product is one exact item with its own SKU, price and photos.
+const variantSelect = `id,sku,slug,name,brand,ships_from,made_in,size_label,qualities,range_name,version_name,swatch,net_quantity,net_unit,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,availability,pack_quantity,care,returns_note,seo_title,seo_description,colours,category_id,theme_id,created_at,status,product_images(url,alt,position,sort_order,media_type)`;
+const listingSelect = `id,slug,listing_type,name,kind,description,category_id,theme_id,sort_order,option_label,seo_title,seo_description,created_at,themes!listings_theme_id_fkey(name,slug),listing_themes(themes(slug,name)),categories(name,slug),listing_products(sort_order,quantity,products(${variantSelect}))`;
+
+type ListingRow = { id: string; slug: string; listing_type: string; name: string; kind: string; description: string; category_id: string | null; theme_id: string | null; sort_order: number; option_label: string; seo_title: string; seo_description: string; created_at: string; themes: { name: string; slug: string } | null; listing_themes: { themes: { slug: string; name: string } | null }[]; categories: { name: string; slug: string } | null; listing_products: { sort_order: number; quantity: number; products: Product | null }[] };
 
 function must<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
@@ -21,39 +26,54 @@ function sortImages(p: Product): Product {
   return { ...p, price_cents: offer.cents, was_cents: offer.wasCents, sale_label: offer.label, product_media: [...p.product_images].sort((a, b) => a.sort_order - b.sort_order), product_images: [...p.product_images].filter((i) => i.media_type !== "video").sort((a, b) => a.sort_order - b.sort_order) };
 }
 
+// Turns a listing into what the pages show: the listing's name, words, category and collections,
+// with the first available version's price and photos, and every version for the picker.
+function fromListing(l: ListingRow): Product | null {
+  const variants = [...l.listing_products].sort((a, b) => a.sort_order - b.sort_order).flatMap((lp) => (lp.products ? [sortImages(lp.products)] : []));
+  if (!variants.length) return null;
+  const lead = variants.find((v) => v.availability !== "Sold out" && v.price_cents !== null) ?? variants[0];
+  const prices = variants.map((v) => v.price_cents).filter((c): c is number => c !== null);
+  return {
+    ...lead, slug: l.slug, name: l.name || lead.name, kind: l.kind || lead.kind, description: l.description || lead.description,
+    category_id: l.category_id, theme_id: l.theme_id, themes: l.themes, categories: l.categories, product_themes: l.listing_themes,
+    seo_title: l.seo_title, seo_description: l.seo_description, created_at: l.created_at,
+    listing_id: l.id, listing_type: l.listing_type, option_label: l.option_label || "Colour",
+    variants: l.listing_type === "group" ? variants : undefined,
+    price_from_cents: prices.length && Math.min(...prices) !== Math.max(...prices) ? Math.min(...prices) : null,
+  };
+}
+const toProducts = (rows: unknown) => (rows as ListingRow[]).map(fromListing).filter((p): p is Product => p !== null);
+
 export async function getThemes(): Promise<Theme[]> {
   const { data, error } = await supabase.from("themes").select("*").order("sort_order");
   return must(data, error) as Theme[];
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const { data, error } = await supabase.from("products").select(productSelect).order("sort_order");
-  return (must(data, error) as unknown as Product[]).map(sortImages);
+  const { data, error } = await supabase.from("listings").select(listingSelect).order("sort_order");
+  return toProducts(must(data, error));
 }
 
 export async function getProduct(slug: string): Promise<Product | null> {
-  const { data, error } = await supabase.from("products").select(productSelect).eq("slug", slug).maybeSingle();
+  const { data, error } = await supabase.from("listings").select(listingSelect).eq("slug", slug).maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? sortImages(data as unknown as Product) : null;
+  return data ? fromListing(data as unknown as ListingRow) : null;
 }
 
+// The range is small, so search matches every word against the listing and all of its versions.
 export async function searchProducts(query: string): Promise<Product[]> {
-  const words = query.replace(/[^\p{L}\p{N} &-]/gu, " ").trim().split(/\s+/).filter(Boolean).slice(0, 5);
+  const words = query.toLowerCase().replace(/[^\p{L}\p{N} &-]/gu, " ").trim().split(/\s+/).filter(Boolean).slice(0, 5);
   if (!words.length) return [];
-  let request = supabase.from("products").select(productSelect);
-  for (const word of words) {
-    const term = `"%${word}%"`;
-    request = request.or(`name.ilike.${term},brand.ilike.${term},description.ilike.${term},materials.ilike.${term},kind.ilike.${term}`);
-  }
-  const { data, error } = await request.order("sort_order").limit(48);
-  return (must(data, error) as unknown as Product[]).map(sortImages);
+  const all = await getProducts();
+  const text = (p: Product) => [p.name, p.kind, p.description, ...(p.variants ?? [p]).flatMap((v) => [v.brand, v.materials, v.version_name, v.colours, v.kind])].join(" ").toLowerCase();
+  return all.filter((p) => words.every((w) => text(p).includes(w))).slice(0, 48);
 }
 
 export async function getProductPreview(token: string, db: typeof supabase): Promise<Product | null> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) return null;
-  const { data, error } = await db.rpc("product_preview", { token });
+  const { data, error } = await db.rpc("listing_preview", { token });
   if (error) throw new Error(error.message);
-  return data ? sortImages(data as Product) : null;
+  return data ? fromListing(data as ListingRow) : null;
 }
 
 export async function getCategories(): Promise<Category[]> {
@@ -61,9 +81,9 @@ export async function getCategories(): Promise<Category[]> {
   return must(data, error) as Category[];
 }
 
-// Only categories with products to show. A main category stays when any of its subcategories has stock.
+// Only categories with listings to show. A main category stays when any of its subcategories has stock.
 export async function getStockedCategories(): Promise<Category[]> {
-  const [categories, { data }] = await Promise.all([getCategories(), supabase.from("products").select("category_id").not("category_id", "is", null)]);
+  const [categories, { data }] = await Promise.all([getCategories(), supabase.from("listings").select("category_id").not("category_id", "is", null)]);
   const used = new Set((data ?? []).map((p) => p.category_id as string));
   for (const c of categories) if (c.parent_id && used.has(c.id)) used.add(c.parent_id);
   return categories.filter((c) => used.has(c.id));
@@ -82,22 +102,22 @@ export async function getTheme(slug: string): Promise<Theme | null> {
 }
 
 export async function getProductsInCategories(ids: string[]): Promise<Product[]> {
-  const { data, error } = await supabase.from("products").select(productSelect).in("category_id", ids).order("sort_order");
-  return (must(data, error) as unknown as Product[]).map(sortImages);
+  const { data, error } = await supabase.from("listings").select(listingSelect).in("category_id", ids).order("sort_order");
+  return toProducts(must(data, error));
 }
 
 export async function getProductsBySlugs(slugs: string[]): Promise<Product[]> {
   if (!slugs.length) return [];
-  const { data, error } = await supabase.from("products").select(productSelect).in("slug", slugs);
-  return (must(data, error) as unknown as Product[]).map(sortImages);
+  const { data, error } = await supabase.from("listings").select(listingSelect).in("slug", slugs);
+  return toProducts(must(data, error));
 }
 
 export async function getProductsByTheme(id: string): Promise<Product[]> {
-  // A product belongs to its main collection and to any extra collections it's been added to.
-  const { data: extra } = await supabase.from("product_themes").select("product_id").eq("theme_id", id);
-  const extraIds = ((extra ?? []) as { product_id: string }[]).map((r) => r.product_id);
-  const { data, error } = await supabase.from("products").select(productSelect).or(extraIds.length ? `theme_id.eq.${id},id.in.(${extraIds.join(",")})` : `theme_id.eq.${id}`).order("sort_order");
-  return (must(data, error) as unknown as Product[]).map(sortImages);
+  // A listing belongs to its main collection and to any extra collections it's been added to.
+  const { data: extra } = await supabase.from("listing_themes").select("listing_id").eq("theme_id", id);
+  const extraIds = ((extra ?? []) as { listing_id: string }[]).map((r) => r.listing_id);
+  const { data, error } = await supabase.from("listings").select(listingSelect).or(extraIds.length ? `theme_id.eq.${id},id.in.(${extraIds.join(",")})` : `theme_id.eq.${id}`).order("sort_order");
+  return toProducts(must(data, error));
 }
 
 export async function getDeliveryDates(): Promise<DeliveryDate[]> {

@@ -1,3 +1,4 @@
+import { fullName, productPaths } from "@/lib/product-name";
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { SITE_URL, sendMessage } from "@/lib/comms";
@@ -23,16 +24,17 @@ export async function GET(request: Request) {
 
   const now = Date.now();
   const { data } = await db.from("cart_items")
-    .select("customer_email,quantity,products(name,sku,slug,status)")
+    .select("customer_email,quantity,product_id,products(name,version_name,sku,slug,status)")
     .eq("status", "In cart").neq("customer_email", "")
     .lt("created_at", new Date(now - DAY).toISOString()).gt("created_at", new Date(now - 7 * DAY).toISOString()).limit(2000);
-  const rows = (data ?? []) as unknown as { customer_email: string; quantity: number; products: { name: string; sku: string; slug: string; status: string } | null }[];
+  const rows = (data ?? []) as unknown as { customer_email: string; quantity: number; product_id: string; products: { name: string; version_name: string; sku: string; slug: string; status: string } | null }[];
 
+  const paths = await productPaths(db as never, rows.map((r) => r.product_id));
   const baskets = new Map<string, string[]>();
   for (const row of rows) {
     if (row.products?.status !== "active") continue;
     const email = row.customer_email.toLowerCase();
-    baskets.set(email, [...(baskets.get(email) ?? []), `${row.quantity} x [${row.products.name.replace(/[[\]]/g, "")}](${SITE_URL}/products/${row.products.slug}), item no. ${row.products.sku}`]);
+    baskets.set(email, [...(baskets.get(email) ?? []), `${row.quantity} x [${fullName(row.products).replace(/[[\]]/g, "")}](${SITE_URL}/products/${paths.get(row.product_id) ?? row.products.slug}), item no. ${row.products.sku}`]);
   }
 
   const { data: recent } = await db.from("basket_reminders").select("email").gt("last_sent_at", new Date(now - REPEAT_AFTER_DAYS * DAY).toISOString()).in("email", [...baskets.keys()]);

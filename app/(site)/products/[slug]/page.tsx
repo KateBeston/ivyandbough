@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: product.seo_title || `${product.name} | Ivy & Bough`, description, alternates: { canonical: `/products/${product.slug}` }, openGraph: { title: product.name, description, url: `/products/${product.slug}`, images: product.product_images[0] ? [product.product_images[0].url] : undefined } };
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProductPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ colour?: string }> }) {
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
@@ -25,7 +25,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <>
       <JsonLd data={schema} />
       <JsonLd data={breadcrumbs(crumbs)} />
-      <ProductView product={product} />
+      <ProductView product={product} colour={(await searchParams).colour} />
     </>
   );
 }

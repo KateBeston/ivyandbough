@@ -13,7 +13,7 @@ export function AddToBasket({ product, preview }: { product: Product; preview: b
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const off = preview || product.price_cents === null;
-  const line = (): Line => ({ id: product.id, sku: product.sku, slug: product.slug, name: fullName(product), price_cents: product.price_cents!, was_cents: product.was_cents, sale_label: product.sale_label, image: product.product_images[0]?.url ?? "", quantity });
+  const line = (): Line => ({ id: product.id, sku: product.sku, slug: product.listing_type === "group" ? `${product.slug}?colour=${encodeURIComponent(product.sku)}` : product.slug, name: fullName(product), price_cents: product.price_cents!, was_cents: product.was_cents, sale_label: product.sale_label, image: product.product_images[0]?.url ?? "", quantity });
 
   // Delivery details are needed before payment, so express buyers go through the basket.
   function buyNow() {

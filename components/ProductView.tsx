@@ -8,22 +8,25 @@ import { Gallery } from "./Gallery";
 import { NotifyMe } from "./NotifyMe";
 import { HeartButton } from "./HeartButton";
 import { ShipTo } from "./ShipTo";
+import { fullName } from "@/lib/product-name";
 import { ProductGrid } from "./ProductGrid";
 
 const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: n % 1 ? 2 : 0 }).format(n);
 
-export async function ProductView({ product, preview = false }: { product: Product; preview?: boolean }) {
+export async function ProductView({ product: listing, preview = false, colour }: { product: Product; preview?: boolean; colour?: string }) {
+  // A grouped listing is one page. Choosing a colour swaps the photos, price and item number, never the page.
+  const versions = listing.variants ?? [];
+  const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
+  const product: Product = chosen ? { ...chosen, name: listing.name, kind: listing.kind, description: listing.description, slug: listing.slug, themes: listing.themes, categories: listing.categories, category_id: listing.category_id, theme_id: listing.theme_id, product_themes: listing.product_themes, listing_id: listing.listing_id, listing_type: listing.listing_type } : listing;
   const theme = product.themes;
-  const [{ data: settings }, related, { data: versions }, { data: palette }] = await Promise.all([
+  const [{ data: settings }, related, { data: palette }] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
-    product.range_name ? supabase.from("products").select("id,slug,name,version_name,availability,swatch").eq("range_name", product.range_name).eq("status", "active").order("version_name") : Promise.resolve({ data: [] as { id: string; slug: string; name: string; version_name: string; availability: string; swatch: string }[] }),
-    product.range_name ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
+    versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
   ]);
-  const others = (versions ?? []) as { id: string; slug: string; name: string; version_name: string; availability: string; swatch: string }[];
   const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
-  const dot = (n: string) => { const c = colourOf(n); if (!c) return null; return <span aria-hidden="true" className="swatch" style={{ background: c.hex2 ? `linear-gradient(135deg, ${c.hex} 50%, ${c.hex2} 50%)` : c.hex }} />; };
-  const currentName = others.find((v) => v.id === product.id)?.version_name || "";
+  const dot = (n?: string) => { const c = n ? colourOf(n) : null; if (!c) return null; return <span aria-hidden="true" className="swatch" style={{ background: c.hex2 ? `linear-gradient(135deg, ${c.hex} 50%, ${c.hex2} 50%)` : c.hex }} />; };
+  const label = listing.option_label || "Colour";
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const details = [
@@ -39,7 +42,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
     product.care && ["Care and storage", product.care],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, string][];
-  const more = related.filter((p) => p.id !== product.id && (!product.range_name || p.range_name !== product.range_name) && p.price_cents && p.availability !== "Sold out").slice(0, 4);
+  const more = related.filter((p) => p.slug !== listing.slug && p.price_cents && p.availability !== "Sold out").slice(0, 4);
   const qualities = ["Packaging", "Production", "Materials", "Certifications"].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
@@ -49,22 +52,22 @@ export async function ProductView({ product, preview = false }: { product: Produ
     <main className="product-page">
       <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
-        <Gallery images={product.product_media ?? product.product_images} />
+        <Gallery key={product.id} images={product.product_media ?? product.product_images} />
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
-            <div className="title-row"><h1>{product.name}</h1>{!preview && <HeartButton productId={product.id} name={product.name} className="page-heart" />}</div>
+            <div className="title-row"><h1>{product.name}</h1>{!preview && <HeartButton productId={product.id} name={fullName(product)} className="page-heart" />}</div>
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
             <div className="muted price-note">GST included</div>
             <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
-          {others.length > 1 && (
+          {versions.length > 1 && chosen && (
             <div className="versions">
-              <span className="versions-label">{others.some((v) => v.swatch) ? <>Colour{currentName ? <>: <strong>{currentName}</strong></> : null}</> : "Also available in"}</span>
-              <div className="versions-list">{others.map((v) => v.id === product.id
-                ? <span key={v.id} className="version on" aria-current="true">{dot(v.swatch)}{v.version_name || v.name}</span>
-                : <Link key={v.id} href={`/products/${v.slug}`} className="version" scroll={false}>{dot(v.swatch)}{v.version_name || v.name}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
+              <span className="versions-label">{label}: <strong>{chosen.version_name || chosen.sku}</strong></span>
+              <div className="versions-list">{versions.map((v) => v.id === chosen.id
+                ? <span key={v.id} className="version on" aria-current="true">{dot(v.swatch)}{v.version_name || v.sku}</span>
+                : <Link key={v.id} href={`?colour=${encodeURIComponent(v.sku)}`} replace scroll={false} className="version">{dot(v.swatch)}{v.version_name || v.sku}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
             </div>
           )}
           <p className="lede">{product.description}</p>
