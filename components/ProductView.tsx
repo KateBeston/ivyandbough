@@ -19,6 +19,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const details = [
+    product.net_quantity && ["Size", `${Number(product.net_quantity)} ${product.net_unit}`],
     product.pack_quantity && ["Quantity", product.pack_quantity === 1 ? "Sold individually" : `Pack of ${product.pack_quantity}`],
     product.materials && ["Materials", product.materials],
     (measured || product.dimensions) && ["Size", measured ? `${measured} cm` : product.dimensions],
