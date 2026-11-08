@@ -19,6 +19,8 @@ Description:
 - For scents, use the notes the supplier states, in plain words. Don't invent comparisons.
 - Styling ideas must suit how the item is actually used: a room spray is sprayed in a room or on linen, not set out as decor; a candle sits on a table or mantel. Give at most one styling idea and at most one gift idea, and don't list kinds of recipients.
 - Write flowing sentences that read naturally aloud, not a checklist of features.
+Grouped listings:
+- If grouped_versions is given, this is one listing for several versions of the same product (for example the same spray with different bow colours). Write one general description of what every version shares, then say it comes in the versions listed, using option_label (for example "Available with a red gingham, brown or tartan bow."). Don't describe one version as if it were the product. Photos may show different versions; that's expected, so don't flag it.
 Versions:
 - If this_version is given (a colour, ribbon or scent), the listing is for that version only. Describe it with that colour or detail, and don't mention other colours as if they come with it.
 - If the photos show more than one version (for example the same bottle with different coloured bows), describe only the one that matches this_version, write image_alt for what each photo actually shows, and add to needs_checking: "The photos show more than one version. Keep only the photos of this version." If this_version is empty, don't pick one: describe what they share, and add to needs_checking that the photos show several versions.`;
