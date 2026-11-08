@@ -4,11 +4,11 @@ import { supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; image_alt: string; hero_position: string; card_position: string; hero_shade: number; is_featured: boolean; feature_order: number; seo_title: string; seo_description: string; page_intro: string; page_content: string };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number };
-export type Product = { pack_quantity: number | null; availability: string; returns_note: string; id: string; sku: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; was_cents: number | null; sale_label: string; sale_kind: string; discount_type: string; discount_value: number | null; sale_starts_at: string | null; sale_ends_at: string | null; materials: string; dimensions: string; weight: string; height_cm: number | null; width_cm: number | null; depth_cm: number | null; weight_g: number | null; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; colours: string; category_id: string | null; theme_id: string | null; created_at: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
+export type Product = { brand: string; pack_quantity: number | null; availability: string; returns_note: string; id: string; sku: string; slug: string; name: string; kind: string; description: string; price_cents: number | null; was_cents: number | null; sale_label: string; sale_kind: string; discount_type: string; discount_value: number | null; sale_starts_at: string | null; sale_ends_at: string | null; materials: string; dimensions: string; weight: string; height_cm: number | null; width_cm: number | null; depth_cm: number | null; weight_g: number | null; dispatch_days: number | null; care: string; seo_title: string; seo_description: string; colours: string; category_id: string | null; theme_id: string | null; created_at: string; themes: { name: string; slug: string } | null; categories: { name: string; slug: string } | null; product_images: ProductImage[] };
 export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string; parent_id: string | null; seo_title: string; seo_description: string; page_intro: string };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
-const productSelect = `id,sku,slug,name,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,availability,pack_quantity,care,returns_note,seo_title,seo_description,colours,category_id,theme_id,created_at,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)`;
+const productSelect = `id,sku,slug,name,brand,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,availability,pack_quantity,care,returns_note,seo_title,seo_description,colours,category_id,theme_id,created_at,themes(name,slug),categories(name,slug),product_images(url,alt,position,sort_order)`;
 
 function must<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
@@ -43,7 +43,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
   let request = supabase.from("products").select(productSelect);
   for (const word of words) {
     const term = `"%${word}%"`;
-    request = request.or(`name.ilike.${term},description.ilike.${term},materials.ilike.${term},kind.ilike.${term}`);
+    request = request.or(`name.ilike.${term},brand.ilike.${term},description.ilike.${term},materials.ilike.${term},kind.ilike.${term}`);
   }
   const { data, error } = await request.order("sort_order").limit(48);
   return (must(data, error) as unknown as Product[]).map(sortImages);

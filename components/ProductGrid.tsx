@@ -14,6 +14,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
             <small>{p.kind}</small>
             <strong>{p.name}</strong>
             <span><Price cents={p.price_cents} wasCents={p.was_cents} /></span>
+            {p.availability === "Coming soon" && <em className="card-soon">Coming soon</em>}
           </Link>
         );
       })}

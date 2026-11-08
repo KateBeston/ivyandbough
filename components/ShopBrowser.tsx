@@ -5,9 +5,9 @@ import type { Category, Product, Theme } from "@/lib/catalogue";
 import { ProductGrid } from "./ProductGrid";
 import { SIZES, SORTS, sizeOf, sortProducts } from "@/lib/sizes";
 
-type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; size: string[]; material: string[]; price: string[]; offer: string[] };
-const blank: Filters = { q: "", sort: "featured", category: [], collection: [], colour: [], size: [], material: [], price: [], offer: [] };
-const lists = ["category", "collection", "colour", "size", "material", "price", "offer"] as const;
+type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; size: string[]; material: string[]; brand: string[]; price: string[]; offer: string[] };
+const blank: Filters = { q: "", sort: "featured", category: [], collection: [], colour: [], size: [], material: [], brand: [], price: [], offer: [] };
+const lists = ["category", "collection", "colour", "size", "material", "brand", "price", "offer"] as const;
 const sorts = SORTS;
 const prices: [string, string, number, number][] = [["under50", "Under $50", 0, 5000], ["50-100", "$50 to $100", 5000, 10000], ["100-200", "$100 to $200", 10000, 20000], ["200", "$200 and over", 20000, Infinity]];
 const colourList = ["Red", "Burgundy", "Green", "Gold", "Silver", "White", "Ivory", "Champagne", "Blush", "Pink", "Blue", "Black", "Brown", "Natural", "Multicolour"];
@@ -41,12 +41,13 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
   const mains = categories.filter((c) => !c.parent_id);
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const offers = useMemo(() => ["Sale", "Clearance"].filter((k) => products.some((p) => p.sale_label === k)), [products]);
+  const brands = useMemo(() => [...new Set(products.map((p) => p.brand).filter(Boolean))].sort(), [products]);
   const materials = useMemo(() => [...new Set(products.flatMap((p) => split(p.materials)))].sort(), [products]);
 
   const results = useMemo(() => {
     const words = f.q.toLowerCase().split(/\s+/).filter(Boolean);
     const list = products.filter((p) => {
-      const text = `${p.name} ${p.description} ${p.kind} ${p.materials} ${p.colours}`.toLowerCase();
+      const text = `${p.name} ${p.brand} ${p.description} ${p.kind} ${p.materials} ${p.colours}`.toLowerCase();
       if (!words.every((w) => text.includes(w))) return false;
       const cat = p.category_id ? byId.get(p.category_id) : undefined;
       if (f.category.length && !(cat && (f.category.includes(cat.slug) || f.category.includes(byId.get(cat.parent_id ?? "")?.slug ?? "")))) return false;
@@ -54,6 +55,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
       if (f.colour.length && !split(p.colours).some((c) => f.colour.includes(c))) return false;
       if (f.size.length && !f.size.includes(sizeOf(p))) return false;
       if (f.material.length && !split(p.materials).some((m) => f.material.includes(m))) return false;
+      if (f.brand.length && !f.brand.includes(p.brand)) return false;
       if (f.offer.length && !f.offer.includes(p.sale_label)) return false;
       if (f.price.length) {
         const price = p.price_cents;
@@ -89,6 +91,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
             <Group title="Colour">{colourList.map((c) => check("colour", c, c))}</Group>
             <Group title="Size">{SIZES.map(([id, label]) => check("size", id, label))}</Group>
             {materials.length > 0 && <Group title="Material">{materials.map((m) => check("material", m, m))}</Group>}
+            {brands.length > 0 && <Group title="Brand">{brands.map((b) => check("brand", b, b))}</Group>}
             <Group title="Price">{prices.map(([id, label]) => check("price", id, label))}</Group>
             {offers.length > 0 && <Group title="Offers">{offers.map((o) => check("offer", o, o))}</Group>}
             {active && <button type="button" className="link-button" onClick={() => setF({ ...blank, sort: f.sort })}>Clear all filters</button>}

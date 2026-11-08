@@ -5,6 +5,7 @@ import { Price } from "./Price";
 import { DeliveryCheck } from "./DeliveryCheck";
 import { AddToBasket } from "./AddToBasket";
 import { Gallery } from "./Gallery";
+import { NotifyMe } from "./NotifyMe";
 import { ProductGrid } from "./ProductGrid";
 
 const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: n % 1 ? 2 : 0 }).format(n);
@@ -22,12 +23,14 @@ export async function ProductView({ product, preview = false }: { product: Produ
     product.materials && ["Materials", product.materials],
     (measured || product.dimensions) && ["Size", measured ? `${measured} cm` : product.dimensions],
     (product.weight_g || product.weight) && ["Weight", product.weight_g ? `${product.weight_g} g` : product.weight],
+    product.brand && ["Brand", product.brand],
     product.colours && ["Colours", product.colours],
     product.care && ["Care and storage", product.care],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, string][];
   const more = related.filter((p) => p.id !== product.id && p.price_cents && p.availability !== "Sold out").slice(0, 4);
   const soldOut = product.availability === "Sold out";
+  const comingSoon = product.availability === "Coming soon";
   const dispatch = product.dispatch_days !== null ? `Dispatches within ${product.dispatch_days} business ${product.dispatch_days === 1 ? "day" : "days"}` : "Ready to dispatch";
 
   return (
@@ -42,10 +45,10 @@ export async function ProductView({ product, preview = false }: { product: Produ
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
             <div className="muted price-note">GST included</div>
-            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
+            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
           <p className="lede">{product.description}</p>
-          {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : <AddToBasket product={product} preview={preview} />}
+          {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : comingSoon ? (preview ? <button type="button" className="solid" disabled>Notify me</button> : <NotifyMe productId={product.id} />) : <AddToBasket product={product} preview={preview} />}
 
           <div className="delivery-box">
             <ul>

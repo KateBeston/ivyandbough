@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   const lines = items.flatMap((item) => {
     const row = rows.find((r) => r.id === item.id);
     const offer = row ? offerPrice(row) : null;
-    return row && offer?.cents && (row as { availability?: string }).availability !== "Sold out" ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "" }] : [];
+    return row && offer?.cents && !["Sold out", "Coming soon"].includes(String((row as { availability?: string }).availability)) ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "" }] : [];
   });
   if (lines.length !== items.length) return NextResponse.json({ error: "Something in your basket is no longer available." }, { status: 400 });
 
