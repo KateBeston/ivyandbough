@@ -19,10 +19,11 @@ export async function POST(request: Request) {
   if (!(await requireAdmin(request))) return NextResponse.json({ error: "Not allowed." }, { status: 401 });
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return NextResponse.json({ error: "The listing writer isn't connected yet. ANTHROPIC_API_KEY needs adding in Vercel." }, { status: 503 });
-  const body = (await request.json().catch(() => null)) as { images?: string[]; notes?: string; name?: string; categories?: Option[]; collections?: Option[] } | null;
+  const body = (await request.json().catch(() => null)) as { images?: string[]; notes?: string; name?: string; known?: Record<string, unknown>; categories?: Option[]; collections?: Option[] } | null;
   const images = (body?.images ?? []).filter((u) => typeof u === "string" && u.startsWith(STORAGE)).slice(0, 4);
-  if (!images.length) return NextResponse.json({ error: "Upload at least one product photo first." }, { status: 400 });
   const notes = String(body?.notes ?? "").slice(0, 8000);
+  const known = Object.entries(body?.known ?? {}).filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "").slice(0, 30).map(([k, v]) => `${k}: ${String(v).slice(0, 2000)}`).join("\n");
+  if (!images.length && !notes.trim() && !known) return NextResponse.json({ error: "Upload a product photo or add the supplier's description first." }, { status: 400 });
   const categories = (body?.categories ?? []).slice(0, 200).map((c) => `${c.id} | ${c.parent ? `${c.parent} > ` : ""}${c.name}`).join("\n");
   const collections = (body?.collections ?? []).slice(0, 100).map((c) => `${c.id} | ${c.name}`).join("\n");
 
@@ -34,8 +35,8 @@ export async function POST(request: Request) {
     const data = await sharp(Buffer.from(await res.arrayBuffer()), { failOn: "none" }).rotate().resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer().catch(() => null);
     if (data) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: data.toString("base64") } });
   }
-  if (!content.length) return NextResponse.json({ error: "The photos couldn't be opened. Try uploading them again as JPEG or PNG." }, { status: 400 });
-  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits) and a collection id only if the piece clearly suits one.` });
+  if (images.length && !content.length) return NextResponse.json({ error: "The photos couldn't be opened. Try uploading them again as JPEG or PNG." }, { status: 400 });
+  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<known_details>\n${known || "None given."}\n</known_details>\nThese details were entered by the shop owner from the supplier's listing. Treat them as facts: keep measurements, materials, quantities, brand and care exactly as given, and use the photos only to fill gaps. Where a known detail and a photo disagree, keep the known detail and add a note to needs_checking.\n\n<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits) and a collection id only if the piece clearly suits one.` });
 
   const str = (description: string) => ({ type: "string", description });
   const num = (description: string) => ({ type: ["number", "null"], description });
