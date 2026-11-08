@@ -27,6 +27,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
     (measured || product.dimensions) && ["Size", measured ? `${measured} cm` : product.dimensions],
     (product.weight_g || product.weight) && ["Weight", product.weight_g ? `${product.weight_g} g` : product.weight],
     product.brand && ["Brand", product.brand],
+    product.made_in && ["Made in", product.made_in],
     product.colours && ["Colours", product.colours],
     product.care && ["Care and storage", product.care],
     product.sku && ["Item no.", product.sku],
