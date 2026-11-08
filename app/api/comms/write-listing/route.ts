@@ -18,7 +18,10 @@ Description:
 - Never hedge from a photo ("glass-look", "appears to be", "what looks like"). If you can't tell what something is, leave it out.
 - For scents, use the notes the supplier states, in plain words. Don't invent comparisons.
 - Styling ideas must suit how the item is actually used: a room spray is sprayed in a room or on linen, not set out as decor; a candle sits on a table or mantel. Give at most one styling idea and at most one gift idea, and don't list kinds of recipients.
-- Write flowing sentences that read naturally aloud, not a checklist of features.`;
+- Write flowing sentences that read naturally aloud, not a checklist of features.
+Versions:
+- If this_version is given (a colour, ribbon or scent), the listing is for that version only. Describe it with that colour or detail, and don't mention other colours as if they come with it.
+- If the photos show more than one version (for example the same bottle with different coloured bows), describe only the one that matches this_version, write image_alt for what each photo actually shows, and add to needs_checking: "The photos show more than one version. Keep only the photos of this version." If this_version is empty, don't pick one: describe what they share, and add to needs_checking that the photos show several versions.`;
 
 type Option = { id: string; name: string; parent?: string };
 
