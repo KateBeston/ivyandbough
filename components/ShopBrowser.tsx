@@ -49,8 +49,9 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
     const list = products.filter((p) => {
       const text = `${p.name} ${p.brand} ${p.description} ${p.kind} ${p.materials} ${p.colours}`.toLowerCase();
       if (!words.every((w) => text.includes(w))) return false;
-      const cat = p.category_id ? byId.get(p.category_id) : undefined;
-      if (f.category.length && !(cat && (f.category.includes(cat.slug) || f.category.includes(byId.get(cat.parent_id ?? "")?.slug ?? "")))) return false;
+      // Matches its main category or any it has also been added to, and their parent categories.
+      const cats = [p.category_id, ...(p.extra_category_ids ?? [])].flatMap((id) => (id && byId.get(id) ? [byId.get(id)!] : []));
+      if (f.category.length && !cats.some((cat) => f.category.includes(cat.slug) || f.category.includes(byId.get(cat.parent_id ?? "")?.slug ?? ""))) return false;
       if (f.collection.length && ![p.themes?.slug ?? "", ...(p.product_themes ?? []).map((t) => t.themes?.slug ?? "")].some((s) => s && f.collection.includes(s))) return false;
       if (f.colour.length && !split(p.colours).some((c) => f.colour.includes(c))) return false;
       if (f.size.length && !f.size.includes(sizeOf(p))) return false;
