@@ -19,6 +19,10 @@ Description:
 - For scents, use the notes the supplier states, in plain words. Don't invent comparisons.
 - Styling ideas must suit how the item is actually used: a room spray is sprayed in a room or on linen, not set out as decor; a candle sits on a table or mantel. Give at most one styling idea and at most one gift idea, and don't list kinds of recipients.
 - Write flowing sentences that read naturally aloud, not a checklist of features.
+Food and drink:
+- Ingredients, allergens, diets and nutrition are legal label information. Only mention a diet (vegan, gluten-free, organic and so on) or an allergen if it is in the known details, worded exactly as given. Never infer one from the photos or the name, and never write health claims ("healthy", "good for you", "boosts").
+- Don't repeat the ingredients or allergens in the description; they're shown separately on the page. Describe the taste, the occasion and how it's served or gifted.
+- If it looks like food or drink and no ingredients or allergens are given, add to needs_checking: "Add the ingredients, allergens and nutrition from the label in the Food tab."
 Grouped listings:
 - If grouped_versions is given, this is one listing for several versions of the same product (for example the same spray with different bow colours). Write one general description of what every version shares, then say it comes in the versions listed, using option_label (for example "Available with a red gingham, brown or tartan bow."). Don't describe one version as if it were the product. Photos may show different versions; that's expected, so don't flag it.
 Versions:

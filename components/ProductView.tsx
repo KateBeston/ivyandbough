@@ -111,6 +111,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
               ))}
             </div>
           )}
+          {product.is_food && <FoodInfo product={product} />}
         </div>
       </div>
       {more.length > 0 && (
@@ -120,5 +121,41 @@ export async function ProductView({ product: listing, preview = false, colour }:
         </section>
       )}
     </main>
+  );
+}
+
+const NUTRIENTS: [string, string, string][] = [["energy", "Energy", "kJ"], ["protein", "Protein", "g"], ["fat", "Fat, total", "g"], ["saturated", "– saturated", "g"], ["carbs", "Carbohydrate", "g"], ["sugars", "– sugars", "g"], ["fibre", "Dietary fibre", "g"], ["sodium", "Sodium", "mg"]];
+const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+const sentence = (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`).toLowerCase();
+
+// Food and drink: diet labels, ingredients, allergens, nutrition and storage, exactly as the supplier's label gives them.
+function FoodInfo({ product }: { product: Product }) {
+  const n = product.nutrition ?? {};
+  const unit = product.net_unit === "ml" || product.net_unit === "L" ? "mL" : "g";
+  const size = Number(n.serving_size) || 0;
+  const perServing = (k: string) => n.per_serving?.[k] || (size && n.per100?.[k] ? String(Math.round(Number(n.per100[k]) * size) / 100) : "");
+  const rows = NUTRIENTS.filter(([k]) => n.per100?.[k] || n.per_serving?.[k]);
+  const diet = list(product.diet), contains = list(product.allergens_contains), may = list(product.allergens_may_contain);
+  return (
+    <div className="spec food-info">
+      {diet.length > 0 && <div><h2 className="spec-head">Diet</h2><ul className="quality-pills">{diet.map((d) => <li key={d} className="quality-pill">{d}</li>)}</ul></div>}
+      {product.ingredients && <div><h2 className="spec-head">Ingredients</h2><p>{product.ingredients}</p></div>}
+      {(contains.length > 0 || may.length > 0) && (
+        <div><h2 className="spec-head">Allergens</h2>
+          {contains.length > 0 && <p><strong>Contains {sentence(contains)}.</strong></p>}
+          {may.length > 0 && <p>May contain {sentence(may)}.</p>}
+        </div>
+      )}
+      {rows.length > 0 && (
+        <div><h2 className="spec-head">Nutrition information</h2>
+          {(n.servings || n.serving_size) && <p className="muted">{n.servings ? `Servings per package: ${n.servings}` : ""}{n.servings && n.serving_size ? ". " : ""}{n.serving_size ? `Serving size: ${n.serving_size} ${unit}` : ""}</p>}
+          <table className="nip-table">
+            <thead><tr><th /><th>Average per serving</th><th>Average per 100 {unit}</th></tr></thead>
+            <tbody>{rows.map(([k, label, u]) => <tr key={k}><th scope="row">{label}</th><td>{perServing(k) ? `${perServing(k)} ${u}` : ""}</td><td>{n.per100?.[k] ? `${n.per100[k]} ${u}` : ""}</td></tr>)}</tbody>
+          </table>
+        </div>
+      )}
+      {product.storage && <div><h2 className="spec-head">Storage</h2><p>{product.storage}</p></div>}
+    </div>
   );
 }
