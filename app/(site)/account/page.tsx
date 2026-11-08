@@ -207,6 +207,7 @@ export default function AccountPage() {
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "payment") setTab("Payment methods");
     if (t === "requests") setTab("Returns and disputes");
+    if (t === "addresses") setTab("Addresses");
     // After signing in from the basket, go straight back to checkout.
     const next = new URLSearchParams(window.location.search).get("next") ?? "";
     const back = (s: Session | null) => { if (s && /^\/[a-z]/.test(next)) window.location.replace(next); };

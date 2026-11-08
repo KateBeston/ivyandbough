@@ -689,3 +689,13 @@ button{font:inherit;color:inherit}
 .quality-group .spec-head{margin-bottom:8px}
 .quality-pills{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
 .quality-pill{padding:6px 12px;border:1px solid var(--line);background:var(--sand);font-size:12px;letter-spacing:.04em;color:var(--ink);border-radius:0}
+.ship-to{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin-bottom:10px;font-size:14px}
+.ship-to-btn{padding:0;border:0;background:none;font:inherit;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ship-dialog{width:min(420px,calc(100vw - 32px));padding:22px;border:0;background:var(--paper);color:var(--ink);box-shadow:0 30px 80px rgba(21,19,15,.4)}
+.ship-dialog::backdrop{background:rgba(21,19,15,.45)}
+.ship-dialog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ship-dialog-head h2{margin:0;font-family:var(--serif);font-size:24px;font-weight:400}
+.ship-dialog-head button{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--ink)}
+.ship-label{margin:0 0 4px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
+.ship-address{font-style:normal;line-height:1.6;margin-bottom:14px}
+.ship-choices{margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;font-size:13px}

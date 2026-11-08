@@ -6,6 +6,7 @@ import { DeliveryCheck } from "./DeliveryCheck";
 import { AddToBasket } from "./AddToBasket";
 import { Gallery } from "./Gallery";
 import { NotifyMe } from "./NotifyMe";
+import { ShipTo } from "./ShipTo";
 import { ProductGrid } from "./ProductGrid";
 
 const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: n % 1 ? 2 : 0 }).format(n);
@@ -65,6 +66,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
           {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : comingSoon ? (preview ? <button type="button" className="solid" disabled>Notify me</button> : <NotifyMe productId={product.id} />) : <AddToBasket product={product} preview={preview} />}
 
           <div className="delivery-box">
+            {!preview && <ShipTo shipsFrom={product.ships_from} />}
             <ul>
               <li>{dispatch}, then delivered Australia-wide.</li>
               <li>{freeOver === null ? "Delivery calculated from your postcode." : `Free standard delivery on orders over ${aud(freeOver)}.`}</li>
