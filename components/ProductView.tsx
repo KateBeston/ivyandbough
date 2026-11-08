@@ -14,12 +14,16 @@ const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", c
 
 export async function ProductView({ product, preview = false }: { product: Product; preview?: boolean }) {
   const theme = product.themes;
-  const [{ data: settings }, related, { data: versions }] = await Promise.all([
+  const [{ data: settings }, related, { data: versions }, { data: palette }] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
-    product.range_name ? supabase.from("products").select("id,slug,name,version_name,availability").eq("range_name", product.range_name).eq("status", "active").order("version_name") : Promise.resolve({ data: [] as { id: string; slug: string; name: string; version_name: string; availability: string }[] }),
+    product.range_name ? supabase.from("products").select("id,slug,name,version_name,availability,swatch").eq("range_name", product.range_name).eq("status", "active").order("version_name") : Promise.resolve({ data: [] as { id: string; slug: string; name: string; version_name: string; availability: string; swatch: string }[] }),
+    product.range_name ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
   ]);
-  const others = (versions ?? []) as { id: string; slug: string; name: string; version_name: string; availability: string }[];
+  const others = (versions ?? []) as { id: string; slug: string; name: string; version_name: string; availability: string; swatch: string }[];
+  const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
+  const dot = (n: string) => { const c = colourOf(n); if (!c) return null; return <span aria-hidden="true" className="swatch" style={{ background: c.hex2 ? `linear-gradient(135deg, ${c.hex} 50%, ${c.hex2} 50%)` : c.hex }} />; };
+  const currentName = others.find((v) => v.id === product.id)?.version_name || "";
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const details = [
@@ -57,10 +61,10 @@ export async function ProductView({ product, preview = false }: { product: Produ
           </div>
           {others.length > 1 && (
             <div className="versions">
-              <span className="versions-label">Also available in</span>
+              <span className="versions-label">{others.some((v) => v.swatch) ? <>Colour{currentName ? <>: <strong>{currentName}</strong></> : null}</> : "Also available in"}</span>
               <div className="versions-list">{others.map((v) => v.id === product.id
-                ? <span key={v.id} className="version on" aria-current="true">{v.version_name || v.name}</span>
-                : <Link key={v.id} href={`/products/${v.slug}`} className="version">{v.version_name || v.name}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
+                ? <span key={v.id} className="version on" aria-current="true">{dot(v.swatch)}{v.version_name || v.name}</span>
+                : <Link key={v.id} href={`/products/${v.slug}`} className="version" scroll={false}>{dot(v.swatch)}{v.version_name || v.name}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
             </div>
           )}
           <p className="lede">{product.description}</p>
