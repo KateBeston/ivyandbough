@@ -43,7 +43,7 @@ export const SAMPLE: Record<string, string> = {
   parcel_status: "Delivery attempt failed", carrier: "Australia Post", tracking_number: "123456789",
   po_number: "PO-1001", po_items: "2 x Velvet Bow (IVB-10001), $18.00 each", delivery_phone: "+61 400 000 000", po_notes: "",
   first_name: "Sarah", customer_name: "Sarah Smith", order_number: "IB-1001", items: "1 x Dark velvet Christmas tree bow, $49.00", order_total: "$63.95", delivery_total: "$14.95", gst_total: "$5.81",
-  delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post, [track your parcel](https://auspost.com.au/mypost/track/#/details/123456789)", details: "$63.95", dispatch_estimate: "Most items are dispatched within 3 business days.",
+  delivery_name: "Sarah Smith", delivery_address: "1 Example Street, Brisbane QLD 4000", tracking: "Dark velvet Christmas tree bow: Australia Post\n[Track your parcel](https://ivyandbough.com/track/sample)", track_url: "https://ivyandbough.com/track/sample", details: "$63.95", dispatch_estimate: "Most items are dispatched within 3 business days.",
   basket_items: "1 x [Dark velvet Christmas tree bow](https://ivy-and-bough.vercel.app/shop)",
   promo_code: "WELCOME-SAMPLE12", offer: "$10 off your first order of $50 or more", offer_terms: "It can be used once, on your first order, and expires on 5 December 2026. It can't be used on sale or clearance items.",
 };
@@ -161,15 +161,19 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,discount_total,promo_code,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,themes!products_theme_id_fkey(name),product_images(url,sort_order)))").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,track_token,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,discount_total,promo_code,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,themes!products_theme_id_fkey(name),product_images(url,sort_order)))").eq("id", orderId).single();
   if (!data) return null;
-  const order = data as unknown as { order_number: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; discount_total: number; promo_code: string; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; sku: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { dispatch_days: number | null; themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
+  const order = data as unknown as { order_number: string; track_token: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; discount_total: number; promo_code: string; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; sku: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { dispatch_days: number | null; themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
   const name = order.customers?.name || order.shipping_name || "";
   const dispatchDays = order.order_items.flatMap((i) => (i.products?.dispatch_days ? [i.products.dispatch_days] : []));
+  // Every tracking link goes to the branded tracking page, which links on to the courier.
+  const trackUrl = order.track_token ? `${SITE_URL}/track/${order.track_token}` : "";
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
+    if (trackUrl) return `${clean(i.name)}: ${clean(i.carrier) || "on its way"}`;
     const link = trackingUrl(i.carrier, i.tracking_number);
     return `${clean(i.name)}: ${[clean(i.carrier), link ? `[track your parcel](${link})` : `tracking ${clean(i.tracking_number)}`].filter(Boolean).join(", ")}`;
   });
+  if (tracked.length && trackUrl) tracked.push(`[Track your parcel](${trackUrl})`);
   return {
     email: order.customer_email,
     phone: order.shipping_phone || order.customers?.phone || "",
@@ -192,6 +196,7 @@ async function orderData(db: Db, orderId: string) {
       order_total: money(Number(order.total)), delivery_total: Number(order.shipping_total) ? money(Number(order.shipping_total)) : "Free", gst_total: money(Number(order.gst_total)),
       delivery_name: order.shipping_name, delivery_address: order.shipping_address,
       tracking: tracked.join("\n") || "You can check your order in your account.",
+      track_url: trackUrl || `${SITE_URL}/account`,
       dispatch_estimate: dispatchDays.length ? `Your order is usually dispatched within ${Math.max(...dispatchDays)} business ${Math.max(...dispatchDays) === 1 ? "day" : "days"}.` : "Dispatch times are shown on each product page.",
     } as Record<string, string>,
   };

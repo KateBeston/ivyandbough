@@ -16,7 +16,7 @@ import { SavedItems } from "@/components/SavedItems";
 import { AddressLookup } from "@/components/AddressLookup";
 
 type Item = { name: string; quantity: number; unit_price: number; shipping_status: string; carrier: string; tracking_number: string };
-type Order = { id: string; order_number: string; status: string; placed_on: string; total: number; subtotal: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; items: Item[] };
+type Order = { id: string; order_number: string; status: string; placed_on: string; total: number; subtotal: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; track_token: string; items: Item[] };
 type Address = { id: string; label: string; name: string; line1: string; line2: string; suburb: string; state: string; postcode: string };
 const cents = (n: number) => formatPrice(Math.round(Number(n) * 100));
 const states = ["QLD", "NSW", "VIC", "TAS", "SA", "WA", "NT", "ACT"];
@@ -121,6 +121,7 @@ function Orders() {
               <div>{i.shipping_status}{i.carrier ? ` with ${i.carrier}` : ""}{i.tracking_number ? <>, {trackingUrl(i.carrier, i.tracking_number) ? <a href={trackingUrl(i.carrier, i.tracking_number)!} target="_blank" rel="noopener noreferrer">track your parcel</a> : `tracking ${i.tracking_number}`}</> : ""}</div>
             </div>
           ))}
+          {o.track_token && <p><Link className="text-link" href={`/track/${o.track_token}`}>Track your order</Link></p>}
           <p className="muted">Delivered to {o.shipping_name}, {o.shipping_address}</p>
           <p className="muted">Delivery {cents(o.shipping_total)}. Total {cents(o.total)}, including {cents(o.gst_total)} GST.</p>
         </details>
