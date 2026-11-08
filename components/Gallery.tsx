@@ -24,17 +24,17 @@ export function Gallery({ images }: { images: ProductImage[] }) {
   return (
     <div className="ic" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <div className="ic-stage">
-        {images.map((img, k) => (
-          <Image key={img.url} src={img.url} alt={k === idx ? img.alt : ""} aria-hidden={k !== idx} fill priority={k === 0} sizes="(max-width: 900px) 100vw, 50vw" quality={85} className={`cover ic-slide${k === idx ? " on" : ""}`} style={{ objectPosition: img.position }} />
-        ))}
+        {images.map((img, k) => img.media_type === "video"
+          ? (k === idx ? <video key={img.url} src={img.url} className="cover ic-slide on ic-video" autoPlay muted loop playsInline controls aria-label={img.alt || "Product video"} onPlay={() => setPaused(true)} /> : null)
+          : <Image key={img.url} src={img.url} alt={k === idx ? img.alt : ""} aria-hidden={k !== idx} fill priority={k === 0} sizes="(max-width: 900px) 100vw, 50vw" quality={85} className={`cover ic-slide${k === idx ? " on" : ""}`} style={{ objectPosition: img.position }} />)}
       </div>
       {many && (
         <div className="ic-car">
           <button type="button" className="ic-cbtn" onClick={() => step(-1)} aria-label="Previous image">‹</button>
           <div className="ic-strip">
             {others.map((k) => (
-              <button key={images[k].url} type="button" className="ic-thumb" onClick={() => setI(k)} aria-label={`Show image ${k + 1}`}>
-                <Image src={images[k].url} alt="" fill sizes="60px" className="cover" />
+              <button key={images[k].url} type="button" className="ic-thumb" onClick={() => setI(k)} aria-label={images[k].media_type === "video" ? "Play video" : `Show image ${k + 1}`}>
+                {images[k].media_type === "video" ? <><video src={`${images[k].url}#t=0.1`} className="cover" muted playsInline preload="metadata" /><span className="ic-play" aria-hidden="true">▶</span></> : <Image src={images[k].url} alt="" fill sizes="60px" className="cover" />}
               </button>
             ))}
           </div>

@@ -40,7 +40,7 @@ export async function ProductView({ product, preview = false }: { product: Produ
     <main className="product-page">
       <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
-        <Gallery images={product.product_images} />
+        <Gallery images={product.product_media ?? product.product_images} />
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
