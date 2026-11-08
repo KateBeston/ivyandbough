@@ -25,7 +25,13 @@ export async function ProductView({ product: listing, preview = false, colour }:
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
   ]);
   const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
-  const dot = (n?: string) => { const c = n ? colourOf(n) : null; if (!c) return null; return <span aria-hidden="true" className="swatch" style={{ background: c.hex2 ? `linear-gradient(135deg, ${c.hex} 50%, ${c.hex2} 50%)` : c.hex }} />; };
+  // A product can be more than one colour ("Red, White"): the dot shows the first two, split diagonally.
+  const dot = (n?: string) => {
+    const found = (n ?? "").split(",").map((x) => colourOf(x.trim())).filter((c): c is { name: string; hex: string; hex2: string } => !!c);
+    if (!found.length) return null;
+    const a = found[0].hex, b = found[1]?.hex ?? found[0].hex2;
+    return <span aria-hidden="true" className="swatch" style={{ background: b ? `linear-gradient(135deg, ${a} 50%, ${b} 50%)` : a }} />;
+  };
   const label = listing.option_label || "Colour";
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
