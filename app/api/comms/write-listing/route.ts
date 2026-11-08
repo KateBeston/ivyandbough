@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     if (data) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: data.toString("base64") } });
   }
   if (images.length && !content.length) return NextResponse.json({ error: "The photos couldn't be opened. Try uploading them again as JPEG or PNG." }, { status: 400 });
-  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<known_details>\n${known || "None given."}\n</known_details>\nThese details were entered by the shop owner from the supplier's listing. Treat them as facts: keep measurements, materials, quantities, brand and care exactly as given, and use the photos only to fill gaps. Where a known detail and a photo disagree, keep the known detail and add a note to needs_checking.\n\n<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits) and a collection id only if the piece clearly suits one.` });
+  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<known_details>\n${known || "None given."}\n</known_details>\nThese details were entered by the shop owner from the supplier's listing. Treat them as facts: keep measurements, materials, quantities, brand and care exactly as given, and use the photos only to fill gaps. Where a known detail and a photo disagree, keep the known detail and add a note to needs_checking.\n\n<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits), up to 2 alternatives, and every collection the piece genuinely suits, best fit first.` });
 
   const str = (description: string) => ({ type: "string", description });
   const num = (description: string) => ({ type: ["number", "null"], description });
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         description: "Save the drafted listing.",
         input_schema: {
           type: "object",
-          required: ["name", "kind", "description", "pack_quantity", "materials", "colours", "care", "dimensions", "height_cm", "width_cm", "depth_cm", "weight_g", "category_id", "collection_id", "seo_title", "seo_description", "social_caption", "pinterest_description", "image_alt", "needs_checking"],
+          required: ["name", "kind", "description", "pack_quantity", "materials", "colours", "care", "dimensions", "height_cm", "width_cm", "depth_cm", "weight_g", "category_id", "other_category_ids", "collection_ids", "suggestion_reason", "seo_title", "seo_description", "social_caption", "pinterest_description", "image_alt", "needs_checking"],
           properties: {
             name: str("Product name, 2 to 7 words, title case, no brand names unless in the supplier details"),
             kind: str("Short product type shown above the name on cards, such as Bauble, Wreath, Table runner"),
@@ -67,8 +67,10 @@ export async function POST(request: Request) {
             width_cm: num("Width in cm, only if stated"),
             depth_cm: num("Depth in cm, only if stated"),
             weight_g: num("Weight in grams, only if stated"),
-            category_id: str("Category id from the list, or empty"),
-            collection_id: str("Collection id from the list, or empty"),
+            category_id: str("The single best category id from the list: the most specific subcategory that fits, or empty"),
+            other_category_ids: { type: "array", items: { type: "string" }, description: "Up to 2 other category ids that would also be a reasonable home, best first; empty if none" },
+            collection_ids: { type: "array", items: { type: "string" }, description: "Every collection id the piece genuinely suits by colour, material and style, best fit first. Only include a collection if the piece would look right styled with it; usually 1 to 3; empty if none" },
+            suggestion_reason: str("One short sentence explaining the category and collection choices"),
             seo_title: str("Search title under 60 characters ending with | Ivy & Bough"),
             seo_description: str("Search description, 140 to 160 characters, ending with Delivered across Australia."),
             social_caption: str("Instagram caption, 1 to 3 short sentences, then 3 to 5 relevant hashtags"),

@@ -129,6 +129,58 @@ function Orders() {
   );
 }
 
+const notify = async (event: string) => { await fetch("/api/account/notify", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ event }) }).catch(() => null); };
+
+function Security({ email }: { email: string }) {
+  const [pw, setPw] = useState({ next: "", again: "" });
+  const [newEmail, setNewEmail] = useState("");
+  const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function changePassword(e: FormEvent) {
+    e.preventDefault();
+    setMsg(""); setError("");
+    if (pw.next.length < 8) return setError("Your new password needs at least 8 characters.");
+    if (pw.next !== pw.again) return setError("The new passwords don't match.");
+    setBusy(true);
+    const { error: err } = await account.auth.updateUser({ password: pw.next });
+    setBusy(false);
+    if (err) return setError(/reauth|nonce|recent/i.test(err.message) ? "For your security, please sign out, sign back in, then change your password." : err.message);
+    setPw({ next: "", again: "" });
+    setMsg("Password changed. We've emailed you to confirm.");
+    notify("password");
+  }
+  async function changeEmail(e: FormEvent) {
+    e.preventDefault();
+    setMsg(""); setError("");
+    setBusy(true);
+    const { error: err } = await account.auth.updateUser({ email: newEmail.trim() }, { emailRedirectTo: `${window.location.origin}/account` });
+    setBusy(false);
+    if (err) return setError(err.message);
+    setMsg(`Check ${newEmail.trim()} for a link to confirm the change. Your email stays the same until you do.`);
+    notify("email");
+    setNewEmail("");
+  }
+  return (
+    <div className="account-security">
+      {msg && <p role="status">{msg}</p>}
+      {error && <p role="alert" className="form-error">{error}</p>}
+      <form className="account-form" onSubmit={changePassword}>
+        <h2 className="spec-head">Change password</h2>
+        <label>New password<input type="password" required minLength={8} autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></label>
+        <label>New password again<input type="password" required minLength={8} autoComplete="new-password" value={pw.again} onChange={(e) => setPw({ ...pw, again: e.target.value })} /></label>
+        <button className="solid" disabled={busy}>Change password</button>
+      </form>
+      <form className="account-form" onSubmit={changeEmail}>
+        <h2 className="spec-head">Change email</h2>
+        <p className="muted">Your current email is {email}.</p>
+        <label>New email<input type="email" required autoComplete="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} /></label>
+        <button className="solid" disabled={busy}>Change email</button>
+      </form>
+    </div>
+  );
+}
+
 function Details({ email }: { email: string }) {
   const [form, setForm] = useState({ name: "", phone: "" });
   const [msg, setMsg] = useState("");
@@ -138,7 +190,8 @@ function Details({ email }: { email: string }) {
   async function save(e: FormEvent) {
     e.preventDefault();
     const { error } = await account.rpc("update_my_details", { full_name: form.name, phone_number: form.phone });
-    setMsg(error ? "That didn't save. Please try again." : "Saved.");
+    setMsg(error ? "That didn't save. Please try again." : "Saved. We've emailed you to confirm.");
+    if (!error) notify("details");
   }
   return (
     <form className="account-form" onSubmit={save}>
@@ -155,6 +208,7 @@ function Addresses({ userId }: { userId: string }) {
   const blank = { label: "", name: "", line1: "", line2: "", suburb: "", state: "QLD", postcode: "" };
   const [rows, setRows] = useState<Address[]>([]);
   const [form, setForm] = useState(blank);
+  const [editing, setEditing] = useState("");
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     const { data } = await account.from("customer_addresses").select("*").order("created_at");
@@ -163,13 +217,19 @@ function Addresses({ userId }: { userId: string }) {
   useEffect(() => { load(); }, [load]);
   async function add(e: FormEvent) {
     e.preventDefault();
-    const { error: err } = await account.from("customer_addresses").insert({ ...form, auth_user_id: userId });
+    const { error: err } = editing
+      ? await account.from("customer_addresses").update(form).eq("id", editing)
+      : await account.from("customer_addresses").insert({ ...form, auth_user_id: userId });
     if (err) return setError("That didn't save. Please try again.");
+    notify(editing ? "address-updated" : "address-added");
     setForm(blank);
+    setEditing("");
     load();
   }
   async function remove(id: string) {
+    if (!window.confirm("Remove this address?")) return;
     await account.from("customer_addresses").delete().eq("id", id);
+    notify("address-removed");
     load();
   }
   const input = (key: keyof typeof blank, label: string, required = false) => <label>{label}<input required={required} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} /></label>;
@@ -178,7 +238,7 @@ function Addresses({ userId }: { userId: string }) {
       {rows.map((a) => (
         <div key={a.id} className="order-line">
           <div><strong>{a.label || a.name}</strong><br />{[a.name, a.line1, a.line2, `${a.suburb} ${a.state} ${a.postcode}`].filter(Boolean).join(", ")}</div>
-          <button type="button" className="link-button" onClick={() => remove(a.id)}>Remove</button>
+          <span className="address-actions"><button type="button" className="link-button" onClick={() => { setEditing(a.id); setForm({ label: a.label ?? "", name: a.name ?? "", line1: a.line1 ?? "", line2: a.line2 ?? "", suburb: a.suburb ?? "", state: a.state ?? "QLD", postcode: a.postcode ?? "" }); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}>Edit</button><button type="button" className="link-button" onClick={() => remove(a.id)}>Remove</button></span>
         </div>
       ))}
       <form className="account-form" onSubmit={add}>
@@ -191,7 +251,8 @@ function Addresses({ userId }: { userId: string }) {
         {input("suburb", "Suburb", true)}
         <label>State<select value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })}>{states.map((s) => <option key={s}>{s}</option>)}</select></label>
         {input("postcode", "Postcode", true)}
-        <button className="solid">Add address</button>
+        <button className="solid">{editing ? "Save address" : "Add address"}</button>
+        {editing && <button type="button" className="link-button" onClick={() => { setEditing(""); setForm(blank); }}>Cancel</button>}
       </form>
     </>
   );
@@ -246,7 +307,7 @@ export default function AccountPage() {
       </div>
       {welcome && <div className="welcome-offer"><p>Your welcome offer: {welcome.offer}.</p><strong>{welcome.code}</strong><p className="muted">{welcome.terms}</p></div>}
       <div className="pill-row account-tabs" role="tablist">
-        {["Orders", "Saved items", "Returns and disputes", "Details", "Addresses", "Payment methods"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
+        {["Orders", "Saved items", "Returns and disputes", "Details", "Addresses", "Payment methods", "Password and email"].map((t) => <button key={t} type="button" role="tab" aria-selected={t === tab} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
       </div>
       {tab === "Orders" && <Orders />}
       {tab === "Saved items" && <SavedItems />}
@@ -254,6 +315,7 @@ export default function AccountPage() {
       {tab === "Details" && <Details email={session.user.email ?? ""} />}
       {tab === "Addresses" && <Addresses userId={session.user.id} />}
       {tab === "Payment methods" && <PaymentMethods />}
+      {tab === "Password and email" && <Security email={session.user.email ?? ""} />}
     </main>
   );
 }

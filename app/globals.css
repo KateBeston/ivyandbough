@@ -707,3 +707,4 @@ button{font:inherit;color:inherit}
 .page-heart{flex:none;border:1px solid var(--line);background:transparent}
 .nav-saved{position:relative;display:inline-flex;align-items:center}
 .nav-count{position:absolute;top:-6px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#8B1E2B;color:#fff;font-size:10px;line-height:16px;text-align:center}
+.address-actions{display:flex;gap:14px}.account-security{display:flex;flex-direction:column;gap:28px}
