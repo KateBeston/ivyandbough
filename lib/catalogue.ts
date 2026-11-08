@@ -8,7 +8,7 @@ export type Product = { product_themes?: { themes: { slug: string; name: string 
 export type Category = { id: string; slug: string; name: string; intro: string; image_url: string; image_alt: string; image_position: string; parent_id: string | null; seo_title: string; seo_description: string; page_intro: string };
 export type DeliveryDate = { region: string; last_order_date: string | null };
 
-const productSelect = `id,sku,slug,name,brand,ships_from,made_in,size_label,qualities,range_name,version_name,net_quantity,net_unit,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,availability,pack_quantity,care,returns_note,seo_title,seo_description,colours,category_id,theme_id,created_at,themes(name,slug),product_themes(themes(slug,name)),categories(name,slug),product_images(url,alt,position,sort_order,media_type)`;
+const productSelect = `id,sku,slug,name,brand,ships_from,made_in,size_label,qualities,range_name,version_name,net_quantity,net_unit,kind,description,price_cents,${OFFER_COLUMNS},materials,dimensions,weight,height_cm,width_cm,depth_cm,weight_g,dispatch_days,availability,pack_quantity,care,returns_note,seo_title,seo_description,colours,category_id,theme_id,created_at,themes!products_theme_id_fkey(name,slug),product_themes(themes(slug,name)),categories(name,slug),product_images(url,alt,position,sort_order,media_type)`;
 
 function must<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
