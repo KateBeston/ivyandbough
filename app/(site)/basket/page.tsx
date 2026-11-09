@@ -111,7 +111,7 @@ export default function BasketPage() {
               <div key={l.id} className="basket-line">
                 <div className="frame">{l.image && <Image src={l.image} alt="" fill sizes="110px" className="cover" />}</div>
                 <div>
-                  <Link href={`/products/${l.slug}`} className="basket-name">{l.name}</Link>
+                  <Link href={`/products/${l.slug}`} className="basket-name">{l.name.split(" – ")[0]}</Link>{l.name.includes(" – ") && <small className="basket-version">{l.name.split(" – ").slice(1).join(" – ")}</small>}
                   {l.sku && <div className="muted">Item no. {l.sku}</div>}
                   <div>{l.sale_label && <span className="product-offer-label">{l.sale_label}</span>}<div><Price cents={l.price_cents} wasCents={l.was_cents} /></div></div>
                   <button type="button" className="link-button" onClick={() => remove(l.id)}>Remove</button>

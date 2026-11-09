@@ -73,7 +73,9 @@ export async function ProductView({ product: listing, preview = false, colour }:
           </div>
           {versions.length > 1 && chosen && (
             <div className="versions">
-              <span className="versions-label">{label}: <strong>{chosen.version_name || chosen.sku}</strong></span>
+              <div className="versions-label">{splitPills(chosen).length
+                ? <>{splitPills(chosen).map(([k, vals]) => <span key={k} className="version-pills"><span>{k}</span>{vals.map((v) => <em key={v} className="quality-pill">{v}</em>)}</span>)}</>
+                : <>{label}: <strong>{chosen.version_name || chosen.sku}</strong></>}</div>
               <div className="versions-list">{versions.map((v) => v.id === chosen.id
                 ? <span key={v.id} className="version on" aria-current="true">{dot(v.swatch)}{v.version_name || v.sku}</span>
                 : <Link key={v.id} href={`?colour=${encodeURIComponent(v.sku)}`} replace scroll={false} className="version">{dot(v.swatch)}{v.version_name || v.sku}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
@@ -163,4 +165,11 @@ function FoodInfo({ product }: { product: Product }) {
       {product.storage && <div><h2 className="spec-head">Storage</h2><p>{product.storage}</p></div>}
     </div>
   );
+}
+
+// The chosen version's colours and materials as pills, rather than one long name.
+function splitPills(p: Product): [string, string[]][] {
+  const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+  const c = list(p.colour), m = list(p.material);
+  return [...(c.length ? [[c.length > 1 ? "Colours" : "Colour", c] as [string, string[]]] : []), ...(m.length ? [[m.length > 1 ? "Materials" : "Material", m] as [string, string[]]] : [])];
 }
