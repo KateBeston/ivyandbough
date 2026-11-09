@@ -21,6 +21,7 @@ export function ShopTheLook({ productHref }: { productHref: string }) {
         ))}
       </div>
       <div className="look-copy">
+        <div className="eyebrow">Shop the look</div>
         <h2 className="heading">The Rustic Homestead room</h2>
         <div className="look-list">
           {spots.map((s, i) => (

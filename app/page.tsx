@@ -48,6 +48,7 @@ export default async function HomePage() {
 
         <section className="intro">
           <div>
+            <div className="eyebrow">Welcome</div>
             <h2 className="heading">The pieces you unpack every December. The ones that feel like home.</h2>
             <p>Ivy &amp; Bough brings together elegant, unique Christmas pieces for the table, the tree and the front door.</p>
             <a href="#collections" className="text-link">Find your Christmas</a>
@@ -59,7 +60,8 @@ export default async function HomePage() {
 
         <section id="collections" className="magazine">
           <div className="magazine-head">
-            <h2 className="heading">Shop the collection</h2>
+            <div><div className="eyebrow">Find your Christmas</div>
+            <h2 className="heading">Shop the collection</h2></div>
             <Link href="/collections" className="text-link">Explore all collections</Link>
           </div>
           <div className="magazine-grid">
@@ -82,6 +84,7 @@ export default async function HomePage() {
         </section>
 
         <section id="home" className="home">
+          <div className="eyebrow">Around the home</div>
           <h2 className="heading">From the table to the front door</h2>
           <div className="home-grid">
             {places.map((p) => (
