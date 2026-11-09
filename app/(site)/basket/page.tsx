@@ -132,7 +132,10 @@ export default function BasketPage() {
                 <label>State<select autoComplete="address-level1" value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
                 <label>Postcode<input inputMode="numeric" maxLength={4} autoComplete="postal-code" value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
               </div>
-              <p className="muted delivery-note">We deliver to street addresses, PO boxes and parcel lockers. Large or heavy items need a street address.</p>
+              <div className="muted delivery-note">
+                <p><strong>Please check your address carefully.</strong> Once your order has been dispatched we can&apos;t change it, and any redelivery charge is yours to pay.</p>
+                <p>Dispatch and delivery times are estimates and can be longer in the weeks before Christmas or for regional areas. Some items ship separately from our suppliers, and large items need a street address. <Link href="/delivery">Delivery information</Link></p>
+              </div>
               <div className="delivery-consents">
                 <label className="check-line"><input type="checkbox" checked={details.authorityToLeave} onChange={(e) => set({ authorityToLeave: e.target.checked })} /><span>Leave my parcel in a safe place if no one is home. Once it&apos;s left as asked, it counts as delivered.</span></label>
               </div>

@@ -89,6 +89,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
               <li>{freeOver === null ? "Delivery calculated from your postcode." : `Free standard delivery on orders over ${aud(freeOver)}.`}</li>
               <li>{product.returns_note ? `Returns: ${product.returns_note}` : <>Easy returns under our <Link href="/returns">Returns Policy</Link>.</>}</li>
             </ul>
+            <p className="estimate-note">Dispatch and delivery times are estimates. <Link href="/delivery">Delivery information</Link></p>
             <details>
               <summary>More delivery information</summary>
               {!preview && <DeliveryCheck productId={product.id} />}
