@@ -776,3 +776,9 @@ button{font:inherit;color:inherit}
 .lb-hint{margin:0;padding:8px 16px 14px;text-align:center;color:rgba(255,255,255,.6);font-size:12px}
 @media (max-width:700px){.lb-nav{width:38px;height:52px;font-size:26px}.lb-hint{font-size:11px}}
 .lb{background:#181614}
+/* Family choices: plain, equal-sized text options in a tidy grid. No colour dots here. */
+.versions{gap:14px}
+.option-row{display:grid;grid-template-columns:96px repeat(auto-fill,minmax(150px,1fr));gap:8px;align-items:stretch}
+.option-label{align-self:center;min-width:0}
+.option-pill{justify-content:center;text-align:center;padding:7px 12px;font-size:12.5px;letter-spacing:.02em;min-height:36px}
+@media (max-width:600px){.option-row{grid-template-columns:repeat(2,minmax(0,1fr))}.option-label{grid-column:1/-1}}

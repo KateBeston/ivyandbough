@@ -77,8 +77,8 @@ export async function ProductView({ product: listing, preview = false, colour }:
                 <div key={row.label} className="option-row" role="group" aria-label={row.label}>
                   <span className="option-label">{row.label}</span>
                   {row.options.map((o) => o.on
-                    ? <span key={o.value} className="option-pill on" aria-current="true">{row.dots && dot(o.value)}{o.text}</span>
-                    : <Link key={o.value} href={`?colour=${encodeURIComponent(o.sku)}`} replace scroll={false} className={`option-pill${o.soldOut ? " sold" : ""}`}>{row.dots && dot(o.value)}{o.text}{o.soldOut ? " (sold out)" : ""}</Link>)}
+                    ? <span key={o.value} className="option-pill on" aria-current="true">{o.text}</span>
+                    : <Link key={o.value} href={`?colour=${encodeURIComponent(o.sku)}`} replace scroll={false} className={`option-pill${o.soldOut ? " sold" : ""}`}>{o.text}{o.soldOut ? " (sold out)" : ""}</Link>)}
                 </div>
               ))}
             </div>
