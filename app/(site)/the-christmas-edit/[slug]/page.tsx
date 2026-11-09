@@ -48,6 +48,12 @@ function Divider({ style }: { style: string }) {
   return <hr className={`article-divider ${style === "short" ? "short" : ""}`} />;
 }
 
+// What's in the photo, then who took and styled it.
+function Caption({ text, credit, className = "article-caption" }: { text?: string; credit?: string; className?: string }) {
+  if (!text?.trim() && !credit?.trim()) return null;
+  return <figcaption className={className}>{text?.trim()}{text?.trim() && credit?.trim() ? " " : ""}{credit?.trim() && <em>(Credit: {credit.trim()})</em>}</figcaption>;
+}
+
 const sizes: Record<string, string> = { small: "article-h-small", large: "article-h-large" };
 
 function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
@@ -67,7 +73,7 @@ function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
           {s.image && <div className="frame article-photo"><Image src={s.image} alt={s.alt} fill sizes="(max-width: 760px) 50vw, 400px" className="cover" style={{ objectPosition: s.position }} /></div>}
           {s.image2 && <div className="frame article-photo"><Image src={s.image2} alt={s.alt2 ?? ""} fill sizes="(max-width: 760px) 50vw, 400px" className="cover" style={{ objectPosition: s.position2 }} /></div>}
         </div>
-        {s.credit && <figcaption className="article-credit">{s.credit}</figcaption>}
+        <Caption text={s.caption} credit={s.credit} />
       </figure>
     );
   }
@@ -76,7 +82,7 @@ function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
     return (
       <figure className={`article-figure ${full ? "article-full" : ""}`}>
         {s.image && <div className="frame article-photo" style={full ? { aspectRatio: "21 / 9" } : { aspectRatio: ratio(s.shape) }}><Image src={s.image} alt={s.alt} fill sizes={full ? "100vw" : "(max-width: 760px) 100vw, 860px"} className="cover" style={{ objectPosition: s.position }} /></div>}
-        {s.credit && <figcaption className="article-credit">{s.credit}</figcaption>}
+        <Caption text={s.caption} credit={s.credit} />
       </figure>
     );
   }
@@ -84,7 +90,7 @@ function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
     <section className={`article-section ${s.align === "center" ? "centre" : ""}`}>
       {s.heading && <h2 className={sizes[s.size ?? ""]}>{s.heading}</h2>}
       {s.image && <div className="frame article-photo" style={{ aspectRatio: ratio(s.shape) }}><Image src={s.image} alt={s.alt} fill sizes="(max-width: 760px) 100vw, 860px" className="cover" style={{ objectPosition: s.position }} /></div>}
-      {s.credit && <div className="article-credit">{s.credit}</div>}
+      <Caption text={s.caption} credit={s.credit} />
       {s.note && <div className="article-note">{s.note}</div>}
       {s.text && <RichText text={s.text} />}
       {!!s.products?.length && <div className={`article-products ${s.columns === 3 ? "three" : ""}`}>{s.products.map((item, n) => <ArticleProduct key={n} item={item} catalogue={catalogue} />)}</div>}
@@ -118,7 +124,7 @@ export default async function PostPage({ params }: Props) {
           <Image src={post.image_url} alt={post.image_alt} fill priority sizes="(max-width: 760px) 100vw, 50vw" className="cover" style={{ objectPosition: post.image_position }} />
         </div>
       </section>
-      {post.image_credit && <div className="post-credit">{post.image_credit}</div>}
+      <Caption text={post.image_caption} credit={post.image_credit} className="post-caption" />
       <article className="article">
         {post.intro && <RichText text={post.intro} />}
         {related.length > 0 && (

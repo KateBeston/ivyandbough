@@ -806,3 +806,9 @@ button{font:inherit;color:inherit}
 .product-more .spec{margin-top:0}
 .ingredients{font-size:14px;line-height:1.7;margin:0}
 @media (max-width:900px){.product-specs{grid-template-columns:1fr;gap:32px}.product-more{margin-top:40px;padding-top:28px}}
+
+/* Photo captions: what's in the photo, then the credit in italics */
+.article-caption,.post-caption{margin-top:8px;font-family:var(--a-body,var(--sans));font-size:14px;line-height:1.55;color:#5a4a3f;text-align:left}
+.article-caption em,.post-caption em{font-style:italic}
+.post-caption{max-width:var(--a-col,700px);margin:10px auto 0;padding:0 16px}
+.article-full .article-caption{padding:0 16px}
