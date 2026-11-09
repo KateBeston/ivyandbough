@@ -6,6 +6,7 @@ import { stripeCustomer } from "@/lib/payments";
 import { OFFER_COLUMNS, offerPrice, type OfferFields } from "@/lib/pricing";
 import { checkCode, reserveCode, type Checked } from "@/lib/promotions";
 import { admin, stripe, userFrom } from "@/lib/server";
+import { checkSuburb } from "@/lib/auspost";
 import { cleanItems, quoteDelivery } from "@/lib/shipping";
 import { supabase } from "@/lib/supabase";
 
@@ -26,6 +27,10 @@ export async function POST(request: Request) {
   const text = (value: unknown, max = 120) => String(value ?? "").trim().slice(0, max);
   const delivery = { name: text(body?.delivery?.name), phone: text(body?.delivery?.phone, 30), line1: text(body?.delivery?.line1, 200), line2: text(body?.delivery?.line2, 200), city: text(body?.delivery?.city), state: text(body?.delivery?.state, 3), postcode: text(body?.delivery?.postcode, 4) };
   if (!delivery.name || !delivery.line1 || !delivery.city || !STATES.includes(delivery.state) || !/^\d{4}$/.test(delivery.postcode) || !/^\+614\d{8}$/.test(delivery.phone)) return NextResponse.json({ error: "Please check your delivery details." }, { status: 400 });
+
+  // Catches a suburb that isn't in the postcode, so parcels aren't misaddressed. Skipped if Australia Post can't be reached.
+  const wrongSuburb = await checkSuburb(delivery.city, delivery.state, delivery.postcode);
+  if (wrongSuburb) return NextResponse.json({ error: wrongSuburb }, { status: 400 });
 
   // Prices always come from the database, never from the browser.
   const { data, error } = await supabase.from("products").select(`id,sku,name,version_name,price_cents,availability,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
