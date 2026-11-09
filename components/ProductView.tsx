@@ -46,6 +46,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
     product.made_in && ["Made in", product.made_in],
     product.colours && ["Colours", product.colours],
     product.care && ["Care and storage", product.care],
+    product.warranty && ["Warranty", product.warranty],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, string][];
   const more = related.filter((p) => p.slug !== listing.slug && p.price_cents && p.availability !== "Sold out").slice(0, 4);
@@ -99,6 +100,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
             <div className="spec">
               <h2 className="spec-head">Details</h2>
               <ul className="detail-list">{details.map(([k, v]) => <li key={k}><span>{k}</span>{v}</li>)}</ul>
+              {product.warranty && <p className="acl-note">Our goods come with guarantees that cannot be excluded under the Australian Consumer Law. You are entitled to a replacement or refund for a major failure and compensation for any other reasonably foreseeable loss or damage. You are also entitled to have the goods repaired or replaced if the goods fail to be of acceptable quality and the failure does not amount to a major failure. <Link href="/returns">Returns and warranties</Link></p>}
             </div>
           )}
           {qualities.length > 0 && (
