@@ -69,11 +69,12 @@ export async function POST(request: Request) {
         description: "Save the drafted listing.",
         input_schema: {
           type: "object",
-          required: ["name", "kind", "description", "pack_quantity", "materials", "colours", "care", "dimensions", "height_cm", "width_cm", "depth_cm", "weight_g", "category_id", "other_category_ids", "collection_ids", "suggestion_reason", "seo_title", "seo_description", "social_caption", "pinterest_description", "image_alt", "needs_checking"],
+          required: ["name", "kind", "short_description", "description", "pack_quantity", "materials", "colours", "care", "dimensions", "height_cm", "width_cm", "depth_cm", "weight_g", "category_id", "other_category_ids", "collection_ids", "suggestion_reason", "seo_title", "seo_description", "social_caption", "pinterest_description", "image_alt", "needs_checking"],
           properties: {
             name: str("Product name, 2 to 7 words, title case, no brand names unless in the supplier details"),
             kind: str("Short product type shown above the name on cards, such as Bauble, Wreath, Table runner"),
-            description: str("2 to 4 sentences, 40 to 90 words. Opens with the feeling or scent it brings to the home, never with size or packaging. Follow the Description rules."),
+            short_description: str("Short description shown beside the price: 1 to 2 sentences, 15 to 35 words. Opens with the feeling or scent it brings, never with size or packaging. Follow the Description rules."),
+            description: str("Long description shown below the photos: 2 short paragraphs separated by a blank line, 70 to 140 words in all. Expands on the short description without repeating it: the look or scent in more detail, how it's used or gifted, and what makes it special. Follow the Description rules."),
             pack_quantity: num("How many pieces come in one pack, only if stated in the supplier details or clearly shown as a set in the photos; 1 if clearly a single piece; otherwise null"),
             materials: str("Materials, only if visible beyond doubt or stated; otherwise empty"),
             colours: str("Main colours, comma separated, such as Ivory, Gold"),

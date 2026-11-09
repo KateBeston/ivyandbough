@@ -797,3 +797,12 @@ button{font:inherit;color:inherit}
 .variant-tile.sold{opacity:.55}
 .detail-pills{display:inline-flex;flex-wrap:wrap;gap:6px}
 .detail-pills em{font-style:normal;padding:2px 9px;border:1px solid var(--line);background:var(--sand);font-size:12px}
+/* Below the fold on a product page: long description, then details beside ingredients and qualities. */
+.product-more{margin-top:64px;padding-top:40px;border-top:1px solid var(--line)}
+.product-long{max-width:760px;margin-bottom:40px}
+.product-long p{font-size:16px;line-height:1.8;margin:0 0 14px}
+.product-specs{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:48px;align-items:start}
+.spec-side{display:grid;gap:28px}
+.product-more .spec{margin-top:0}
+.ingredients{font-size:14px;line-height:1.7;margin:0}
+@media (max-width:900px){.product-specs{grid-template-columns:1fr;gap:32px}.product-more{margin-top:40px;padding-top:28px}}

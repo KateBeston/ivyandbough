@@ -18,7 +18,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
   // A grouped listing is one page. Choosing a colour swaps the photos, price and item number, never the page.
   const versions = listing.variants ?? [];
   const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
-  const product: Product = chosen ? { ...chosen, name: listing.name, kind: listing.kind, description: listing.description, slug: listing.slug, themes: listing.themes, categories: listing.categories, category_id: listing.category_id, theme_id: listing.theme_id, product_themes: listing.product_themes, listing_id: listing.listing_id, listing_type: listing.listing_type } : listing;
+  const product: Product = chosen ? { ...chosen, name: listing.name, kind: listing.kind, description: listing.description, slug: listing.slug, themes: listing.themes, categories: listing.categories, category_id: listing.category_id, theme_id: listing.theme_id, product_themes: listing.product_themes, listing_id: listing.listing_id, listing_type: listing.listing_type, short_description: listing.short_description } : listing;
   const theme = product.themes;
   const [{ data: settings }, related, { data: palette }] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
@@ -90,7 +90,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
               </div>
             </div>
           )}
-          <p className="lede">{product.description}</p>
+          <p className="lede">{product.short_description || product.description}</p>
           {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : comingSoon ? (preview ? <button type="button" className="solid" disabled>Notify me</button> : <NotifyMe productId={product.id} />) : <AddToBasket product={product} preview={preview} />}
 
           <div className="delivery-box">
@@ -110,26 +110,42 @@ export async function ProductView({ product: listing, preview = false, colour }:
 
           {theme && <p className="from-collection"><Link href={`/collections/${theme.slug}`}>Shop the {theme.name} collection</Link></p>}
 
-          {details.length > 0 && (
-            <div className="spec">
-              <h2 className="spec-head">Details</h2>
-              <ul className="detail-list">{details.map(([k, v]) => <li key={k}><span>{k}</span>{v}</li>)}</ul>
-              {product.warranty && <p className="acl-note">Our goods come with guarantees that cannot be excluded under the Australian Consumer Law. You are entitled to a replacement or refund for a major failure and compensation for any other reasonably foreseeable loss or damage. You are also entitled to have the goods repaired or replaced if the goods fail to be of acceptable quality and the failure does not amount to a major failure. <Link href="/returns">Returns and warranties</Link></p>}
-            </div>
-          )}
-          {qualities.length > 0 && (
-            <div className="spec qualities">
-              {qualities.map(([group, list]) => (
-                <div key={group} className="quality-group">
-                  <h2 className="spec-head">{group}</h2>
-                  <ul className="quality-pills">{list.map((q) => <li key={q} className="quality-pill">{q}</li>)}</ul>
-                </div>
-              ))}
-            </div>
-          )}
-          {product.is_food && <FoodInfo product={product} />}
         </div>
       </div>
+
+      {/* The fuller story below the fold: long description, then the details, ingredients and qualities. */}
+      {(product.short_description || details.length > 0 || qualities.length > 0 || product.ingredients || product.is_food) && (
+        <section className="product-more">
+          {product.short_description && product.description && (
+            <div className="product-long">
+              <h2 className="spec-head">About this piece</h2>
+              {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
+            </div>
+          )}
+          <div className="product-specs">
+            {details.length > 0 && (
+              <div className="spec">
+                <h2 className="spec-head">Details</h2>
+                <ul className="detail-list">{details.map(([k, v]) => <li key={k}><span>{k}</span>{v}</li>)}</ul>
+                {product.warranty && <p className="acl-note">Our goods come with guarantees that cannot be excluded under the Australian Consumer Law. You are entitled to a replacement or refund for a major failure and compensation for any other reasonably foreseeable loss or damage. You are also entitled to have the goods repaired or replaced if the goods fail to be of acceptable quality and the failure does not amount to a major failure. <Link href="/returns">Returns and warranties</Link></p>}
+              </div>
+            )}
+            <div className="spec-side">
+              {product.is_food ? <FoodInfo product={product} /> : product.ingredients ? <div className="spec"><h2 className="spec-head">Ingredients</h2><p className="ingredients">{product.ingredients}</p></div> : null}
+              {qualities.length > 0 && (
+                <div className="spec qualities">
+                  {qualities.map(([group, list]) => (
+                    <div key={group} className="quality-group">
+                      <h2 className="spec-head">{group}</h2>
+                      <ul className="quality-pills">{list.map((q) => <li key={q} className="quality-pill">{q}</li>)}</ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
       {more.length > 0 && (
         <section className="related">
           <h2 className="heading">You may also like</h2>
