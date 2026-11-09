@@ -97,8 +97,9 @@ export async function ProductView({ product: listing, preview = false, colour }:
             {!preview && <ShipTo shipsFrom={product.ships_from} />}
             <ul>
               <li>{dispatch}, then delivered Australia-wide.</li>
-              <li>{freeOver === null ? "Delivery calculated from your postcode." : `Free standard delivery on orders over ${aud(freeOver)}.`}</li>
-              <li>{product.returns_note ? `Returns: ${product.returns_note}` : <>Easy returns under our <Link href="/returns">Returns Policy</Link>.</>}</li>
+              <li>Delivery is calculated at checkout from your postcode.</li>
+              {freeOver !== null && <li>Free standard delivery on orders over {aud(freeOver)}, excluding large items and Christmas trees. <Link href="/delivery">Conditions apply</Link>.</li>}
+              <li>{product.final_sale ? <>Final sale: no change-of-mind returns. See our <Link href="/returns">Returns Policy</Link>.</> : product.returns_note ? `Returns: ${product.returns_note}` : <>Easy returns under our <Link href="/returns">Returns Policy</Link>.</>}</li>
             </ul>
             <p className="estimate-note">Dispatch and delivery times are estimates. <Link href="/delivery">Delivery information</Link></p>
             <details>
