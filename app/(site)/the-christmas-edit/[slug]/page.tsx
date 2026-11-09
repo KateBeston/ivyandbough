@@ -49,14 +49,19 @@ function Divider({ style }: { style: string }) {
 }
 
 // What's in the photo, then who took and styled it.
-function Caption({ text, credit, className = "article-caption" }: { text?: string; credit?: string; className?: string }) {
-  if (!text?.trim() && !credit?.trim()) return null;
-  return <figcaption className={className}>{text?.trim()}{text?.trim() && credit?.trim() ? " " : ""}{credit?.trim() && <em>(Credit: {credit.trim()})</em>}</figcaption>;
+function Caption({ text, credit, count, className = "article-caption" }: { text?: string; credit?: string; count?: string; className?: string }) {
+  if (!text?.trim() && !credit?.trim() && !count) return null;
+  return (
+    <figcaption className={className}>
+      {text?.trim() && <span className="cap-text">{text.trim()}</span>}{text?.trim() && credit?.trim() ? " " : ""}{credit?.trim() && <span className="cap-credit">{credit.trim()}</span>}
+      {count && <span className="cap-count">{count}</span>}
+    </figcaption>
+  );
 }
 
 const sizes: Record<string, string> = { small: "article-h-small", large: "article-h-large" };
 
-function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
+function Block({ s, catalogue, count }: { s: PostSection; catalogue: Product[]; count?: string }) {
   if (s.type === "divider") return <Divider style={s.style ?? "line"} />;
   if (s.type === "quote") {
     return (
@@ -73,7 +78,7 @@ function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
           {s.image && <div className="frame article-photo"><Image src={s.image} alt={s.alt} fill sizes="(max-width: 760px) 50vw, 400px" className="cover" style={{ objectPosition: s.position }} /></div>}
           {s.image2 && <div className="frame article-photo"><Image src={s.image2} alt={s.alt2 ?? ""} fill sizes="(max-width: 760px) 50vw, 400px" className="cover" style={{ objectPosition: s.position2 }} /></div>}
         </div>
-        <Caption text={s.caption} credit={s.credit} />
+        <Caption text={s.caption} credit={s.credit} count={count} />
       </figure>
     );
   }
@@ -82,7 +87,7 @@ function Block({ s, catalogue }: { s: PostSection; catalogue: Product[] }) {
     return (
       <figure className={`article-figure ${full ? "article-full" : ""}`}>
         {s.image && <div className="frame article-photo" style={full ? { aspectRatio: "21 / 9" } : { aspectRatio: ratio(s.shape) }}><Image src={s.image} alt={s.alt} fill sizes={full ? "100vw" : "(max-width: 760px) 100vw, 860px"} className="cover" style={{ objectPosition: s.position }} /></div>}
-        <Caption text={s.caption} credit={s.credit} />
+        <Caption text={s.caption} credit={s.credit} count={count} />
       </figure>
     );
   }
@@ -104,52 +109,88 @@ function autoDivider(design: ArticleDesign, s: PostSection, before?: PostSection
   return design.divider !== "none" && isSection(s) && isSection(before) ? <Divider style={design.divider} /> : null;
 }
 
+const isPhoto = (s: PostSection) => s.type === "photo" || s.type === "pair";
+
 export default async function PostPage({ params }: Props) {
   const post = await getPost((await params).slug);
   if (!post) notFound();
-  const related = (await getPosts()).filter((p) => p.id !== post.id).slice(0, 3);
+  const more = (await getPosts()).filter((p) => p.id !== post.id).slice(0, 8);
   const slugs = post.sections.flatMap((s) => (s.products ?? []).flatMap((p) => (p.slug ? [p.slug] : [])));
   const [catalogue, design] = await Promise.all([getProductsBySlugs([...new Set(slugs)]), getArticleDesign()]);
+  const stacked = design.heroSide === "stacked";
+  // "1/10" under each photo when the article is a numbered list.
+  const photoTotal = post.sections.filter(isPhoto).length;
+  let photoNo = 0;
+  const topics = (post.topics ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+  const meta = <JsonLd data={{ "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, datePublished: post.published_at, image: post.image_url ? absolute(post.image_url) : undefined, author: { "@type": "Organization", name: "Ivy & Bough" }, publisher: { "@type": "Organization", name: "Ivy & Bough", logo: absolute("/icon.png") }, mainEntityOfPage: absolute(`/the-christmas-edit/${post.slug}`) }} />;
   return (
     <main className="article-page" style={designStyle(design)}>
-      <section className={`post-hero ${design.heroSide === "left" ? "photo-left" : ""}`}>
-        <div className="post-hero-copy">
-          <Link href="/the-christmas-edit" className="eyebrow">{post.category}</Link>
-          <JsonLd data={{ "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, datePublished: post.published_at, image: post.image_url ? absolute(post.image_url) : undefined, author: { "@type": "Organization", name: "Ivy & Bough" }, publisher: { "@type": "Organization", name: "Ivy & Bough", logo: absolute("/icon.png") }, mainEntityOfPage: absolute(`/the-christmas-edit/${post.slug}`) }} />
+      {stacked ? (
+        <header className="post-head">
+          <Link href="/the-christmas-edit" className="post-label">{post.category}</Link>
+          {meta}
           <h1>{post.title}</h1>
-          <p>{post.excerpt}</p>
-          <div className="post-meta">By {post.author} | Published: {longDate.format(new Date(post.published_at))}</div>
-        </div>
-        <div className="frame post-hero-photo">
-          <Image src={post.image_url} alt={post.image_alt} fill priority sizes="(max-width: 760px) 100vw, 50vw" className="cover" style={{ objectPosition: post.image_position }} />
-        </div>
-      </section>
-      <Caption text={post.image_caption} credit={post.image_credit} className="post-caption" />
-      <article className="article">
+          {post.excerpt && <p className="post-dek">{post.excerpt}</p>}
+          <div className="post-byline">By <span>{post.author}</span></div>
+          <div className="post-date">{longDate.format(new Date(post.published_at))}</div>
+          {post.image_url && (
+            <figure className="post-head-figure">
+              <div className="frame post-head-photo"><Image src={post.image_url} alt={post.image_alt} fill priority sizes="(max-width: 760px) 100vw, 860px" className="cover" style={{ objectPosition: post.image_position }} /></div>
+              <Caption text={post.image_caption} credit={post.image_credit} />
+            </figure>
+          )}
+        </header>
+      ) : (
+        <>
+          <section className={`post-hero ${design.heroSide === "left" ? "photo-left" : ""}`}>
+            <div className="post-hero-copy">
+              <Link href="/the-christmas-edit" className="eyebrow">{post.category}</Link>
+              {meta}
+              <h1>{post.title}</h1>
+              <p>{post.excerpt}</p>
+              <div className="post-meta">By {post.author} | Published: {longDate.format(new Date(post.published_at))}</div>
+            </div>
+            <div className="frame post-hero-photo">
+              <Image src={post.image_url} alt={post.image_alt} fill priority sizes="(max-width: 760px) 100vw, 50vw" className="cover" style={{ objectPosition: post.image_position }} />
+            </div>
+          </section>
+          <Caption text={post.image_caption} credit={post.image_credit} className="post-caption" />
+        </>
+      )}
+      <article className={`article ${design.dropCap ? "drop-cap" : ""} ${stacked ? "stacked" : ""}`}>
         {post.intro && <RichText text={post.intro} />}
-        {related.length > 0 && (
-          <aside className="article-related">
-            <h2>Related Stories</h2>
-            {related.map((p) => (
-              <Link key={p.id} href={`/the-christmas-edit/${p.slug}`}>
-                <div className="frame"><Image src={p.image_url} alt="" fill sizes="120px" className="cover" style={{ objectPosition: p.image_position }} /></div>
-                <span>{p.title}</span>
-              </Link>
-            ))}
-          </aside>
+        {post.sections.map((s, i) => {
+          const count = post.numbered && isPhoto(s) ? `${++photoNo}/${photoTotal}` : undefined;
+          return (
+            <Fragment key={i}>
+              {autoDivider(design, s, post.sections[i - 1])}
+              <Block s={s} catalogue={catalogue} count={count} />
+            </Fragment>
+          );
+        })}
+        {topics.length > 0 && (
+          <div className="article-topics"><span>Topics</span>{topics.map((t) => <span key={t}>{t}</span>)}</div>
         )}
-        {post.sections.map((s, i) => (
-          <Fragment key={i}>
-            {autoDivider(design, s, post.sections[i - 1])}
-            <Block s={s} catalogue={catalogue} />
-          </Fragment>
-        ))}
         <section className="article-signup">
-          <h2 className="heading">First look at new pieces</h2>
+          <h2>First look at new pieces</h2>
           <p>New collections and Christmas delivery dates, before anyone else.</p>
           <SignupForm offer={await getWelcomeOffer("Newsletter sign-up")} />
         </section>
       </article>
+      {more.length > 0 && (
+        <section className="read-more" aria-labelledby="read-more">
+          <h2 id="read-more">Read more</h2>
+          <div className="read-more-grid">
+            {more.map((p) => (
+              <Link key={p.id} href={`/the-christmas-edit/${p.slug}`} className="read-more-card">
+                <div className="frame"><Image src={p.image_url} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: p.image_position }} /></div>
+                <strong>{p.title}</strong>
+                <span>By {p.author}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

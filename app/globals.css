@@ -807,8 +807,50 @@ button{font:inherit;color:inherit}
 .ingredients{font-size:14px;line-height:1.7;margin:0}
 @media (max-width:900px){.product-specs{grid-template-columns:1fr;gap:32px}.product-more{margin-top:40px;padding-top:28px}}
 
-/* Photo captions: what's in the photo, then the credit in italics */
-.article-caption,.post-caption{margin-top:8px;font-family:var(--a-body,var(--sans));font-size:14px;line-height:1.55;color:#5a4a3f;text-align:left}
-.article-caption em,.post-caption em{font-style:italic}
-.post-caption{max-width:var(--a-col,700px);margin:10px auto 0;padding:0 16px}
-.article-full .article-caption{padding:0 16px}
+/* Article, magazine style: title stacked above the main photo */
+.post-head{max-width:calc(var(--a-col) + 260px);margin:0 auto;padding:72px 24px 0}
+.post-label{font-family:var(--sans);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brown);text-decoration:none}
+.post-head h1{margin:18px 0 20px;font-family:var(--a-head);font-size:min(var(--a-title),10vw);font-weight:400;line-height:1.15;letter-spacing:var(--a-track);text-transform:var(--a-case)}
+.post-dek{max-width:760px;margin-bottom:22px;font-family:var(--sans);font-size:17px;line-height:1.55}
+.post-byline,.post-date{font-family:var(--sans);font-size:12px;color:var(--brown)}
+.post-byline span{color:var(--ink)}
+.post-date{margin-top:6px}
+.post-head-figure{max-width:var(--a-col);margin:44px auto 0}
+.post-head-photo{aspect-ratio:3 / 2}
+.article.stacked{padding-top:36px}
+/* Captions: italic description, then the credit in small grey type */
+.article-caption,.post-caption{margin-top:8px;font-family:var(--a-body,var(--sans));font-size:14px;line-height:1.5;color:var(--ink);text-align:left}
+.cap-text{font-style:italic}
+.cap-credit{margin-left:4px;font-family:var(--sans);font-size:11px;font-style:normal;color:#8a7c70}
+.cap-count{display:block;margin-top:14px;font-family:var(--sans);font-size:12px;letter-spacing:.08em;color:var(--brown)}
+/* Large first letter on the opening paragraph */
+.drop-cap > .article-text:first-child > p:first-child::first-letter{float:left;margin:6px 10px 0 0;font-family:var(--a-head);font-size:calc(var(--a-size)*5.4);line-height:.78;color:var(--ink)}
+/* Links in the body: coloured and underlined */
+.article-text a{font-weight:400;color:var(--brown);text-decoration:underline;text-decoration-color:currentColor;text-underline-offset:3px}
+.article-text a:hover{color:var(--ink)}
+/* Topics row */
+.article-topics{display:flex;flex-wrap:wrap;gap:12px 32px;margin-top:64px;padding:16px 8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-family:var(--sans);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.article-topics span:first-child{color:var(--brown)}
+/* Newsletter sign-up, centred and light */
+.article-signup{margin-top:72px;padding:0 16px;background:none;color:var(--ink);text-align:center}
+.article-signup h2{margin-bottom:12px;font-family:var(--a-head);font-size:min(calc(var(--a-h2)*1.05),8vw);font-weight:400;line-height:1.25;letter-spacing:var(--a-track);text-transform:var(--a-case)}
+.article-signup p{margin-bottom:24px}
+.article-signup form{justify-content:center}
+.article-signup input{border-color:var(--line)}
+.article-signup button{border-color:var(--ink);background:var(--ink);color:#fff}
+/* Read more */
+.read-more{max-width:1480px;margin:0 auto;padding:0 32px 88px}
+.read-more h2{padding:14px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);font-family:var(--a-head,var(--serif));font-size:30px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;text-align:center}
+.read-more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:48px 32px;margin-top:20px}
+.read-more-card{display:flex;flex-direction:column;gap:12px;text-decoration:none;color:var(--ink)}
+.read-more-card .frame{aspect-ratio:1 / 1}
+.read-more-card strong{font-family:var(--a-head,var(--serif));font-size:24px;font-weight:400;line-height:1.3;letter-spacing:var(--a-track);text-transform:var(--a-case)}
+.read-more-card span{font-family:var(--sans);font-size:12px;color:var(--brown)}
+@media (max-width:760px){
+.post-head{padding-top:40px}
+.post-head-figure{margin-left:-24px;margin-right:-24px}
+.post-head-figure .article-caption{padding:0 24px}
+.read-more{padding:0 20px 64px}
+.read-more-grid{grid-template-columns:1fr 1fr;gap:32px 16px}
+.read-more-card strong{font-size:18px}
+}
