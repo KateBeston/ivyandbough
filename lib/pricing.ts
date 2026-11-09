@@ -1,12 +1,13 @@
 // The one place an offer turns into a price. The shop, basket and checkout all use it.
-export const OFFER_COLUMNS = "sale_kind,discount_type,discount_value,sale_starts_at,sale_ends_at";
+export const OFFER_COLUMNS = "sale_kind,discount_type,discount_value,sale_starts_at,sale_ends_at,no_discount";
 
-export type OfferFields = { price_cents: number | null; sale_kind?: string | null; discount_type?: string | null; discount_value?: number | string | null; sale_starts_at?: string | null; sale_ends_at?: string | null };
+export type OfferFields = { price_cents: number | null; sale_kind?: string | null; discount_type?: string | null; discount_value?: number | string | null; sale_starts_at?: string | null; sale_ends_at?: string | null; no_discount?: boolean | null };
 
 export function offerPrice(row: OfferFields, now = new Date()) {
   const plain = { cents: row.price_cents, wasCents: null as number | null, label: "" };
   const value = Number(row.discount_value ?? 0);
-  if (row.price_cents === null || !row.sale_kind || !value) return plain;
+  // Products marked "never discount" always sell at full price.
+  if (row.price_cents === null || row.no_discount || !row.sale_kind || !value) return plain;
   if (row.sale_starts_at && new Date(row.sale_starts_at) > now) return plain;
   if (row.sale_ends_at && new Date(row.sale_ends_at) <= now) return plain;
   // Price means the sale price was set by hand, rather than worked out from a discount.

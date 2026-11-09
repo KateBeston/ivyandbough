@@ -70,7 +70,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
             <div className="title-row"><h1>{product.name}</h1>{!preview && <HeartButton productId={product.id} name={fullName(product)} className="page-heart" />}</div>
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
-            <div className="muted price-note">GST included</div>
+            <div className="muted price-note">GST included{product.no_discount ? " · Excluded from offers and discount codes" : ""}</div>
             <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
           {versions.length > 1 && chosen && (

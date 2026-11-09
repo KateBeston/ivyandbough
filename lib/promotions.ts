@@ -5,7 +5,7 @@ import { admin } from "./server";
 
 type Db = NonNullable<ReturnType<typeof admin>>;
 export type Code = { id: string; code: string; email: string; discount_type: string; discount_value: number; min_order: number; applies_to_sale: boolean; expires_at: string; used_at: string | null; reserved_until: string | null; reserved_cart: string | null; reserved_session: string | null };
-export type PricedLine = { id: string; cents: number; quantity: number; onSale: boolean };
+export type PricedLine = { id: string; cents: number; quantity: number; onSale: boolean; noDiscount?: boolean };
 export type Checked = { ok: true; code: Code; discountCents: number; label: string } | { ok: false; error: string };
 
 const LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -13,7 +13,7 @@ const newCode = () => `WELCOME-${Array.from({ length: 8 }, () => LETTERS[randomI
 // sarah+shop@example.com is the same person as sarah@example.com.
 const emailKey = (email: string) => email.toLowerCase().trim().replace(/\+[^@]*@/, "@");
 const expiry = (date: string) => new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Brisbane" }).format(new Date(date));
-export const codeTerms = (c: Pick<Code, "expires_at" | "applies_to_sale">) => `It can be used once, on your first order, and expires on ${expiry(c.expires_at)}.${c.applies_to_sale ? "" : " It can't be used on sale or clearance items."}`;
+export const codeTerms = (c: Pick<Code, "expires_at" | "applies_to_sale">) => `It can be used once, on your first order, and expires on ${expiry(c.expires_at)}.${c.applies_to_sale ? "" : " It can't be used on sale or clearance items."} Some items are excluded from offers, as shown on their product page.`;
 
 async function hasOrdered(db: Db, email: string) {
   const { count } = await db.from("orders").select("id", { count: "exact", head: true }).eq("customer_email", email.toLowerCase());
@@ -49,7 +49,7 @@ export async function priceLines(db: Db, items: { id: string; quantity: number }
   return items.flatMap((item) => {
     const row = (data ?? []).find((r) => r.id === item.id);
     const offer = row ? offerPrice(row) : null;
-    return offer?.cents ? [{ id: item.id, cents: offer.cents, quantity: item.quantity, onSale: offer.label !== "" }] : [];
+    return offer?.cents ? [{ id: item.id, cents: offer.cents, quantity: item.quantity, onSale: offer.label !== "", noDiscount: !!(row as { no_discount?: boolean } | undefined)?.no_discount }] : [];
   });
 }
 
@@ -64,8 +64,9 @@ export async function checkCode(db: Db, input: string, lines: PricedLine[], cart
   if (await hasOrdered(db, code.email)) return { ok: false, error: "That code is for a first order." };
   if (code.reserved_until && new Date(code.reserved_until) > new Date() && code.reserved_cart !== cart) return { ok: false, error: "That code is already being used at checkout." };
   const subtotal = lines.reduce((n, l) => n + l.cents * l.quantity, 0);
-  const base = lines.filter((l) => code.applies_to_sale || !l.onSale).reduce((n, l) => n + l.cents * l.quantity, 0);
-  if (!base) return { ok: false, error: "That code can't be used on sale or clearance items." };
+  // Codes never apply to products marked "never discount", or to sale items unless the code allows it.
+  const base = lines.filter((l) => !l.noDiscount && (code.applies_to_sale || !l.onSale)).reduce((n, l) => n + l.cents * l.quantity, 0);
+  if (!base) return { ok: false, error: lines.some((l) => l.noDiscount) ? "That code can't be used on these items." : "That code can't be used on sale or clearance items." };
   const min = Math.round(Number(code.min_order) * 100);
   if (base < min) return { ok: false, error: `Spend ${new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(min / 100)} or more${code.applies_to_sale ? "" : " on full-priced items"} to use this code.` };
   const off = code.discount_type === "Percent" ? Math.round(base * Number(code.discount_value) / 100) : Math.min(Math.round(Number(code.discount_value) * 100), base);

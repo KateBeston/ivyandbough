@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const lines = items.flatMap((item) => {
     const row = rows.find((r) => r.id === item.id);
     const offer = row ? offerPrice(row) : null;
-    return row && offer?.cents && !["Sold out", "Coming soon"].includes(String((row as { availability?: string }).availability)) ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "" }] : [];
+    return row && offer?.cents && !["Sold out", "Coming soon"].includes(String((row as { availability?: string }).availability)) ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "", noDiscount: !!(row as { no_discount?: boolean }).no_discount }] : [];
   });
   if (lines.length !== items.length) return NextResponse.json({ error: "Something in your basket is no longer available." }, { status: 400 });
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   const promoCode = String(body?.promoCode ?? "").trim();
   if (promoCode) {
     if (!db) return NextResponse.json({ error: "Codes aren't available right now." }, { status: 503 });
-    const checked = await checkCode(db, promoCode, lines.map((l) => ({ id: l.row.id, cents: l.cents, quantity: l.quantity, onSale: l.onSale })), cart);
+    const checked = await checkCode(db, promoCode, lines.map((l) => ({ id: l.row.id, cents: l.cents, quantity: l.quantity, onSale: l.onSale, noDiscount: l.noDiscount })), cart);
     if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
     if (!(await reserveCode(db, checked.code, cart))) return NextResponse.json({ error: "That code is already being used at checkout." }, { status: 409 });
     // Going back to the basket leaves the earlier payment page open, so it's closed here.
