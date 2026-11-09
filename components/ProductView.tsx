@@ -53,7 +53,9 @@ export async function ProductView({ product: listing, preview = false, colour }:
   const qualities = ["Packaging", "Production", "Materials", "Certifications"].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
-  const dispatch = product.dispatch_days !== null ? `Dispatches within ${product.dispatch_days} business ${product.dispatch_days === 1 ? "day" : "days"}` : "Ready to dispatch";
+  // A range ("1 to 3") when the product has one; otherwise "within" the number of days.
+  const dmin = product.dispatch_days_min, dmax = product.dispatch_days;
+  const dispatch = dmax === null || dmax === undefined ? "Ready to dispatch" : dmin !== null && dmin !== undefined && dmin < dmax ? `Dispatches in ${dmin} to ${dmax} business days` : dmax === 0 ? "Dispatches the same business day" : `Dispatches within ${dmax} business ${dmax === 1 ? "day" : "days"}`;
 
   return (
     <main className="product-page">
