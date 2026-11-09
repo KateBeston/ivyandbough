@@ -782,3 +782,4 @@ button{font:inherit;color:inherit}
 .option-label{align-self:center;min-width:0}
 .option-pill{justify-content:center;text-align:center;padding:7px 12px;font-size:12.5px;letter-spacing:.02em;min-height:36px}
 @media (max-width:600px){.option-row{grid-template-columns:repeat(2,minmax(0,1fr))}.option-label{grid-column:1/-1}}
+.option-row{grid-template-columns:96px repeat(auto-fill,170px)}@media (max-width:600px){.option-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
