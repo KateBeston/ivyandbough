@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getProductsInCategories, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
@@ -44,11 +45,12 @@ export async function ProductView({ product: listing, preview = false, colour }:
     (product.weight_g || product.weight) && ["Weight", product.weight_g ? `${product.weight_g} g` : product.weight],
     product.brand && ["Brand", product.brand],
     product.made_in && ["Made in", product.made_in],
-    product.colours && ["Colours", product.colours],
+    pillList(product.colour).length ? ["Colour", <span key="c" className="detail-pills">{pillList(product.colour).map((v) => <em key={v}>{v}</em>)}</span>] : product.colours && ["Colours", product.colours],
+    pillList(product.material).length ? ["Material", <span key="m" className="detail-pills">{pillList(product.material).map((v) => <em key={v}>{v}</em>)}</span>] : null,
     product.care && ["Care and storage", product.care],
     product.warranty && ["Warranty", product.warranty],
     product.sku && ["Item no.", product.sku],
-  ].filter(Boolean) as [string, string][];
+  ].filter(Boolean) as [string, React.ReactNode][];
   const more = related.filter((p) => p.slug !== listing.slug && p.price_cents && p.availability !== "Sold out").slice(0, 4);
   const qualities = ["Packaging", "Production", "Materials", "Certifications"].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
@@ -72,15 +74,20 @@ export async function ProductView({ product: listing, preview = false, colour }:
             <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
           {versions.length > 1 && chosen && (
-            <div className="versions">
-              {optionRows(versions, chosen, label).map((row) => (
-                <div key={row.label} className="option-row" role="group" aria-label={row.label}>
-                  <span className="option-label">{row.label}</span>
-                  {row.options.map((o) => o.on
-                    ? <span key={o.value} className="option-pill on" aria-current="true">{o.text}</span>
-                    : <Link key={o.value} href={`?colour=${encodeURIComponent(o.sku)}`} replace scroll={false} className={`option-pill${o.soldOut ? " sold" : ""}`}>{o.text}{o.soldOut ? " (sold out)" : ""}</Link>)}
-                </div>
-              ))}
+            <div className="variant-picker">
+              <p className="variant-label">{label}: <strong>{chosen.version_name || chosen.sku}</strong></p>
+              <div className="variant-tiles" role="group" aria-label={`Choose a ${label.toLowerCase()}`}>
+                {versions.map((v) => {
+                  const photo = (v.product_images ?? [])[0];
+                  const tile = <>
+                    <span className="variant-photo">{photo ? <Image src={photo.url} alt="" fill sizes="80px" className="cover" style={{ objectPosition: photo.position }} /> : null}</span>
+                    <span className="variant-name">{v.version_name || v.sku}{v.availability === "Sold out" ? " (sold out)" : ""}</span>
+                  </>;
+                  return v.id === chosen.id
+                    ? <span key={v.id} className="variant-tile on" aria-current="true">{tile}</span>
+                    : <Link key={v.id} href={`?colour=${encodeURIComponent(v.sku)}`} replace scroll={false} className={`variant-tile${v.availability === "Sold out" ? " sold" : ""}`} aria-label={v.version_name || v.sku}>{tile}</Link>;
+                })}
+              </div>
             </div>
           )}
           <p className="lede">{product.description}</p>
@@ -169,23 +176,4 @@ function FoodInfo({ product }: { product: Product }) {
   );
 }
 
-// The choices for a family, as rows of slim pills: Colour, then Material (or Scent, Size and so on).
-// Picking a colour keeps the current material where that combination exists, and the other way round.
-type OptionRow = { label: string; dots: boolean; options: { value: string; text: string; sku: string; on: boolean; soldOut: boolean }[] };
-function optionRows(versions: Product[], chosen: Product, label: string): OptionRow[] {
-  const natural = (v: string) => { const l = v.split(",").map((x) => x.trim()).filter(Boolean); return (l.length < 2 ? l.join("") : `${l.slice(0, -1).join(", ")} and ${l[l.length - 1]}`).toLowerCase().replace(/^./, (c) => c.toUpperCase()); };
-  const row = (name: string, key: "colour" | "material", other: "colour" | "material" | null, dots: boolean): OptionRow | null => {
-    const values = [...new Set(versions.map((v) => (v[key] ?? "").trim()).filter(Boolean))];
-    if (values.length < 1) return null;
-    return { label: name, dots, options: values.map((value) => {
-      const match = versions.find((v) => v[key] === value && (!other || v[other] === chosen[other])) ?? versions.find((v) => v[key] === value)!;
-      return { value, text: natural(value), sku: match.sku, on: chosen[key] === value, soldOut: match.availability === "Sold out" };
-    }) };
-  };
-  const rows = [row("Colour", "colour", "material", true), row("Material", "material", "colour", false)].filter((r): r is OptionRow => !!r && r.options.length > 0);
-  // Only show a row when it actually offers a choice, unless it's the only row.
-  const useful = rows.filter((r) => r.options.length > 1);
-  if (useful.length) return useful;
-  if (rows.length) return rows;
-  return [{ label, dots: true, options: versions.map((v) => ({ value: v.swatch ?? "", text: v.version_name || v.sku, sku: v.sku, on: v.id === chosen.id, soldOut: v.availability === "Sold out" })) }];
-}
+const pillList = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
