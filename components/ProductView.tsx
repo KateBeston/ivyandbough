@@ -132,7 +132,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
               </div>
             )}
             <div className="spec-side">
-              {product.is_food ? <FoodInfo product={product} /> : product.ingredients ? <div className="spec"><h2 className="spec-head">Ingredients</h2><p className="ingredients">{product.ingredients}</p></div> : null}
+              {product.is_food ? <FoodInfo product={product} /> : product.ingredients ? <div className="spec"><h2 className="spec-head">Ingredients</h2><p className="ingredients">{ingredientText(product.ingredients)}</p></div> : null}
               {qualities.length > 0 && (
                 <div className="spec qualities">
                   {qualities.map(([group, list]) => (
@@ -172,7 +172,7 @@ function FoodInfo({ product }: { product: Product }) {
   return (
     <div className="spec food-info">
       {diet.length > 0 && <div><h2 className="spec-head">Diet</h2><ul className="quality-pills">{diet.map((d) => <li key={d} className="quality-pill">{d}</li>)}</ul></div>}
-      {product.ingredients && <div><h2 className="spec-head">Ingredients</h2><p>{product.ingredients}</p></div>}
+      {product.ingredients && <div><h2 className="spec-head">Ingredients</h2><p>{ingredientText(product.ingredients)}</p></div>}
       {(contains.length > 0 || may.length > 0) && (
         <div><h2 className="spec-head">Allergens</h2>
           {contains.length > 0 && <p><strong>Contains {sentence(contains)}.</strong></p>}
@@ -194,3 +194,6 @@ function FoodInfo({ product }: { product: Product }) {
 }
 
 const pillList = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+
+// Ingredients are saved one per line, in label order; customers see them as one list.
+const ingredientText = (v?: string) => (v ?? "").split("\n").map((x) => x.trim()).filter(Boolean).join(", ") + ".";
