@@ -73,12 +73,14 @@ export async function ProductView({ product: listing, preview = false, colour }:
           </div>
           {versions.length > 1 && chosen && (
             <div className="versions">
-              <div className="versions-label">{splitPills(chosen).length
-                ? <>{splitPills(chosen).map(([k, vals]) => <span key={k} className="version-pills"><span>{k}</span>{vals.map((v) => <em key={v} className="quality-pill">{v}</em>)}</span>)}</>
-                : <>{label}: <strong>{chosen.version_name || chosen.sku}</strong></>}</div>
-              <div className="versions-list">{versions.map((v) => v.id === chosen.id
-                ? <span key={v.id} className="version on" aria-current="true">{dot(v.swatch)}{v.version_name || v.sku}</span>
-                : <Link key={v.id} href={`?colour=${encodeURIComponent(v.sku)}`} replace scroll={false} className="version">{dot(v.swatch)}{v.version_name || v.sku}{v.availability === "Sold out" ? " (sold out)" : ""}</Link>)}</div>
+              {optionRows(versions, chosen, label).map((row) => (
+                <div key={row.label} className="option-row" role="group" aria-label={row.label}>
+                  <span className="option-label">{row.label}</span>
+                  {row.options.map((o) => o.on
+                    ? <span key={o.value} className="option-pill on" aria-current="true">{row.dots && dot(o.value)}{o.text}</span>
+                    : <Link key={o.value} href={`?colour=${encodeURIComponent(o.sku)}`} replace scroll={false} className={`option-pill${o.soldOut ? " sold" : ""}`}>{row.dots && dot(o.value)}{o.text}{o.soldOut ? " (sold out)" : ""}</Link>)}
+                </div>
+              ))}
             </div>
           )}
           <p className="lede">{product.description}</p>
@@ -167,9 +169,23 @@ function FoodInfo({ product }: { product: Product }) {
   );
 }
 
-// The chosen version's colours and materials as pills, rather than one long name.
-function splitPills(p: Product): [string, string[]][] {
-  const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
-  const c = list(p.colour), m = list(p.material);
-  return [...(c.length ? [[c.length > 1 ? "Colours" : "Colour", c] as [string, string[]]] : []), ...(m.length ? [[m.length > 1 ? "Materials" : "Material", m] as [string, string[]]] : [])];
+// The choices for a family, as rows of slim pills: Colour, then Material (or Scent, Size and so on).
+// Picking a colour keeps the current material where that combination exists, and the other way round.
+type OptionRow = { label: string; dots: boolean; options: { value: string; text: string; sku: string; on: boolean; soldOut: boolean }[] };
+function optionRows(versions: Product[], chosen: Product, label: string): OptionRow[] {
+  const natural = (v: string) => { const l = v.split(",").map((x) => x.trim()).filter(Boolean); return (l.length < 2 ? l.join("") : `${l.slice(0, -1).join(", ")} and ${l[l.length - 1]}`).toLowerCase().replace(/^./, (c) => c.toUpperCase()); };
+  const row = (name: string, key: "colour" | "material", other: "colour" | "material" | null, dots: boolean): OptionRow | null => {
+    const values = [...new Set(versions.map((v) => (v[key] ?? "").trim()).filter(Boolean))];
+    if (values.length < 1) return null;
+    return { label: name, dots, options: values.map((value) => {
+      const match = versions.find((v) => v[key] === value && (!other || v[other] === chosen[other])) ?? versions.find((v) => v[key] === value)!;
+      return { value, text: natural(value), sku: match.sku, on: chosen[key] === value, soldOut: match.availability === "Sold out" };
+    }) };
+  };
+  const rows = [row("Colour", "colour", "material", true), row("Material", "material", "colour", false)].filter((r): r is OptionRow => !!r && r.options.length > 0);
+  // Only show a row when it actually offers a choice, unless it's the only row.
+  const useful = rows.filter((r) => r.options.length > 1);
+  if (useful.length) return useful;
+  if (rows.length) return rows;
+  return [{ label, dots: true, options: versions.map((v) => ({ value: v.swatch ?? "", text: v.version_name || v.sku, sku: v.sku, on: v.id === chosen.id, soldOut: v.availability === "Sold out" })) }];
 }
