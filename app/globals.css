@@ -928,3 +928,6 @@ button{font:inherit;color:inherit}
 /* Form labels: darker and a touch larger so they're easy to read */
 .delivery-grid label,.address-lookup label,.delivery-check label,.delivery-instructions,.qty,.account-form label,.contact-form label{font-size:14px;font-weight:500;color:var(--ink)}
 .delivery-details .check-line span{color:var(--ink)}
+.delivery-instructions{display:flex;flex-direction:column;gap:4px}
+.delivery-instructions input{height:48px;padding:0 12px;border:1px solid #B9AE9E;background:#fff;font:inherit;font-size:16px}
+.delivery-details .muted{font-size:13px;color:#4F463D}
