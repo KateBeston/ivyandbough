@@ -3,14 +3,17 @@ import Link from "next/link";
 import { formatPrice, type Product } from "@/lib/catalogue";
 import { HeartButton } from "./HeartButton";
 import { Price } from "./Price";
+import { QuickAdd } from "./QuickAdd";
 
 export function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div className="product-grid">
       {products.map((p) => {
         const img = p.product_images[0];
+        const href = `/products/${p.slug}${p.pick_sku ? `?colour=${encodeURIComponent(p.pick_sku)}` : ""}`;
         return (
-          <Link key={`${p.slug}|${p.pick_sku ?? ""}`} href={`/products/${p.slug}${p.pick_sku ? `?colour=${encodeURIComponent(p.pick_sku)}` : ""}`} className="product-card">
+          <div key={`${p.slug}|${p.pick_sku ?? ""}`} className="product-card-wrap">
+          <Link href={href} className="product-card">
             {img && <div className="frame card-photo">{p.sale_label && <em className="offer-badge">{p.sale_label}</em>}<HeartButton productId={p.id} name={p.name} className="card-heart" /><Image src={img.url} alt={img.alt} fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: img.position }} /></div>}
             <small>{p.kind}</small>
             <strong>{p.name}</strong>
@@ -19,6 +22,8 @@ export function ProductGrid({ products }: { products: Product[] }) {
               : (p.variants?.length ?? 0) > 1 && <em className="card-options">{p.variants!.length} {/ and /i.test(p.option_label || "") ? "options" : `${(p.option_label || "Colour").toLowerCase()}s`}</em>}
             {p.availability === "Coming soon" && <em className="card-soon">Coming soon</em>}
           </Link>
+          <QuickAdd p={p} href={href} />
+          </div>
         );
       })}
     </div>

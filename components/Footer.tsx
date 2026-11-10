@@ -30,7 +30,7 @@ export function Footer() {
         </nav>
       </div>
       <div className="footer-bottom">
-        <div>© 2026 Aurella Group Pty Ltd trading as Ivy &amp; Bough · ABN 70 649 742 423</div>
+        <div>© 2026 Aurella Group Pty Ltd trading as Ivy &amp; Bough · ABN 70 649 742 423<br />All prices are in AUD and include GST.</div>
         <PaymentMarks />
       </div>
       <nav className="footer-legal" aria-label="Legal">
