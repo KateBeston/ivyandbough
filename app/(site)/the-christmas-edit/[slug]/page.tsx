@@ -14,6 +14,11 @@ export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Articles are built ahead and refreshed every minute, so they open instantly instead of being made on each visit.
+export async function generateStaticParams() {
+  return (await getPosts()).map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost((await params).slug);
   if (!post) return { title: "Ivy & Bough" };
