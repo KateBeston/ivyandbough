@@ -54,17 +54,35 @@ export async function quoteDelivery(db: Db, items: { id: string; quantity: numbe
   return live(quote, products.data as Row[], items, postcode, settings.data);
 }
 
-// Live Australia Post Parcel Post price, when it's switched on in the portal. Falls back to the zone rate for trees
-// (they go by courier), items without a size and weight, parcels over Australia Post's limits, or if Australia Post doesn't answer.
+// Live Australia Post Parcel Post price, when it's switched on in the portal. Items you post go from your postcode;
+// items a dropship supplier sends go from theirs, each as its own parcel, and the prices are added together.
+// Falls back to the zone rate for trees (they go by courier), items without a weight, parcels over Australia Post's limits,
+// or if Australia Post doesn't answer.
 async function live(quote: Quote, rows: Row[], items: { id: string; quantity: number }[], postcode: string, settings: { live_postage?: boolean } | null): Promise<Quote> {
-  if (quote.free || !settings?.live_postage) return quote;
-  // The send-from postcode is private, so it's read with the server key.
-  const from = (await admin()?.from("delivery_settings").select("send_from_postcode").maybeSingle())?.data?.send_from_postcode ?? "";
-  if (!/^\d{4}$/.test(from) || quote.lines.some((l) => /tree/i.test(l.className))) return quote;
-  const parcel = parcelFor(items.map((i) => ({ ...rows.find((r) => r.id === i.id)!, quantity: i.quantity })));
-  const cents = parcel && (await parcelPostCents(from, postcode, parcel));
-  if (!cents) return quote;
-  return { ...quote, source: "auspost", zone: "Australia Post Parcel Post", baseCents: cents, deliveryCents: cents + quote.surchargeCents };
+  if (quote.free || !settings?.live_postage || quote.lines.some((l) => /tree/i.test(l.className))) return quote;
+  const db = admin();
+  if (!db) return quote;
+  // The send-from postcode and supplier details are private, so they're read with the server key.
+  const [{ data: s }, { data: links }] = await Promise.all([
+    db.from("delivery_settings").select("send_from_postcode").maybeSingle(),
+    db.from("supplier_items").select("product_id,suppliers(dropship,ships_from_postcode)").in("product_id", items.map((i) => i.id)),
+  ]);
+  const home = s?.send_from_postcode ?? "";
+  if (!/^\d{4}$/.test(home)) return quote;
+  const originOf = (id: string) => {
+    const sup = ((links ?? []) as unknown as { product_id: string; suppliers: { dropship: boolean; ships_from_postcode: string } | null }[]).find((l) => l.product_id === id)?.suppliers;
+    return sup?.dropship && /^\d{4}$/.test(sup.ships_from_postcode) ? sup.ships_from_postcode : home;
+  };
+  const groups = new Map<string, { id: string; quantity: number }[]>();
+  for (const i of items) groups.set(originOf(i.id), [...(groups.get(originOf(i.id)) ?? []), i]);
+  let total = 0;
+  for (const [from, list] of groups) {
+    const parcel = parcelFor(list.map((i) => ({ ...rows.find((r) => r.id === i.id)!, quantity: i.quantity })));
+    const cents = parcel && (await parcelPostCents(from, postcode, parcel));
+    if (!cents) return quote;
+    total += cents;
+  }
+  return { ...quote, source: "auspost", zone: groups.size > 1 ? `Australia Post Parcel Post (${groups.size} parcels)` : "Australia Post Parcel Post", baseCents: total, deliveryCents: total + quote.surchargeCents };
 }
 
 export const cleanItems = (input: unknown) => (Array.isArray(input) ? (input as { id: string; quantity: number }[]).slice(0, 50) : []).map((i) => ({ id: String(i.id), quantity: Math.min(20, Math.max(1, Math.round(Number(i.quantity)) || 1)) }));

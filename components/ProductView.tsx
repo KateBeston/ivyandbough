@@ -113,9 +113,9 @@ export async function ProductView({ product: listing, preview = false, colour }:
               <li>{product.final_sale ? <>Final sale: no change-of-mind returns. See our <Link href="/returns">Returns Policy</Link>.</> : product.returns_note ? `Returns: ${product.returns_note}` : <>Easy returns under our <Link href="/returns">Returns Policy</Link>.</>}</li>
             </ul>
             <p className="estimate-note">Dispatch and delivery times are estimates. <Link href="/delivery">Delivery information</Link></p>
+            {!preview && <DeliveryCheck productId={product.id} />}
             <details>
               <summary>More delivery information</summary>
-              {!preview && <DeliveryCheck productId={product.id} />}
               <p className="muted">See <Link href="/delivery">delivery rates and Christmas last order dates</Link>, and our <Link href="/returns">Returns Policy</Link>.</p>
             </details>
           </div>

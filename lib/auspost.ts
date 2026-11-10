@@ -17,9 +17,12 @@ export type Item = { quantity: number; height_cm: number | null; width_cm: numbe
 
 // One box for the whole order: the largest item plus 2 cm of packaging each way, made taller if the items need more room,
 // and the total weight plus 10% for packaging. The same guess the portal calculator starts from.
+// An item with a weight but no size yet is treated as a small item (15 × 10 × 5 cm), so small things still get a fair price.
+const SMALL = [15, 10, 5];
 export function parcelFor(items: Item[]) {
-  if (!items.length || items.some((i) => !(Number(i.height_cm) > 0 && Number(i.width_cm) > 0 && Number(i.depth_cm) > 0 && Number(i.weight_g) > 0))) return null;
-  const sides = items.map((i) => [Number(i.height_cm), Number(i.width_cm), Number(i.depth_cm)].sort((a, b) => b - a));
+  if (!items.length || items.some((i) => !(Number(i.weight_g) > 0))) return null;
+  const sized = (i: Item) => Number(i.height_cm) > 0 && Number(i.width_cm) > 0 && Number(i.depth_cm) > 0;
+  const sides = items.map((i) => (sized(i) ? [Number(i.height_cm), Number(i.width_cm), Number(i.depth_cm)] : [...SMALL]).sort((a, b) => b - a));
   const largest = [...sides].sort((a, b) => b[0] * b[1] * b[2] - a[0] * a[1] * a[2])[0];
   const volume = items.reduce((n, i, k) => n + sides[k][0] * sides[k][1] * sides[k][2] * i.quantity, 0) * 1.1;
   const [length, width] = [largest[0] + 2, largest[1] + 2];

@@ -28,8 +28,8 @@ export function DeliveryCheck({ productId }: { productId: string }) {
 
   return (
     <form className="delivery-check" onSubmit={check}>
-      <label>Check delivery<input inputMode="numeric" maxLength={4} placeholder="Postcode" value={postcode} onChange={(e) => setPostcode(e.target.value.replace(/\D/g, ""))} /></label>
-      <button type="submit">Check</button>
+      <label>Calculate delivery<input inputMode="numeric" maxLength={4} placeholder="Postcode" value={postcode} onChange={(e) => setPostcode(e.target.value.replace(/\D/g, ""))} /></label>
+      <button type="submit">Calculate</button>
       {result && <p className="muted" role="status">{result}</p>}
     </form>
   );

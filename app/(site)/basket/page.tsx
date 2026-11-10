@@ -31,6 +31,7 @@ export default function BasketPage() {
   const { lines, subtotal, setQuantity, remove, checkout, sessionId, welcome, paying, payFail } = useBasket();
   const [details, setDetails] = useState(blank);
   const [restored, setRestored] = useState(false);
+  const [calc, setCalc] = useState("");
   useEffect(() => { const d = readDraft(); if (d) setDetails((cur) => ({ ...cur, ...Object.fromEntries(Object.entries(d).filter(([k, v]) => v !== "" && v !== undefined && !(cur as Record<string, unknown>)[k])) })); setRestored(true); }, []);
   useEffect(() => { if (restored) { try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(details)); } catch { /* still works without it */ } } }, [details, restored]);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -100,7 +101,6 @@ export default function BasketPage() {
   const payable = subtotal - discount + (quote?.deliveryCents ?? 0);
   const poBox = PO_BOX.test(`${details.line1} ${details.line2}`);
   const ready = quote && details.name.trim() && validMobile && details.line1.trim() && !poBox && details.city.trim() && details.state;
-  const findAddress = () => { const el = document.querySelector<HTMLInputElement>(".address-lookup input") ?? document.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]'); el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus({ preventScroll: true }); };
 
   // The payment window closed (or didn't load): the Checkout button works again.
   useEffect(() => { if (!paying) setBusy(false); }, [paying]);
@@ -173,7 +173,13 @@ export default function BasketPage() {
           <aside className="basket-summary">
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
             {promo && <div><span>Discount <button type="button" className="link-button" onClick={removeCode}>Remove</button></span><span>-{formatPrice(discount)}</span></div>}
-            <div><span>{quote ? `Delivery to ${details.postcode}` : "Delivery"}</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : <button type="button" className="link-button" onClick={findAddress}>Add your delivery address</button>}</span></div>
+            <div><span>{quote ? <>Delivery to {details.postcode} <button type="button" className="link-button" onClick={() => { setCalc(details.postcode); set({ postcode: "" }); }}>Change</button></> : "Delivery"}</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : ""}</span></div>
+            {!quote && (
+              <form className="delivery-calc" onSubmit={(e) => { e.preventDefault(); if (/^\d{4}$/.test(calc)) set({ postcode: calc }); }}>
+                <input inputMode="numeric" maxLength={4} placeholder="Postcode" aria-label="Postcode for delivery" value={calc} onChange={(e) => setCalc(e.target.value.replace(/\D/g, ""))} />
+                <button type="submit">Calculate delivery</button>
+              </form>
+            )}
             <div className="total"><span>Total</span><span>{formatPrice(payable)}</span></div>
             <p className="muted">{quote ? `Total includes ${formatPrice(Math.round(payable / 11))} GST.` : "Prices include GST."}</p>
             {quoteError && <p role="alert">{quoteError}</p>}

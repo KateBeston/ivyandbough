@@ -941,3 +941,6 @@ button{font:inherit;color:inherit}
 /* Address suggestions: easy to read. Labels: a touch lighter than before. */
 .address-lookup button{color:var(--ink);font-weight:400;font-size:15px}
 .delivery-grid label,.address-lookup label,.delivery-check label,.qty,.account-form label,.contact-form label{font-weight:400;color:#3A332D}
+.delivery-calc{display:flex;gap:8px;margin:4px 0 8px}
+.delivery-calc input{width:110px;height:42px;padding:0 10px;border:1px solid #B9AE9E;background:#fff;font:inherit;font-size:16px}
+.delivery-calc button,.delivery-check button{height:42px;padding:0 16px;border:1px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-size:11px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
