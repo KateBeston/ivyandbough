@@ -50,7 +50,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
     (product.weight_g || product.weight) && ["Weight", product.weight_g ? `${product.weight_g} g` : product.weight],
     product.brand && ["Brand", product.brand],
     product.made_in && ["Made in", product.made_in],
-    pillList(product.colour).length ? ["Colour", <span key="c" className="detail-pills">{pillList(product.colour).map((v) => <em key={v}>{v}</em>)}</span>] : product.colours && ["Colours", product.colours],
+    pillList(product.colour).length ? ["Colour", <span key="c" className="detail-pills">{pillList(product.colour).map((v) => <em key={v}>{v}</em>)}</span>] : pillList(product.colours).length ? ["Colour", <span key="c" className="detail-pills">{pillList(product.colours).map((v) => <em key={v}>{v}</em>)}</span>] : null,
     pillList(product.material).length ? ["Material", <span key="m" className="detail-pills">{pillList(product.material).map((v) => <em key={v}>{v}</em>)}</span>] : null,
     product.how_to_use && ["How to use", product.how_to_use],
     product.care && ["Care and storage", product.care],
