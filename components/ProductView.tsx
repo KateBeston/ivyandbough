@@ -49,6 +49,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
     pillList(product.colour).length ? ["Colour", <span key="c" className="detail-pills">{pillList(product.colour).map((v) => <em key={v}>{v}</em>)}</span>] : product.colours && ["Colours", product.colours],
     pillList(product.material).length ? ["Material", <span key="m" className="detail-pills">{pillList(product.material).map((v) => <em key={v}>{v}</em>)}</span>] : null,
     product.care && ["Care and storage", product.care],
+    product.safety_notes && ["Safety", product.safety_notes],
     product.warranty && ["Warranty", product.warranty],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, React.ReactNode][];

@@ -12,6 +12,7 @@ export default async function DeliveryPage() {
     <main className="prose">
       <h1>Delivery</h1>
       <p>We deliver Australia-wide to addresses our couriers can reach. A small number of remote locations may cost more or may not be serviceable, particularly for large items. If we can&apos;t deliver to your address, we&apos;ll let you know and give you a full refund. {summary} Free delivery doesn&apos;t apply to large items or Christmas trees, which are charged at their own delivery rate.</p>
+      <p>Some plant and seed products can&apos;t be sent to every state because of biosecurity rules. Where a product can&apos;t be sent to every state, we say so on its product page. If something in your order still can&apos;t be delivered to you, we&apos;ll let you know and give you a full refund.</p>
       <p>During busy periods, including the lead-up to Christmas, deliveries may be delayed. We&apos;ll always do our best to get your order to you as quickly as possible.</p>
       <p>Dispatch times are shown on each product page. Some pieces ship directly from our suppliers, so your order may arrive in separate parcels.</p>
       <p>We deliver to street addresses, PO boxes and parcel lockers. Large or heavy items need a street address. If your order includes one and you&apos;ve given a PO box or parcel locker, we&apos;ll contact you to arrange delivery.</p>
