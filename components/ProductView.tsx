@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { focus, getProductsByListingIds, getProductsInCategories, type Product } from "@/lib/catalogue";
+import { focus, getBundleItems, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
 import { Price } from "./Price";
 import { DeliveryCheck } from "./DeliveryCheck";
@@ -21,11 +21,12 @@ export async function ProductView({ product: listing, preview = false, colour }:
   const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
   const product: Product = chosen ? { ...chosen, name: listing.name, kind: listing.kind, description: listing.description, slug: listing.slug, themes: listing.themes, categories: listing.categories, category_id: listing.category_id, theme_id: listing.theme_id, product_themes: listing.product_themes, listing_id: listing.listing_id, listing_type: listing.listing_type, short_description: listing.short_description } : listing;
   const theme = product.themes;
-  const [{ data: settings }, related, picked, { data: palette }] = await Promise.all([
+  const [{ data: settings }, related, picked, { data: palette }, inside] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
     preview ? Promise.resolve([] as Product[]) : getProductsByListingIds(listing.similar_ids ?? []),
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
+    product.product_type === "bundle" ? getBundleItems(product.bundle_items ?? []) : Promise.resolve([] as BundleItem[]),
   ]);
   const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
   // A product can be more than one colour ("Red, White"): the dot shows the first two, split diagonally.
@@ -124,10 +125,13 @@ export async function ProductView({ product: listing, preview = false, colour }:
 
         </div>
         {/* Beside the buying details on wide screens, filling the space under the photos. Below them on phones. */}
-        {product.short_description && product.description && (
+        {((product.short_description && product.description) || inside.length > 0) && (
           <div className="product-long">
-            <h2 className="spec-head">About this piece</h2>
-            {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
+            {product.short_description && product.description && <>
+              <h2 className="spec-head">About this piece</h2>
+              {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
+            </>}
+            {inside.length > 0 && <WhatsInside items={inside} />}
           </div>
         )}
       </div>
@@ -166,6 +170,40 @@ export async function ProductView({ product: listing, preview = false, colour }:
         </section>
       )}
     </main>
+  );
+}
+
+// A hamper's contents: each item with its quantity and description, and its ingredients and safety notes behind a tap.
+function WhatsInside({ items }: { items: BundleItem[] }) {
+  const contains = [...new Set(items.flatMap((i) => list(i.allergens_contains)))];
+  return (
+    <div className="whats-inside">
+      <h2 className="spec-head">What&apos;s inside</h2>
+      <ul>
+        {items.map((i) => {
+          const photo = [...(i.product_images ?? [])].filter((m) => m.media_type !== "video").sort((a, b) => a.sort_order - b.sort_order)[0];
+          const about = i.short_description || i.description.split(/\n{2,}/)[0] || "";
+          return (
+            <li key={i.id} className="inside-item">
+              {photo && <span className="inside-photo frame"><Image src={photo.url} alt={photo.alt || i.name} fill sizes="80px" className="cover" /></span>}
+              <div>
+                <h3>{i.quantity > 1 ? `${i.quantity} × ` : ""}{i.name}</h3>
+                {about && <p>{about}</p>}
+                {(i.ingredients || i.allergens_contains || i.allergens_may_contain) && (
+                  <details><summary>Ingredients</summary>
+                    {i.ingredients && <p>{ingredientText(i.ingredients)}</p>}
+                    {i.allergens_contains && <p><strong>Contains:</strong> {sentence(list(i.allergens_contains))}.</p>}
+                    {i.allergens_may_contain && <p><strong>May contain:</strong> {sentence(list(i.allergens_may_contain))}.</p>}
+                  </details>
+                )}
+                {i.safety_notes && <details><summary>Safety</summary><p>{i.safety_notes}</p></details>}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      {contains.length > 0 && <p className="inside-contains"><strong>This hamper contains:</strong> {sentence(contains)}.</p>}
+    </div>
   );
 }
 

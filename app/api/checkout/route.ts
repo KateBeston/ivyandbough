@@ -34,14 +34,14 @@ export async function POST(request: Request) {
   if (wrongSuburb) return NextResponse.json({ error: wrongSuburb }, { status: 400 });
 
   // Prices always come from the database, never from the browser.
-  const { data, error } = await supabase.from("products").select(`id,sku,name,version_name,price_cents,availability,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
+  const { data, error } = await supabase.from("products").select(`id,sku,name,version_name,price_cents,availability,sold_separately,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
   if (error) return NextResponse.json({ error: "Checkout isn't available right now." }, { status: 500 });
   const rows = (data ?? []) as Row[];
   const origin = new URL(request.url).origin;
   const lines = items.flatMap((item) => {
     const row = rows.find((r) => r.id === item.id);
     const offer = row ? offerPrice(row) : null;
-    return row && offer?.cents && !["Sold out", "Coming soon"].includes(String((row as { availability?: string }).availability)) ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "", noDiscount: !!(row as { no_discount?: boolean }).no_discount }] : [];
+    return row && (row as { sold_separately?: boolean }).sold_separately !== false && offer?.cents && !["Sold out", "Coming soon"].includes(String((row as { availability?: string }).availability)) ? [{ row, quantity: item.quantity, cents: offer.cents, onSale: offer.label !== "", noDiscount: !!(row as { no_discount?: boolean }).no_discount }] : [];
   });
   if (lines.length !== items.length) return NextResponse.json({ error: "Something in your basket is no longer available." }, { status: 400 });
 
