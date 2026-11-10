@@ -20,12 +20,19 @@ const formatMobile = (value: string) => mobileDigits(value).slice(0, 9).replace(
 // Couriers can't deliver to these, and some items ship by courier.
 const PO_BOX = /\b(p\.?\s*o\.?\s*box|post\s*office\s*box|gpo\s*box|locked\s*bag|private\s*bag|parcel\s*locker|parcel\s*collect|community\s*mail\s*bag|cmb\s*\d)/i;
 const Req = () => <span className="req" aria-hidden="true">*</span>;
+// What's been typed is kept for this browser tab, so leaving to sign in or look at a product doesn't lose it.
+// It's cleared when the tab closes or the order is placed. Card details are never here; they go straight to Stripe.
+const DRAFT_KEY = "ib-checkout-details";
+const readDraft = () => { try { return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "null") as Partial<typeof blank> | null; } catch { return null; } };
 type Quote = { deliveryCents: number; free: boolean; zone: string };
 type Promo = { code: string; discountCents: number; label: string };
 
 export default function BasketPage() {
   const { lines, subtotal, setQuantity, remove, checkout, sessionId, welcome, paying, payFail } = useBasket();
   const [details, setDetails] = useState(blank);
+  const [restored, setRestored] = useState(false);
+  useEffect(() => { const d = readDraft(); if (d) setDetails((cur) => ({ ...cur, ...Object.fromEntries(Object.entries(d).filter(([k, v]) => v !== "" && v !== undefined && !(cur as Record<string, unknown>)[k])) })); setRestored(true); }, []);
+  useEffect(() => { if (restored) { try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(details)); } catch { /* still works without it */ } } }, [details, restored]);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState("");
   const [error, setError] = useState("");

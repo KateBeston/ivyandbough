@@ -8,7 +8,7 @@ import { useBasket } from "@/components/BasketProvider";
 export default function ThanksPage() {
   const { clear } = useBasket();
   const [guest, setGuest] = useState(false);
-  useEffect(() => { clear(); }, [clear]);
+  useEffect(() => { clear(); try { sessionStorage.removeItem("ib-checkout-details"); } catch { /* nothing saved */ } }, [clear]);
   useEffect(() => { account.auth.getSession().then(({ data }) => setGuest(!data.session)); }, []);
   return (
     <main className="shop-page centre">
