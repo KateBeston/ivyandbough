@@ -33,7 +33,8 @@ export async function GET() {
         ["g:identifier_exists", "no"],
         ["g:product_type", l.categories?.name],
         ["g:item_group_id", l.variants?.length ? l.slug : undefined],
-        ["g:color", l.variants?.length ? v.version_name || undefined : v.colour || undefined],
+        ["g:color", l.variants?.length ? (/colou?r/i.test(l.option_label || "") ? v.version_name || undefined : v.colour || undefined) : v.colour || undefined],
+        ["g:size", l.variants?.length && /size/i.test(l.option_label || "") ? v.version_name || undefined : undefined],
         ["g:material", v.materials || undefined],
       ];
       return `    <item>\n${fields.filter(([, val]) => val).map(([k, val]) => `      <${k}>${esc(String(val))}</${k}>`).join("\n")}\n    </item>`;
