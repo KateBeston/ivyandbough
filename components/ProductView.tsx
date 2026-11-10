@@ -127,15 +127,14 @@ export async function ProductView({ product: listing, preview = false, colour }:
 
         </div>
         {/* Beside the buying details on wide screens, filling the space under the photos. Below them on phones. */}
-        {((product.short_description && product.description) || inside.length > 0) && (
+        {product.short_description && product.description && (
           <div className="product-long">
-            {product.short_description && product.description && <>
-              <h2 className="spec-head">About this piece</h2>
-              {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
-            </>}
-            {inside.length > 0 && <WhatsInside items={inside} />}
+            <h2 className="spec-head">About this piece</h2>
+            {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
           </div>
         )}
+        {/* A hamper's items, across the full width below the photos and buying details. */}
+        {inside.length > 0 && <div className="product-inside"><WhatsInside items={inside} /></div>}
       </div>
 
       {/* The fuller story below the fold: long description, then the details, ingredients and qualities. */}

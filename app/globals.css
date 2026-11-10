@@ -902,7 +902,9 @@ button{font:inherit;color:inherit}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* Product page: long description fills the space under the photos on wide screens */
-.product-layout{grid-template-areas:"gallery details" "long details";grid-template-rows:auto 1fr;row-gap:48px}
+.product-layout{grid-template-areas:"gallery details" "long details" "inside inside";grid-template-rows:auto 1fr auto;row-gap:48px}
+.product-layout>.product-inside{grid-area:inside;min-width:0}
+.product-inside .whats-inside{margin-top:0}
 .product-gallery{grid-area:gallery;min-width:0}
 .product-layout>.details{grid-area:details}
 .product-layout>.product-long{grid-area:long;align-self:start;max-width:none;margin:0}
@@ -912,7 +914,7 @@ button{font:inherit;color:inherit}
 .buy-row .solid{height:52px}
 .express button{height:46px}
 @media (max-width:760px){
-.product-layout{grid-template-areas:"gallery" "details" "long";grid-template-rows:auto;row-gap:32px}
+.product-layout{grid-template-areas:"gallery" "details" "long" "inside";grid-template-rows:auto;row-gap:32px}
 }
 .related .product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media (max-width:900px){.related .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px}}
