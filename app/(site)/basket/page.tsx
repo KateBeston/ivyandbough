@@ -139,7 +139,7 @@ export default function BasketPage() {
             ))}
             <section className="delivery-details" aria-labelledby="delivery-details">
               <h2 id="delivery-details">Delivery details</h2>
-              <CheckoutAccount onFill={(d) => set({ ...d, ...(d.state !== undefined ? { state: STATES.includes(d.state) ? d.state : "" } : {}) })} />
+              <CheckoutAccount onFill={(d) => set({ ...d, ...(d.phone ? { phone: formatMobile(d.phone) } : {}), ...(d.state !== undefined ? { state: STATES.includes(d.state) ? d.state : "" } : {}) })} />
               <AddressLookup onPick={pick} />
               <p className="req-note"><Req /> Required</p>
               <div className="delivery-grid">
