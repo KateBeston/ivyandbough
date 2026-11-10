@@ -23,9 +23,11 @@ export function AddToBasket({ product, preview }: { product: Product; preview: b
 
   return (
     <>
-      <label className="qty">Quantity<input type="number" min={1} max={20} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} /></label>
       <div className="buy">
-        <button type="button" className="solid" disabled={off} onClick={() => { add(line()); setAdded(true); }}>Add to basket</button>
+        <div className="buy-row">
+          <label className="qty">Quantity<input type="number" min={1} max={20} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} /></label>
+          <button type="button" className="solid" disabled={off} onClick={() => { add(line()); setAdded(true); }}>Add to basket</button>
+        </div>
         <div className="express"><button type="button" disabled={off} onClick={buyNow}>Apple Pay</button><button type="button" disabled={off} onClick={buyNow}>Google Pay</button></div>
         {added && <p role="status">Added to your basket. <Link href="/basket">View basket</Link></p>}
       </div>

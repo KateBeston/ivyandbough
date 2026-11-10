@@ -63,7 +63,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
     <main className="product-page">
       <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
-        <Gallery key={product.id} images={product.product_media ?? product.product_images} />
+        <div className="product-gallery"><Gallery key={product.id} images={product.product_media ?? product.product_images} /></div>
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
@@ -112,17 +112,18 @@ export async function ProductView({ product: listing, preview = false, colour }:
           {theme && <p className="from-collection"><Link href={`/collections/${theme.slug}`}>Shop the {theme.name} collection</Link></p>}
 
         </div>
+        {/* Beside the buying details on wide screens, filling the space under the photos. Below them on phones. */}
+        {product.short_description && product.description && (
+          <div className="product-long">
+            <h2 className="spec-head">About this piece</h2>
+            {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
+          </div>
+        )}
       </div>
 
       {/* The fuller story below the fold: long description, then the details, ingredients and qualities. */}
-      {(product.short_description || details.length > 0 || qualities.length > 0 || product.ingredients || product.is_food) && (
+      {(details.length > 0 || qualities.length > 0 || product.ingredients || product.is_food) && (
         <section className="product-more">
-          {product.short_description && product.description && (
-            <div className="product-long">
-              <h2 className="spec-head">About this piece</h2>
-              {product.description.split(/\n{2,}/).map((para, k) => <p key={k}>{para}</p>)}
-            </div>
-          )}
           <div className="product-specs">
             {details.length > 0 && (
               <div className="spec">
