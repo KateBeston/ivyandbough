@@ -938,3 +938,6 @@ button{font:inherit;color:inherit}
 .delivery-details>.delivery-grid+.delivery-grid{margin-top:14px}
 .delivery-grid label.check-line{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:14px}
 .delivery-grid label.check-line input{width:auto;height:auto;margin-top:3px}
+/* Address suggestions: easy to read. Labels: a touch lighter than before. */
+.address-lookup button{color:var(--ink);font-weight:400;font-size:15px}
+.delivery-grid label,.address-lookup label,.delivery-check label,.qty,.account-form label,.contact-form label{font-weight:400;color:#3A332D}
