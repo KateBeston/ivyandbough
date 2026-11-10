@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   if (!(await requireAdmin(request))) return NextResponse.json({ error: "Not allowed." }, { status: 401 });
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return NextResponse.json({ error: "The listing writer isn't connected yet. ANTHROPIC_API_KEY needs adding in Vercel." }, { status: 503 });
-  const body = (await request.json().catch(() => null)) as { images?: string[]; notes?: string; name?: string; known?: Record<string, unknown>; categories?: Option[]; collections?: Option[] } | null;
+  const body = (await request.json().catch(() => null)) as { images?: string[]; notes?: string; name?: string; known?: Record<string, unknown>; categories?: Option[]; collections?: Option[]; previous?: { name?: string; short_description?: string; description?: string } } | null;
   const images = (body?.images ?? []).filter((u) => typeof u === "string" && u.startsWith(STORAGE)).slice(0, 4);
   const notes = String(body?.notes ?? "").slice(0, 8000);
   const known = Object.entries(body?.known ?? {}).filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "").slice(0, 30).map(([k, v]) => `${k}: ${String(v).slice(0, 2000)}`).join("\n");
@@ -57,6 +57,8 @@ export async function POST(request: Request) {
   const collections = (body?.collections ?? []).slice(0, 100).map((c) => `${c.id} | ${c.name}`).join("\n");
 
   // Every photo is fetched and turned into a JPEG the model can read, whatever format it was saved in.
+  const pv = body?.previous;
+  const prev = pv && (pv.description || pv.short_description) ? `\n\n<previous_draft>\nName: ${String(pv.name ?? "").slice(0, 200)}\nShort description: ${String(pv.short_description ?? "").slice(0, 600)}\nDescription: ${String(pv.description ?? "").slice(0, 3000)}\n</previous_draft>\nThe owner wants another option. Write a fresh name, short description and long description that take a clearly different angle, opening and vocabulary from the previous draft, while keeping every fact the same.` : "";
   const content: unknown[] = [];
   for (const url of images) {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) }).catch(() => null);
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
     if (data) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: data.toString("base64") } });
   }
   if (images.length && !content.length) return NextResponse.json({ error: "The photos couldn't be opened. Try uploading them again as JPEG or PNG." }, { status: 400 });
-  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<known_details>\n${known || "None given."}\n</known_details>\nThese details were entered by the shop owner from the supplier's listing. Treat them as facts: keep measurements, materials, quantities, brand and care exactly as given, and use the photos only to fill gaps. Where a known detail and a photo disagree, keep the known detail and add a note to needs_checking.\n\n<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits), up to 2 alternatives, and every collection the piece genuinely suits, best fit first.` });
+  content.push({ type: "text", text: `${body?.name ? `Working name: ${String(body.name).slice(0, 200)}\n` : ""}<known_details>\n${known || "None given."}\n</known_details>\nThese details were entered by the shop owner from the supplier's listing. Treat them as facts: keep measurements, materials, quantities, brand and care exactly as given, and use the photos only to fill gaps. Where a known detail and a photo disagree, keep the known detail and add a note to needs_checking.\n\n<supplier_details>\n${notes || "None given."}\n</supplier_details>\n\n<categories>\n${categories}\n</categories>\n\n<collections>\n${collections}\n</collections>${prev}\n\nCall the write_listing tool once with the listing; do not reply with plain text. Choose the most specific category id from the list (a subcategory where one fits), up to 2 alternatives, and every collection the piece genuinely suits, best fit first.` });
 
   const str = (description: string) => ({ type: "string", description });
   const num = (description: string) => ({ type: ["number", "null"], description });
@@ -106,6 +108,14 @@ export async function POST(request: Request) {
             social_caption: str("Instagram caption, 1 to 3 short sentences, then 3 to 5 relevant hashtags"),
             pinterest_description: str("Pinterest description, 1 to 2 sentences with natural search words"),
             image_alt: { type: "array", items: { type: "string" }, description: "Alt text for each photo in order, under 120 characters, describing what is shown" },
+            net_quantity: num("Contents as a number (such as 500 for 500 ml), only if stated in the supplier details; otherwise null"),
+            net_unit: { type: "string", enum: ["", "ml", "L", "g", "kg"], description: "Unit for net_quantity, or empty" },
+            size_label: str("Size name only if stated, such as Large or 30 cm; otherwise empty"),
+            brand: str("Brand only if stated in the supplier details; otherwise empty"),
+            made_in: str("Country of origin only if stated, such as Australia; otherwise empty"),
+            ingredients: str("Full ingredients list exactly as stated in the supplier details; otherwise empty"),
+            safety_notes: str("Safety or warning wording exactly as stated in the supplier details (such as For external use only); otherwise empty"),
+            warranty: str("Manufacturer's warranty only if stated; otherwise empty"),
             needs_checking: { type: "array", items: { type: "string" }, description: "Facts to confirm before publishing, such as measurements, materials or quantity" },
           },
         },
