@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductView } from "@/components/ProductView";
 import { getProduct } from "@/lib/catalogue";
-import { absolute, breadcrumbs } from "@/lib/seo";
+import { absolute, breadcrumbs, offerExtras } from "@/lib/seo";
+import { supabase } from "@/lib/supabase";
 
 export const revalidate = 60;
 
@@ -19,7 +20,8 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const product = await getProduct(slug);
   if (!product) notFound();
   const url = absolute(`/products/${product.slug}`);
-  const schema = { "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description, sku: product.sku, url, image: product.product_images.map((i) => absolute(i.url)), brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined, category: product.categories?.name, material: product.materials || undefined, offers: product.price_cents === null ? undefined : { "@type": "Offer", url, price: (product.price_cents / 100).toFixed(2), priceCurrency: "AUD", availability: ["Sold out", "Coming soon"].includes(product.availability) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition", priceValidUntil: product.sale_label && product.sale_ends_at ? product.sale_ends_at.slice(0, 10) : undefined } };
+  const extras = await offerExtras(supabase);
+  const schema = { "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description, sku: product.sku, url, image: product.product_images.map((i) => absolute(i.url)), brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined, category: product.categories?.name, material: product.materials || undefined, offers: product.price_cents === null ? undefined : { "@type": "Offer", url, price: (product.price_cents / 100).toFixed(2), priceCurrency: "AUD", availability: ["Sold out", "Coming soon"].includes(product.availability) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition", hasMerchantReturnPolicy: extras.returns, shippingDetails: extras.shipping ? extras.shipping(product.price_cents) : undefined, seller: { "@type": "Organization", name: "Ivy & Bough" }, priceValidUntil: product.sale_label && product.sale_ends_at ? product.sale_ends_at.slice(0, 10) : undefined } };
   const crumbs = [{ name: "Home", path: "" }, ...(product.categories ? [{ name: product.categories.name, path: `/shop/${product.categories.slug}` }] : []), { name: product.name, path: `/products/${product.slug}` }];
   return (
     <>

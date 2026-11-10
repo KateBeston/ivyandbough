@@ -1,0 +1,44 @@
+import { getProducts, type Product } from "@/lib/catalogue";
+import { absolute, SITE } from "@/lib/seo";
+
+export const revalidate = 3600;
+
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const plain = (s: string) => s.replace(/\s+/g, " ").trim();
+const money = (cents: number) => `${(cents / 100).toFixed(2)} AUD`;
+const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming soon" ? "preorder" : "in_stock");
+
+// The product feed for Google Merchant Center (free listings in Google Shopping and AI shopping answers).
+// One item per thing a customer can buy: each colour in a family is its own item, grouped by the family.
+export async function GET() {
+  const listings = await getProducts();
+  const items = listings.flatMap((l: Product) => {
+    const versions = l.variants?.length ? l.variants : [l];
+    return versions.filter((v) => v.price_cents !== null && v.product_images.length).map((v) => {
+      const link = absolute(`/products/${l.slug}${l.variants?.length ? `?colour=${encodeURIComponent(v.sku)}` : ""}`);
+      const title = plain(`${l.name}${l.variants?.length && v.version_name ? ` – ${v.version_name}` : ""}`).slice(0, 150);
+      const onSale = v.was_cents && v.was_cents > (v.price_cents ?? 0);
+      const fields: [string, string | undefined][] = [
+        ["g:id", v.sku],
+        ["g:title", title],
+        ["g:description", plain(l.description || l.short_description || l.name).slice(0, 5000)],
+        ["g:link", link],
+        ["g:image_link", absolute(v.product_images[0].url)],
+        ...v.product_images.slice(1, 10).map((i) => ["g:additional_image_link", absolute(i.url)] as [string, string]),
+        ["g:availability", stock(v.availability)],
+        ["g:price", money(onSale ? v.was_cents! : v.price_cents!)],
+        ["g:sale_price", onSale ? money(v.price_cents!) : undefined],
+        ["g:brand", v.brand || l.brand || "Ivy & Bough"],
+        ["g:condition", "new"],
+        ["g:identifier_exists", "no"],
+        ["g:product_type", l.categories?.name],
+        ["g:item_group_id", l.variants?.length ? l.slug : undefined],
+        ["g:color", l.variants?.length ? v.version_name || undefined : v.colour || undefined],
+        ["g:material", v.materials || undefined],
+      ];
+      return `    <item>\n${fields.filter(([, val]) => val).map(([k, val]) => `      <${k}>${esc(String(val))}</${k}>`).join("\n")}\n    </item>`;
+    });
+  });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">\n  <channel>\n    <title>Ivy &amp; Bough</title>\n    <link>${SITE}</link>\n    <description>Christmas decorations and gifts from Ivy &amp; Bough, delivered across Australia.</description>\n${items.join("\n")}\n  </channel>\n</rss>\n`;
+  return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8" } });
+}
