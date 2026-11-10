@@ -136,18 +136,18 @@ export default function BasketPage() {
               <AddressLookup onPick={pick} />
               <p className="req-note"><Req /> Required</p>
               <div className="delivery-grid">
-                <label className="wide">Full name <Req /><input autoComplete="name" required value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>
-                <label className="wide">Mobile <Req /><span className="mobile-field"><span aria-hidden="true">+61</span><input type="tel" autoComplete="tel-national" inputMode="tel" required placeholder="412 345 678" aria-label="Mobile number, Australia plus 61" value={details.phone} onChange={(e) => set({ phone: formatMobile(e.target.value) })} /></span>
+                <label className="wide"><span>Full name <Req /></span><input autoComplete="name" required value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>
+                <label className="wide"><span>Mobile <Req /></span><span className="mobile-field"><span aria-hidden="true">+61</span><input type="tel" autoComplete="tel-national" inputMode="tel" required placeholder="412 345 678" aria-label="Mobile number, Australia plus 61" value={details.phone} onChange={(e) => set({ phone: formatMobile(e.target.value) })} /></span>
                   {details.phone && !validMobile && <span className="field-note">Enter an Australian mobile number, such as 412 345 678.</span>}
                 </label>
                 <label className="check-line wide"><input type="checkbox" checked={details.smsUpdates} onChange={(e) => set({ smsUpdates: e.target.checked })} /><span>Text me updates about my order by SMS and MMS, such as when it&apos;s on its way.</span></label>
-                <label className="wide">Address <Req /><input autoComplete="address-line1" required value={details.line1} onChange={(e) => set({ line1: e.target.value })} />
+                <label className="wide"><span>Address <Req /></span><input autoComplete="address-line1" required value={details.line1} onChange={(e) => set({ line1: e.target.value })} />
                   {poBox && <span className="field-note" role="alert">We can&apos;t deliver to PO Boxes, Locked Bags or Parcel Lockers. Please use a street address.</span>}
                 </label>
                 <label className="wide">Apartment, unit or building (optional)<input autoComplete="address-line2" value={details.line2} onChange={(e) => set({ line2: e.target.value })} /></label>
-                <label className="wide">Suburb <Req /><input autoComplete="address-level2" required value={details.city} onChange={(e) => set({ city: e.target.value })} /></label>
-                <label>State <Req /><select autoComplete="address-level1" required value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
-                <label>Postcode <Req /><input inputMode="numeric" maxLength={4} autoComplete="postal-code" required value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
+                <label className="wide"><span>Suburb <Req /></span><input autoComplete="address-level2" required value={details.city} onChange={(e) => set({ city: e.target.value })} /></label>
+                <label><span>State <Req /></span><select autoComplete="address-level1" required value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+                <label><span>Postcode <Req /></span><input inputMode="numeric" maxLength={4} autoComplete="postal-code" required value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
               </div>
               <div className="muted delivery-note">
                 <p>We deliver to street addresses only. We can&apos;t deliver to PO Boxes, Locked Bags or Parcel Lockers.</p>

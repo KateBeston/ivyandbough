@@ -936,3 +936,5 @@ button{font:inherit;color:inherit}
 .field-note{font-size:13px;font-weight:400;color:#8B1E2D}
 .delivery-grid .check-line{flex-direction:row;font-weight:400}
 .delivery-details>.delivery-grid+.delivery-grid{margin-top:14px}
+.delivery-grid label.check-line{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:14px}
+.delivery-grid label.check-line input{width:auto;height:auto;margin-top:3px}
