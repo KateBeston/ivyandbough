@@ -3,11 +3,12 @@
 import { fullName, productPaths } from "@/lib/product-name";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { account, authHeader } from "@/lib/account-client";
+import { CheckoutModal } from "./CheckoutModal";
 
 export type DeliveryDetails = { name: string; phone: string; line1: string; line2: string; city: string; state: string; postcode: string; smsUpdates: boolean; marketing: boolean; authorityToLeave: boolean; instructions: string };
 export type Line = { id: string; sku?: string; slug: string; name: string; price_cents: number; was_cents?: number | null; sale_label?: string; image: string; quantity: number };
 export type Welcome = { code: string; offer: string; terms: string };
-type Basket = { lines: Line[]; count: number; subtotal: number; add: (line: Line) => void; setQuantity: (id: string, quantity: number) => void; remove: (id: string) => void; clear: () => void; sessionId: () => string; welcome: Welcome | null; checkout: (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => Promise<string | null> };
+type Basket = { paying?: string | null; payFail?: string; lines: Line[]; count: number; subtotal: number; add: (line: Line) => void; setQuantity: (id: string, quantity: number) => void; remove: (id: string) => void; clear: () => void; sessionId: () => string; welcome: Welcome | null; checkout: (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => Promise<string | null> };
 
 const BasketContext = createContext<Basket | null>(null);
 export const useBasket = () => useContext(BasketContext)!;
@@ -25,6 +26,8 @@ function merge(current: Line[], extra: Line[]) {
 }
 
 export function BasketProvider({ children }: { children: ReactNode }) {
+  const [paying, setPaying] = useState<string | null>(null);
+  const [payFail, setPayFail] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
   const [ready, setReady] = useState(false);
   const session = useRef("");
@@ -87,6 +90,11 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   const checkout = useCallback(async (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => {
     const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, promoCode, ...guard, items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     const body = await res?.json().catch(() => null);
+    if (body?.clientSecret) {
+      setPayFail("");
+      setPaying(body.clientSecret);
+      return null;
+    }
     if (body?.url) {
       window.location.href = body.url;
       return null;
@@ -95,5 +103,10 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   }, [lines]);
 
   const value = useMemo(() => ({ lines, count: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.price_cents * l.quantity, 0), add, setQuantity, remove, clear, sessionId, welcome, checkout }), [lines, add, setQuantity, remove, clear, sessionId, welcome, checkout]);
-  return <BasketContext.Provider value={value}>{children}</BasketContext.Provider>;
+  return (
+    <BasketContext.Provider value={{ ...value, paying, payFail }}>
+      {children}
+      {paying && <CheckoutModal secret={paying} onClose={() => setPaying(null)} onFail={() => { setPaying(null); setPayFail("The payment window didn't load. Please check your connection and try again."); }} />}
+    </BasketContext.Provider>
+  );
 }

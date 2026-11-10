@@ -82,9 +82,11 @@ export async function POST(request: Request) {
     custom_text: { submit: { message: `Total includes GST of $${(payable / 1100).toFixed(2)}. Delivery times are estimates. By placing your order, you agree to the Ivy & Bough Terms of Sale and Privacy Policy.` } },
     ...(customer ? { customer, saved_payment_method_options: { payment_method_save: "enabled" as const } } : { customer_email: user?.email }),
     metadata: { terms_accepted_at: new Date().toISOString(), user_id: user?.id ?? "", cart_session: cart, promo_code: promo?.code.code ?? "", ship_name: delivery.name, ship_phone: delivery.phone, ship_line1: delivery.line1, ship_line2: delivery.line2, ship_city: delivery.city, ship_state: delivery.state, ship_postcode: delivery.postcode, ship_zone: quote.zone, sms_updates: body?.delivery?.smsUpdates === true ? "yes" : "no", marketing: body?.delivery?.marketing === true ? "yes" : "no", atl: body?.delivery?.authorityToLeave === true ? "yes" : "no", ship_notes: text(body?.delivery?.instructions, 200) },
-    success_url: `${origin}/order/thanks`,
-    cancel_url: `${origin}/basket`,
+    // Shown in a window over the basket when the publishable key is set; otherwise Stripe's own page.
+    ...(EMBEDDED ? { ui_mode: "embedded" as const, return_url: `${origin}/order/thanks?session_id={CHECKOUT_SESSION_ID}` } : { success_url: `${origin}/order/thanks`, cancel_url: `${origin}/basket` }),
   });
   if (promo && db) await db.from("promo_codes").update({ reserved_session: session.id }).eq("id", promo.code.id);
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json(EMBEDDED ? { clientSecret: session.client_secret } : { url: session.url });
 }
+
+const EMBEDDED = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;

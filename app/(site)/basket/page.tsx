@@ -19,7 +19,7 @@ type Quote = { deliveryCents: number; free: boolean; zone: string };
 type Promo = { code: string; discountCents: number; label: string };
 
 export default function BasketPage() {
-  const { lines, subtotal, setQuantity, remove, checkout, sessionId, welcome } = useBasket();
+  const { lines, subtotal, setQuantity, remove, checkout, sessionId, welcome, paying, payFail } = useBasket();
   const [details, setDetails] = useState(blank);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState("");
@@ -87,6 +87,10 @@ export default function BasketPage() {
   const discount = promo?.discountCents ?? 0;
   const payable = subtotal - discount + (quote?.deliveryCents ?? 0);
   const ready = quote && details.name.trim() && validMobile && details.line1.trim() && details.city.trim() && details.state;
+
+  // The payment window closed (or didn't load): the Checkout button works again.
+  useEffect(() => { if (!paying) setBusy(false); }, [paying]);
+  useEffect(() => { if (payFail) setError(payFail); }, [payFail]);
 
   async function pay() {
     setBusy(true);
