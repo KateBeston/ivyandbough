@@ -132,10 +132,10 @@ export async function getProductsInCategories(ids: string[]): Promise<Product[]>
 }
 
 // The items inside a hamper or bundle, in the order they were added. Items only sold in bundles are included.
-export type BundleItem = { dimensions: string; size_label: string; net_quantity: number | null; net_unit: string; id: string; name: string; short_description: string; description: string; ingredients: string; allergens_contains: string; allergens_may_contain: string; safety_notes: string; quantity: number; product_images: { url: string; alt: string; sort_order: number; media_type?: string }[] };
+export type BundleItem = { qualities: Record<string, string[]> | null; dimensions: string; size_label: string; net_quantity: number | null; net_unit: string; id: string; name: string; short_description: string; description: string; ingredients: string; allergens_contains: string; allergens_may_contain: string; safety_notes: string; quantity: number; product_images: { url: string; alt: string; sort_order: number; media_type?: string }[] };
 export async function getBundleItems(list: { product_id: string; quantity: number }[]): Promise<BundleItem[]> {
   if (!list.length) return [];
-  const { data } = await supabase.from("products").select("id,name,dimensions,size_label,net_quantity,net_unit,short_description,description,ingredients,allergens_contains,allergens_may_contain,safety_notes,product_images(url,alt,sort_order,media_type)").in("id", list.map((x) => x.product_id));
+  const { data } = await supabase.from("products").select("id,name,dimensions,size_label,net_quantity,net_unit,short_description,description,ingredients,allergens_contains,allergens_may_contain,safety_notes,qualities,product_images(url,alt,sort_order,media_type)").in("id", list.map((x) => x.product_id));
   const rows = (data ?? []) as Omit<BundleItem, "quantity">[];
   return list.flatMap((x) => { const r = rows.find((y) => y.id === x.product_id); return r ? [{ ...r, quantity: x.quantity || 1 }] : []; });
 }

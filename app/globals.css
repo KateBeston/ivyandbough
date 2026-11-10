@@ -967,3 +967,4 @@ button{font:inherit;color:inherit}
 .labels-guide dt{font-weight:500}
 .labels-guide dd{margin:4px 0 0}
 .inside-size{font-size:13px;color:var(--brown)}
+.inside-labels{margin:6px 0 4px;gap:5px}.inside-labels .quality-pill{font-size:11px;padding:3px 9px}

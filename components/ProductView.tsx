@@ -202,6 +202,7 @@ function WhatsInside({ items }: { items: BundleItem[] }) {
                     {i.allergens_may_contain && <p><strong>May contain:</strong> {sentence(list(i.allergens_may_contain))}.</p>}
                   </details>
                 )}
+                {(() => { const labels = [...new Set(Object.values(i.qualities ?? {}).flat().filter(Boolean))]; return labels.length > 0 && <ul className="quality-pills inside-labels">{labels.map((q) => <li key={q} className="quality-pill">{q}</li>)}</ul>; })()}
                 {i.safety_notes && <details><summary>Safety</summary><p>{i.safety_notes}</p></details>}
               </div>
             </li>
