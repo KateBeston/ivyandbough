@@ -182,15 +182,21 @@ function Security({ email }: { email: string }) {
   );
 }
 
+// Australian mobiles: shown as "412 345 678" after +61, saved as +61412345678 so texts and MMS reach them.
+const mobileDigits = (v: string) => v.replace(/\D/g, "").replace(/^61/, "").replace(/^0/, "");
+const formatMobile = (v: string) => mobileDigits(v).slice(0, 9).replace(/^(\d{3})(\d{1,3})?(\d{1,3})?$/, (_, a, b, c) => [a, b, c].filter(Boolean).join(" "));
+
 function Details({ email }: { email: string }) {
   const [form, setForm] = useState({ name: "", phone: "" });
   const [msg, setMsg] = useState("");
   useEffect(() => {
-    account.rpc("my_details").then(({ data }) => { if (data) setForm({ name: data.name ?? "", phone: data.phone ?? "" }); });
+    account.rpc("my_details").then(({ data }) => { if (data) setForm({ name: data.name ?? "", phone: formatMobile(data.phone ?? "") }); });
   }, []);
   async function save(e: FormEvent) {
     e.preventDefault();
-    const { error } = await account.rpc("update_my_details", { full_name: form.name, phone_number: form.phone });
+    const digits = mobileDigits(form.phone);
+    if (digits && !/^4\d{8}$/.test(digits)) return setMsg("Enter an Australian mobile number, such as 412 345 678.");
+    const { error } = await account.rpc("update_my_details", { full_name: form.name, phone_number: digits ? `+61${digits}` : "" });
     setMsg(error ? "That didn't save. Please try again." : "Saved. We've emailed you to confirm.");
     if (!error) notify("details");
   }
@@ -199,7 +205,7 @@ function Details({ email }: { email: string }) {
       {msg && <p role="status">{msg}</p>}
       <label>Email<input value={email} disabled /></label>
       <label>Name<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" /></label>
-      <label>Phone<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} autoComplete="tel" /></label>
+      <label>Mobile<span className="mobile-field"><span aria-hidden="true">+61</span><input type="tel" inputMode="tel" autoComplete="tel-national" placeholder="412 345 678" aria-label="Mobile number, Australia plus 61" value={form.phone} onChange={(e) => setForm({ ...form, phone: formatMobile(e.target.value) })} /></span></label>
       <button className="solid">Save</button>
     </form>
   );
