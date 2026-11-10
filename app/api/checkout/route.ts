@@ -29,6 +29,7 @@ export async function POST(request: Request) {
   if (!delivery.name || !delivery.line1 || !delivery.city || !STATES.includes(delivery.state) || !/^\d{4}$/.test(delivery.postcode) || !/^\+614\d{8}$/.test(delivery.phone)) return NextResponse.json({ error: "Please check your delivery details." }, { status: 400 });
 
   // Catches a suburb that isn't in the postcode, so parcels aren't misaddressed. Skipped if Australia Post can't be reached.
+  if (/\b(p\.?\s*o\.?\s*box|post\s*office\s*box|gpo\s*box|locked\s*bag|private\s*bag|parcel\s*locker|parcel\s*collect|community\s*mail\s*bag|cmb\s*\d)/i.test(`${delivery.line1} ${delivery.line2 ?? ""}`)) return NextResponse.json({ error: "We can't deliver to PO Boxes, Locked Bags or Parcel Lockers. Please use a street address." }, { status: 400 });
   const wrongSuburb = await checkSuburb(delivery.city, delivery.state, delivery.postcode);
   if (wrongSuburb) return NextResponse.json({ error: wrongSuburb }, { status: 400 });
 

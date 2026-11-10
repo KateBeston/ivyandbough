@@ -931,3 +931,8 @@ button{font:inherit;color:inherit}
 .delivery-instructions{display:flex;flex-direction:column;gap:4px}
 .delivery-instructions input{height:48px;padding:0 12px;border:1px solid #B9AE9E;background:#fff;font:inherit;font-size:16px}
 .delivery-details .muted{font-size:13px;color:#4F463D}
+.req{color:#8B1E2D;margin-left:2px}
+.req-note{margin:4px 0 10px;font-size:13px;color:#4F463D}
+.field-note{font-size:13px;font-weight:400;color:#8B1E2D}
+.delivery-grid .check-line{flex-direction:row;font-weight:400}
+.delivery-details>.delivery-grid+.delivery-grid{margin-top:14px}

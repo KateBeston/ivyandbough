@@ -15,6 +15,11 @@ import { formatPrice } from "@/lib/catalogue";
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "", smsUpdates: false, marketing: false, authorityToLeave: false, instructions: "" };
 const mobileDigits = (value: string) => value.replace(/\D/g, "").replace(/^61/, "").replace(/^0/, "");
+// Shows the number as it's typed in groups of three ("412 345 678"); it's sent as +61412345678 so texts and MMS reach it.
+const formatMobile = (value: string) => mobileDigits(value).slice(0, 9).replace(/^(\d{3})(\d{1,3})?(\d{1,3})?$/, (_, a, b, c) => [a, b, c].filter(Boolean).join(" "));
+// Couriers can't deliver to these, and some items ship by courier.
+const PO_BOX = /\b(p\.?\s*o\.?\s*box|post\s*office\s*box|gpo\s*box|locked\s*bag|private\s*bag|parcel\s*locker|parcel\s*collect|community\s*mail\s*bag|cmb\s*\d)/i;
+const Req = () => <span className="req" aria-hidden="true">*</span>;
 type Quote = { deliveryCents: number; free: boolean; zone: string };
 type Promo = { code: string; discountCents: number; label: string };
 
@@ -86,7 +91,9 @@ export default function BasketPage() {
 
   const discount = promo?.discountCents ?? 0;
   const payable = subtotal - discount + (quote?.deliveryCents ?? 0);
-  const ready = quote && details.name.trim() && validMobile && details.line1.trim() && details.city.trim() && details.state;
+  const poBox = PO_BOX.test(`${details.line1} ${details.line2}`);
+  const ready = quote && details.name.trim() && validMobile && details.line1.trim() && !poBox && details.city.trim() && details.state;
+  const findAddress = () => { const el = document.querySelector<HTMLInputElement>(".address-lookup input") ?? document.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]'); el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus({ preventScroll: true }); };
 
   // The payment window closed (or didn't load): the Checkout button works again.
   useEffect(() => { if (!paying) setBusy(false); }, [paying]);
@@ -127,25 +134,31 @@ export default function BasketPage() {
               <h2 id="delivery-details">Delivery details</h2>
               <CheckoutAccount onFill={(d) => set({ ...d, ...(d.state !== undefined ? { state: STATES.includes(d.state) ? d.state : "" } : {}) })} />
               <AddressLookup onPick={pick} />
+              <p className="req-note"><Req /> Required</p>
               <div className="delivery-grid">
-                <label className="wide">Full name<input autoComplete="name" value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>
-                <label className="wide">Mobile<span className="mobile-field"><span aria-hidden="true">+61</span><input type="tel" autoComplete="tel-national" placeholder="412 345 678" aria-label="Mobile number, Australia plus 61" value={details.phone} onChange={(e) => set({ phone: e.target.value })} /></span></label>
-                <label className="wide">Address<input autoComplete="address-line1" value={details.line1} onChange={(e) => set({ line1: e.target.value })} /></label>
+                <label className="wide">Full name <Req /><input autoComplete="name" required value={details.name} onChange={(e) => set({ name: e.target.value })} /></label>
+                <label className="wide">Mobile <Req /><span className="mobile-field"><span aria-hidden="true">+61</span><input type="tel" autoComplete="tel-national" inputMode="tel" required placeholder="412 345 678" aria-label="Mobile number, Australia plus 61" value={details.phone} onChange={(e) => set({ phone: formatMobile(e.target.value) })} /></span>
+                  {details.phone && !validMobile && <span className="field-note">Enter an Australian mobile number, such as 412 345 678.</span>}
+                </label>
+                <label className="check-line wide"><input type="checkbox" checked={details.smsUpdates} onChange={(e) => set({ smsUpdates: e.target.checked })} /><span>Text me updates about my order by SMS and MMS, such as when it&apos;s on its way.</span></label>
+                <label className="wide">Address <Req /><input autoComplete="address-line1" required value={details.line1} onChange={(e) => set({ line1: e.target.value })} />
+                  {poBox && <span className="field-note" role="alert">We can&apos;t deliver to PO Boxes, Locked Bags or Parcel Lockers. Please use a street address.</span>}
+                </label>
                 <label className="wide">Apartment, unit or building (optional)<input autoComplete="address-line2" value={details.line2} onChange={(e) => set({ line2: e.target.value })} /></label>
-                <label className="wide">Suburb<input autoComplete="address-level2" value={details.city} onChange={(e) => set({ city: e.target.value })} /></label>
-                <label>State<select autoComplete="address-level1" value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
-                <label>Postcode<input inputMode="numeric" maxLength={4} autoComplete="postal-code" value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
+                <label className="wide">Suburb <Req /><input autoComplete="address-level2" required value={details.city} onChange={(e) => set({ city: e.target.value })} /></label>
+                <label>State <Req /><select autoComplete="address-level1" required value={details.state} onChange={(e) => set({ state: e.target.value })}><option value="">Choose</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></label>
+                <label>Postcode <Req /><input inputMode="numeric" maxLength={4} autoComplete="postal-code" required value={details.postcode} onChange={(e) => set({ postcode: e.target.value.replace(/\D/g, "") })} /></label>
               </div>
               <div className="muted delivery-note">
+                <p>We deliver to street addresses only. We can&apos;t deliver to PO Boxes, Locked Bags or Parcel Lockers.</p>
                 <p><strong>Please check your address carefully.</strong> Once your order has been dispatched we can&apos;t change it, and any redelivery charge is yours to pay.</p>
                 <p>Dispatch and delivery times are estimates and can be longer in the weeks before Christmas or for regional areas. Some items ship separately from our suppliers, and large items need a street address. <Link href="/delivery">Delivery information</Link></p>
               </div>
               <div className="delivery-consents">
                 <label className="check-line"><input type="checkbox" checked={details.authorityToLeave} onChange={(e) => set({ authorityToLeave: e.target.checked })} /><span>Leave my parcel in a safe place if no one is home. Once it&apos;s left as asked, it counts as delivered.</span></label>
               </div>
-              <label className="delivery-instructions">Delivery instructions (optional)<input maxLength={200} placeholder="For example, leave at the side gate" value={details.instructions} onChange={(e) => set({ instructions: e.target.value })} /></label>
+              <div className="delivery-grid"><label className="wide">Delivery instructions (optional)<input maxLength={200} placeholder="For example, leave at the side gate" value={details.instructions} onChange={(e) => set({ instructions: e.target.value })} /></label></div>
               <div className="delivery-consents">
-                <label className="check-line"><input type="checkbox" checked={details.smsUpdates} onChange={(e) => set({ smsUpdates: e.target.checked })} /><span>I agree to receive updates about my order by SMS and MMS.</span></label>
                 <label className="check-line"><input type="checkbox" checked={details.marketing} onChange={(e) => set({ marketing: e.target.checked })} /><span>I&apos;d like to receive news, offers and basket reminders from Ivy &amp; Bough by email, SMS and MMS. You can opt out at any time.</span></label>
               </div>
             </section>
@@ -153,7 +166,7 @@ export default function BasketPage() {
           <aside className="basket-summary">
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
             {promo && <div><span>Discount <button type="button" className="link-button" onClick={removeCode}>Remove</button></span><span>-{formatPrice(discount)}</span></div>}
-            <div><span>Delivery</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : "Enter your postcode"}</span></div>
+            <div><span>{quote ? `Delivery to ${details.postcode}` : "Delivery"}</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : <button type="button" className="link-button" onClick={findAddress}>Add your delivery address</button>}</span></div>
             <div className="total"><span>Total</span><span>{formatPrice(payable)}</span></div>
             <p className="muted">{quote ? `Total includes ${formatPrice(Math.round(payable / 11))} GST.` : "Prices include GST."}</p>
             {quoteError && <p role="alert">{quoteError}</p>}
