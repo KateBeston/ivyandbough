@@ -194,6 +194,7 @@ function WhatsInside({ items }: { items: BundleItem[] }) {
               <div>
                 <h3>{i.quantity > 1 ? `${i.quantity} × ` : ""}{i.name}</h3>
                 {about && <p>{about}</p>}
+                {(i.dimensions || i.net_quantity) && <p className="inside-size">{[i.net_quantity ? `${i.net_quantity} ${i.net_unit}`.trim() : "", i.dimensions].filter(Boolean).join(" · ")}</p>}
                 {(i.ingredients || i.allergens_contains || i.allergens_may_contain) && (
                   <details><summary>Ingredients</summary>
                     {i.ingredients && <p>{ingredientText(i.ingredients)}</p>}
