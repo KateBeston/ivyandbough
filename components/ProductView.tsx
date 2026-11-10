@@ -41,7 +41,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
     product.net_quantity && ["Contents", `${Number(product.net_quantity)} ${product.net_unit}`],
     product.pack_quantity && ["Quantity", product.pack_quantity === 1 ? "Sold individually" : `Pack of ${product.pack_quantity}`],
     product.materials && ["Materials", product.materials],
-    (measured || product.dimensions) && ["Size", measured ? `${measured} cm` : product.dimensions],
+    (measured || product.dimensions) && ["Dimensions", measured ? `${measured} cm` : product.dimensions],
     (product.weight_g || product.weight) && ["Weight", product.weight_g ? `${product.weight_g} g` : product.weight],
     product.brand && ["Brand", product.brand],
     product.made_in && ["Made in", product.made_in],
