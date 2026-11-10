@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Honeypot } from "./Honeypot";
 import { Turnstile, TURNSTILE_ON } from "./Turnstile";
 
-export function NotifyMe({ productId }: { productId: string }) {
+export function NotifyMe({ productId, soldOut = false }: { productId: string; soldOut?: boolean }) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
@@ -24,7 +24,7 @@ export function NotifyMe({ productId }: { productId: string }) {
   if (state === "done") return <p className="notify-done" role="status">Thank you. We&apos;ll email you once when it&apos;s available.</p>;
   return (
     <form className="notify-me" onSubmit={submit}>
-      <p className="notify-lead">Coming soon. Leave your email and we&apos;ll let you know when it arrives.</p>
+      <p className="notify-lead">{soldOut ? <>Sold out for now. Leave your email and we&apos;ll let you know when it&apos;s back.</> : <>Coming soon. Leave your email and we&apos;ll let you know when it arrives.</>}</p>
       <div className="notify-row">
         <label className="visually-hidden" htmlFor={`notify-${productId}`}>Email address</label>
         <input id={`notify-${productId}`} name="email" type="email" required maxLength={254} autoComplete="email" placeholder="Email address" />

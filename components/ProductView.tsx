@@ -84,7 +84,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
             {theme && <div className="eyebrow">{theme.name}</div>}
             <div className="title-row"><h1>{product.name}</h1>{!preview && <HeartButton productId={product.id} name={fullName(product)} className="page-heart" />}</div>
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
-            <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} /></div>
+            <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} gst /></div>
             {!preview && !soldOut && <AfterpayMessage cents={product.price_cents} />}
             <div className="muted price-note">GST included{product.no_discount ? " · Excluded from offers and discount codes" : ""}</div>
             <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
@@ -107,7 +107,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
             </div>
           )}
           <p className="lede">{product.short_description || product.description}</p>
-          {soldOut ? <button type="button" className="solid" disabled>Sold out</button> : comingSoon ? (preview ? <button type="button" className="solid" disabled>Notify me</button> : <NotifyMe productId={product.id} />) : <AddToBasket product={product} preview={preview} />}
+          {soldOut || comingSoon ? (preview ? <button type="button" className="solid" disabled>{soldOut ? "Sold out" : "Notify me"}</button> : <NotifyMe key={product.id} productId={product.id} soldOut={soldOut} />) : <AddToBasket product={product} preview={preview} />}
 
           <div className="delivery-box">
             {!preview && <ShipTo shipsFrom={product.ships_from} />}

@@ -10,8 +10,8 @@ import { useBasket } from "./BasketProvider";
 export function QuickAdd({ p, href }: { p: Product; href: string }) {
   const { add } = useBasket();
   const [added, setAdded] = useState(false);
+  if (p.availability === "Sold out" || p.availability === "Coming soon") return <Link href={href} className="quick-add">Notify me</Link>;
   if (p.price_cents === null && !p.price_from_cents) return null;
-  if (p.availability === "Sold out" || p.availability === "Coming soon") return null;
   const choices = !p.pick_sku && (p.variants?.length ?? 0) > 1;
   if (choices) {
     const label = /size/i.test(p.option_label || "") ? "size" : /scent/i.test(p.option_label || "") ? "scent" : / and |style/i.test(p.option_label || "") ? "option" : "colour";

@@ -983,3 +983,4 @@ button{font:inherit;color:inherit}
 .quick-add.done{border-color:transparent;padding-left:0;cursor:default;letter-spacing:.08em;text-transform:none;font-size:13px}
 .quick-add.done:hover{background:transparent;color:var(--ink,#2A2420)}
 .quick-add.done a{color:inherit}
+.gst-tag{font-size:.78em;color:var(--brown,#7A6A58);letter-spacing:.02em;white-space:nowrap}
