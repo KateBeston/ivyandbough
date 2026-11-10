@@ -118,6 +118,15 @@ export async function ProductView({ product: listing, preview = false, colour }:
               <li>{product.final_sale ? <>Final sale: no change-of-mind returns. See our <Link href="/returns">Returns Policy</Link>.</> : product.returns_note ? `Returns: ${product.returns_note}` : <>Easy returns under our <Link href="/returns">Returns Policy</Link>.</>}</li>
             </ul>
             <p className="estimate-note">Dispatch and delivery times are estimates. <Link href="/delivery">Delivery information</Link></p>
+            {(() => {
+              // States this can't go to: its own, plus any item inside it, with the reason given in the portal.
+              const ORDER = ["NSW", "ACT", "VIC", "QLD", "SA", "WA", "TAS", "NT"];
+              const states = [...new Set([...(product.blocked_states ?? []), ...inside.flatMap((i) => i.blocked_states ?? [])])].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+              if (!states.length) return null;
+              const reason = product.blocked_reason || inside.find((i) => i.blocked_states?.length && i.blocked_reason)?.blocked_reason || "";
+              const list = states.length < 2 ? states[0] : `${states.slice(0, -1).join(", ")} or ${states[states.length - 1]}`;
+              return <p className="blocked-note">We can&apos;t deliver this to {list}{reason ? `, ${reason}` : ""}.</p>;
+            })()}
             {!preview && <DeliveryCheck productId={product.id} />}
             <details>
               <summary>More delivery information</summary>

@@ -45,6 +45,15 @@ export async function POST(request: Request) {
   });
   if (lines.length !== items.length) return NextResponse.json({ error: "Something in your basket is no longer available." }, { status: 400 });
 
+  // Some products can't go to some states, such as seeds under state biosecurity rules. A hamper takes on its items' limits.
+  const { data: limits } = await supabase.from("products").select("id,name,blocked_states,bundle_items").in("id", items.map((i) => String(i.id)));
+  const limitRows = (limits ?? []) as { id: string; name: string; blocked_states: string[] | null; bundle_items: { product_id: string }[] | null }[];
+  const insideIds = limitRows.flatMap((r) => (r.bundle_items ?? []).map((b) => b.product_id));
+  const { data: insideRows } = insideIds.length ? await supabase.from("products").select("id,blocked_states").in("id", insideIds) : { data: [] };
+  const blockedFor = (r: (typeof limitRows)[number]) => [...(r.blocked_states ?? []), ...(r.bundle_items ?? []).flatMap((b) => ((insideRows ?? []) as { id: string; blocked_states: string[] | null }[]).find((x) => x.id === b.product_id)?.blocked_states ?? [])];
+  const stopped = limitRows.find((r) => blockedFor(r).includes(delivery.state));
+  if (stopped) return NextResponse.json({ error: `Sorry, ${stopped.name} can't be delivered to ${delivery.state}. Please remove it from your basket or use a delivery address in another state.` }, { status: 400 });
+
   let quote;
   try {
     quote = await quoteDelivery(supabase, items, delivery.postcode);

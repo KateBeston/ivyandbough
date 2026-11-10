@@ -972,3 +972,4 @@ button{font:inherit;color:inherit}
 .inside-labels{margin:6px 0 4px;gap:5px}.inside-labels .quality-pill{font-size:11px;padding:3px 9px}
 .pre-lines{white-space:pre-line}
 .detail-list li{white-space:pre-line}
+.blocked-note{font-size:13px;line-height:1.5;color:#7A3B2E;background:#F8EFEA;border-left:3px solid #B5654F;padding:8px 12px;margin:10px 0}
