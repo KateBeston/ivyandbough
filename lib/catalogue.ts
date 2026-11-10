@@ -174,7 +174,7 @@ export function formatPrice(cents: number | null) {
 }
 
 export function formatDate(date: string | null) {
-  if (!date) return "[DATE]";
+  if (!date) return "Dates coming soon";
   return new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", timeZone: "Australia/Brisbane" }).format(new Date(date));
 }
 
