@@ -956,3 +956,13 @@ button{font:inherit;color:inherit}
 .inside-item summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
 .inside-item details p{margin:8px 0 0}
 .inside-contains{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:14px}
+/* Label meanings: tap a label to see what it means */
+.quality-pill.has-meaning{display:inline-block;position:relative}
+.quality-pill.has-meaning summary{list-style:none;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.quality-pill.has-meaning summary::-webkit-details-marker{display:none}
+.pill-meaning{position:absolute;z-index:20;left:0;top:calc(100% + 6px);width:min(260px,70vw);padding:10px 12px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(21,19,15,.12);font-size:13px;line-height:1.5;text-transform:none;letter-spacing:0;color:var(--ink)}
+.labels-link{margin-top:10px;font-size:13px}
+.labels-guide section{margin-top:32px}
+.labels-guide dl div{padding:12px 0;border-top:1px solid var(--line)}
+.labels-guide dt{font-weight:500}
+.labels-guide dd{margin:4px 0 0}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getLabelMeanings } from "@/lib/labels";
 import { focus, getBundleItems, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
 import { Price } from "./Price";
@@ -21,12 +22,13 @@ export async function ProductView({ product: listing, preview = false, colour }:
   const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
   const product: Product = chosen ? { ...chosen, name: listing.name, kind: listing.kind, description: listing.description, slug: listing.slug, themes: listing.themes, categories: listing.categories, category_id: listing.category_id, theme_id: listing.theme_id, product_themes: listing.product_themes, listing_id: listing.listing_id, listing_type: listing.listing_type, short_description: listing.short_description } : listing;
   const theme = product.themes;
-  const [{ data: settings }, related, picked, { data: palette }, inside] = await Promise.all([
+  const [{ data: settings }, related, picked, { data: palette }, inside, meanings] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
     preview ? Promise.resolve([] as Product[]) : getProductsByListingIds(listing.similar_ids ?? []),
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
     product.product_type === "bundle" ? getBundleItems(product.bundle_items ?? []) : Promise.resolve([] as BundleItem[]),
+    getLabelMeanings(),
   ]);
   const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
   // A product can be more than one colour ("Red, White"): the dot shows the first two, split diagonally.
@@ -154,9 +156,12 @@ export async function ProductView({ product: listing, preview = false, colour }:
                   {qualities.map(([group, list]) => (
                     <div key={group} className="quality-group">
                       <h2 className="spec-head">{group}</h2>
-                      <ul className="quality-pills">{list.map((q) => <li key={q} className="quality-pill">{q}</li>)}</ul>
+                      <ul className="quality-pills">{list.map((q) => meanings[`${group}|${q}`]
+                        ? <li key={q}><details className="quality-pill has-meaning"><summary>{q}</summary><span className="pill-meaning">{meanings[`${group}|${q}`]}</span></details></li>
+                        : <li key={q} className="quality-pill">{q}</li>)}</ul>
                     </div>
                   ))}
+                  {Object.keys(meanings).length > 0 && <p className="labels-link"><Link href="/labels">What our labels mean</Link></p>}
                 </div>
               )}
             </div>
