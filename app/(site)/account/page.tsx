@@ -206,7 +206,8 @@ function Details({ email }: { email: string }) {
 }
 
 function Addresses({ userId }: { userId: string }) {
-  const blank = { label: "", name: "", line1: "", line2: "", suburb: "", state: "QLD", postcode: "" };
+  // The name comes from Your details, so addresses only hold the address.
+  const blank = { label: "", line1: "", line2: "", suburb: "", state: "QLD", postcode: "" };
   const [rows, setRows] = useState<Address[]>([]);
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState("");
@@ -238,21 +239,20 @@ function Addresses({ userId }: { userId: string }) {
     <>
       {rows.map((a) => (
         <div key={a.id} className="order-line">
-          <div><strong>{a.label || a.name}</strong><br />{[a.name, a.line1, a.line2, `${a.suburb} ${a.state} ${a.postcode}`].filter(Boolean).join(", ")}</div>
-          <span className="address-actions"><button type="button" className="link-button" onClick={() => { setEditing(a.id); setForm({ label: a.label ?? "", name: a.name ?? "", line1: a.line1 ?? "", line2: a.line2 ?? "", suburb: a.suburb ?? "", state: a.state ?? "QLD", postcode: a.postcode ?? "" }); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}>Edit</button><button type="button" className="link-button" onClick={() => remove(a.id)}>Remove</button></span>
+          <div><strong>{a.label || "Address"}</strong><br />{[a.line1, a.line2, `${a.suburb} ${a.state} ${a.postcode}`].filter(Boolean).join(", ")}</div>
+          <span className="address-actions"><button type="button" className="link-button" onClick={() => { setEditing(a.id); setForm({ label: a.label ?? "", line1: a.line1 ?? "", line2: a.line2 ?? "", suburb: a.suburb ?? "", state: a.state ?? "QLD", postcode: a.postcode ?? "" }); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}>Edit</button><button type="button" className="link-button" onClick={() => remove(a.id)}>Remove</button></span>
         </div>
       ))}
       <form className="account-form" onSubmit={add}>
         {error && <p role="alert" className="form-error">{error}</p>}
         <AddressLookup onPick={(a) => setForm((f) => ({ ...f, line1: a.line1, suburb: a.city, state: states.includes(a.state) ? a.state : f.state, postcode: a.postcode }))} />
         {input("label", "Label, such as Home")}
-        {input("name", "Name", true)}
         {input("line1", "Address", true)}
         {input("line2", "Address line 2")}
         {input("suburb", "Suburb", true)}
         <label>State<select value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })}>{states.map((s) => <option key={s}>{s}</option>)}</select></label>
         {input("postcode", "Postcode", true)}
-        <button className="solid">{editing ? "Save address" : "Add address"}</button>
+        <button className="solid">{editing ? "Update address" : "Add address"}</button>
         {editing && <button type="button" className="link-button" onClick={() => { setEditing(""); setForm(blank); }}>Cancel</button>}
       </form>
     </>

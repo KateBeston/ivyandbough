@@ -63,7 +63,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   // A signed-in customer's first delivery address is saved to their account, so next time checkout fills itself in.
   if (userId && ship.ship_line1) {
     const { count } = await db.from("customer_addresses").select("id", { count: "exact", head: true }).eq("auth_user_id", userId);
-    if (!count) await db.from("customer_addresses").insert({ auth_user_id: userId, label: "Home", name, line1: ship.ship_line1, line2: ship.ship_line2 ?? "", suburb: ship.ship_city ?? "", state: ship.ship_state ?? "", postcode: ship.ship_postcode ?? "" });
+    if (!count) await db.from("customer_addresses").insert({ auth_user_id: userId, label: "Home", line1: ship.ship_line1, line2: ship.ship_line2 ?? "", suburb: ship.ship_city ?? "", state: ship.ship_state ?? "", postcode: ship.ship_postcode ?? "" });
   }
 
   const intentId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;

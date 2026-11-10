@@ -29,7 +29,7 @@ export function CheckoutAccount({ onFill: fill }: { onFill: (d: Partial<SavedDet
       setAddresses(list);
       setUser({ email: session.user.email ?? "", name: details.name || String(session.user.user_metadata?.full_name ?? "") });
       const first = list[0];
-      onFill({ name: first?.name || details.name || String(session.user.user_metadata?.full_name ?? ""), phone: local(details.phone ?? ""), ...(first ? { line1: first.line1, line2: first.line2, city: first.suburb, state: first.state, postcode: first.postcode } : {}) });
+      onFill({ name: details.name || String(session.user.user_metadata?.full_name ?? "") || first?.name || "", phone: local(details.phone ?? ""), ...(first ? { line1: first.line1, line2: first.line2, city: first.suburb, state: first.state, postcode: first.postcode } : {}) });
     };
     load();
     const { data } = account.auth.onAuthStateChange((event) => { if (event === "SIGNED_OUT") setUser(null); });
@@ -39,7 +39,7 @@ export function CheckoutAccount({ onFill: fill }: { onFill: (d: Partial<SavedDet
 
   function choose(id: string) {
     const a = addresses.find((x) => x.id === id);
-    if (a) onFill({ name: a.name || profile.name, line1: a.line1, line2: a.line2, city: a.suburb, state: a.state, postcode: a.postcode });
+    if (a) onFill({ name: profile.name || a.name, line1: a.line1, line2: a.line2, city: a.suburb, state: a.state, postcode: a.postcode });
   }
 
   if (user === undefined) return null;
