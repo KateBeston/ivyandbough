@@ -916,3 +916,4 @@ button{font:inherit;color:inherit}
 }
 .related .product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media (max-width:900px){.related .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px}}
+.afterpay-message{min-height:20px;margin-top:4px}
