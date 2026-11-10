@@ -914,3 +914,5 @@ button{font:inherit;color:inherit}
 @media (max-width:760px){
 .product-layout{grid-template-areas:"gallery" "details" "long";grid-template-rows:auto;row-gap:32px}
 }
+.related .product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.related .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px}}

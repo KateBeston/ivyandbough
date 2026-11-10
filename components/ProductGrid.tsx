@@ -15,7 +15,8 @@ export function ProductGrid({ products }: { products: Product[] }) {
             <small>{p.kind}</small>
             <strong>{p.name}</strong>
             <span>{p.price_from_cents ? <>From {formatPrice(p.price_from_cents)}</> : <Price cents={p.price_cents} wasCents={p.was_cents} />}</span>
-            {(p.variants?.length ?? 0) > 1 && <em className="card-options">{p.variants!.length} {(p.option_label || "Colour").toLowerCase()}s</em>}
+            {p.pick_sku ? (p.version_name && <em className="card-options">{p.version_name}</em>)
+              : (p.variants?.length ?? 0) > 1 && <em className="card-options">{p.variants!.length} {/ and /i.test(p.option_label || "") ? "options" : `${(p.option_label || "Colour").toLowerCase()}s`}</em>}
             {p.availability === "Coming soon" && <em className="card-soon">Coming soon</em>}
           </Link>
         );
