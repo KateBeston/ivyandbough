@@ -31,7 +31,11 @@ Short description:
 Food and drink:
 - Ingredients, allergens, diets and nutrition are legal label information. Only mention a diet (vegan, gluten-free, organic and so on) or an allergen if it is in the known details, worded exactly as given. Never infer one from the photos or the name, and never write health claims ("healthy", "good for you", "boosts").
 - Don't repeat the ingredients or allergens in the description; they're shown separately on the page. Describe the taste, the occasion and how it's served or gifted.
-- If it looks like food or drink and no ingredients or allergens are given, add to needs_checking: "Add the ingredients, allergens and nutrition from the label in the Food information section (Details and qualities tab)."
+- Only if is_food_or_drink is "yes" and no ingredients or allergens are given, add to needs_checking: "Add the ingredients, allergens and nutrition from the label in the Food information section (Details and qualities tab)." Never suggest food information for anything else, such as seeds, soap, sprays or lotions.
+needs_checking:
+- Keep it short: only facts that are genuinely unknown and that matter for this listing. Never list anything already given in known_details (such as ingredients, brand or weight that the owner has entered).
+- If only_sold_inside_hampers is "yes", this item is only sold inside a hamper: it has no price, postage or shipping size of its own. Don't ask about weight, dimensions, packaging size, price, brand or photos. Only ask about what's genuinely unclear in its description, such as how many pieces are included.
+- Don't ask whether to mention things the supplier offers that aren't part of this product (such as custom tags or other seasons). Just leave them out.
 Grouped listings:
 - If grouped_versions is given, this is one listing for several versions of the same product (for example the same spray with different bow colours). Write one general description of what every version shares, then say it comes in the versions listed, using option_label (for example "Available with a red gingham, brown or tartan bow."). Don't describe one version as if it were the product. Photos may show different versions; that's expected, so don't flag it.
 Versions:
