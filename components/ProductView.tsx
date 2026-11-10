@@ -59,7 +59,8 @@ export async function ProductView({ product: listing, preview = false, colour }:
     .filter((p) => p.price_cents && p.availability !== "Sold out")
     .filter((p) => { const k = `${p.slug}|${p.pick_sku ?? ""}`; if (seen.has(k) || (p.slug === listing.slug && !p.pick_sku)) return false; seen.add(k); return true; })
     .slice(0, 8);
-  const qualities = ["Packaging", "Production", "Materials", "Certifications"].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
+  // The usual groups first, then any added in the portal, in the order they were added.
+  const qualities = [...new Set(["Packaging", "Production", "Materials", "Certifications", ...Object.keys(product.qualities ?? {})])].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
   // A range ("1 to 3") when the product has one; otherwise "within" the number of days.
