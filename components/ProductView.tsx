@@ -52,7 +52,9 @@ export async function ProductView({ product: listing, preview = false, colour }:
     product.made_in && ["Made in", product.made_in],
     pillList(product.colour).length ? ["Colour", <span key="c" className="detail-pills">{pillList(product.colour).map((v) => <em key={v}>{v}</em>)}</span>] : product.colours && ["Colours", product.colours],
     pillList(product.material).length ? ["Material", <span key="m" className="detail-pills">{pillList(product.material).map((v) => <em key={v}>{v}</em>)}</span>] : null,
+    product.how_to_use && ["How to use", product.how_to_use],
     product.care && ["Care and storage", product.care],
+    product.good_to_know && ["Good to know", product.good_to_know],
     product.safety_notes && ["Safety", product.safety_notes],
     product.warranty && ["Warranty", product.warranty],
     product.sku && ["Item no.", product.sku],
@@ -202,6 +204,9 @@ function WhatsInside({ items }: { items: BundleItem[] }) {
                   </details>
                 )}
                 {(() => { const labels = [...new Set(Object.values(i.qualities ?? {}).flat().filter(Boolean))]; return labels.length > 0 && <ul className="quality-pills inside-labels">{labels.map((q) => <li key={q} className="quality-pill">{q}</li>)}</ul>; })()}
+                {i.how_to_use && <details><summary>How to use</summary><p className="pre-lines">{i.how_to_use}</p></details>}
+                {i.care && <details><summary>Care</summary><p className="pre-lines">{i.care}</p></details>}
+                {i.good_to_know && <details><summary>Good to know</summary><p className="pre-lines">{i.good_to_know}</p></details>}
                 {i.safety_notes && <details><summary>Safety</summary><p>{i.safety_notes}</p></details>}
               </div>
             </li>
