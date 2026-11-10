@@ -77,7 +77,6 @@ function AuthForm() {
       {mode === "up" && offer && <p className="welcome-offer">Create an account for {offer}. We&apos;ll email your code once you confirm your address, along with an unsubscribe link.</p>}
       <form className="account-form" onSubmit={submit}>
         <Honeypot />
-        <Turnstile onToken={setToken} resetKey={attempt} />
         {error && <p role="alert" className="form-error">{error}</p>}
         {msg && <p role="status">{msg}</p>}
         {mode === "up" && <label>Name<input name="name" required autoComplete="name" /></label>}
@@ -86,6 +85,7 @@ function AuthForm() {
         {mode !== "reset" && mode !== "code" && <label>Password<input name="password" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} /></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="marketing" /><span>Email me about new collections, offers and anything left in my basket. This is optional.</span></label>}
         {mode === "up" && <label className="check-line"><input type="checkbox" name="terms" required /><span>I agree to the <Link href="/account-terms">Account Terms</Link>, <Link href="/terms">Website Terms of Use</Link> and <Link href="/privacy">Privacy Policy</Link>.</span></label>}
+        <Turnstile onToken={setToken} resetKey={attempt} />
         <button className="solid" disabled={busy || (TURNSTILE_ON && !token && !(mode === "code" && codeFor))}>{mode === "in" ? "Sign in" : mode === "up" ? "Create account" : mode === "code" ? (codeFor ? "Sign in" : "Email me a code") : "Send reset link"}</button>
       </form>
       <div className="account-links">
