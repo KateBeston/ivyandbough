@@ -10,7 +10,9 @@ type Address = { id: string; label: string; name: string; line1: string; line2: 
 const local = (phone: string) => phone.replace(/\D/g, "").replace(/^61/, "").replace(/^0/, "");
 
 // Sits above the delivery details: sign in for saved details, or carry on as a guest.
-export function CheckoutAccount({ onFill }: { onFill: (d: Partial<SavedDetails>) => void }) {
+export function CheckoutAccount({ onFill: fill }: { onFill: (d: Partial<SavedDetails>) => void }) {
+  // Only fills what the account actually has, so anything already typed isn't wiped by a blank.
+  const onFill = (d: Partial<SavedDetails>) => fill(Object.fromEntries(Object.entries(d).filter(([, v]) => v)) as Partial<SavedDetails>);
   const [user, setUser] = useState<{ email: string; name: string } | null | undefined>(undefined);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [profile, setProfile] = useState({ name: "", phone: "" });
@@ -27,7 +29,7 @@ export function CheckoutAccount({ onFill }: { onFill: (d: Partial<SavedDetails>)
       setAddresses(list);
       setUser({ email: session.user.email ?? "", name: details.name || String(session.user.user_metadata?.full_name ?? "") });
       const first = list[0];
-      onFill({ name: first?.name || details.name || "", phone: local(details.phone ?? ""), ...(first ? { line1: first.line1, line2: first.line2, city: first.suburb, state: first.state, postcode: first.postcode } : {}) });
+      onFill({ name: first?.name || details.name || String(session.user.user_metadata?.full_name ?? ""), phone: local(details.phone ?? ""), ...(first ? { line1: first.line1, line2: first.line2, city: first.suburb, state: first.state, postcode: first.postcode } : {}) });
     };
     load();
     const { data } = account.auth.onAuthStateChange((event) => { if (event === "SIGNED_OUT") setUser(null); });
@@ -50,7 +52,7 @@ export function CheckoutAccount({ onFill }: { onFill: (d: Partial<SavedDetails>)
   }
   return (
     <div className="checkout-account">
-      <p>Checking out as <strong>{user.name || user.email}</strong> ({user.email}). <button type="button" className="link-button" onClick={() => account.auth.signOut()}>Not you?</button></p>
+      <p>Checking out as {user.name ? <><strong>{user.name}</strong> ({user.email})</> : <strong>{user.email}</strong>}. <button type="button" className="link-button" onClick={() => account.auth.signOut()}>Not you?</button></p>
       {addresses.length > 1 && (
         <label className="checkout-address">Saved address
           <select defaultValue={addresses[0].id} onChange={(e) => choose(e.target.value)}>

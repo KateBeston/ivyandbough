@@ -50,15 +50,20 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   const phone = ship.ship_phone || session.customer_details?.phone || "";
   const userId = session.metadata?.user_id || null;
 
-  const { data: known } = await db.from("customers").select("id").ilike("email", email.replace(/[%_]/g, "\\$&")).maybeSingle();
+  const { data: known } = await db.from("customers").select("id,name").ilike("email", email.replace(/[%_]/g, "\\$&")).maybeSingle();
   let customerId = known?.id as string | undefined;
   // Stripe does not verify a guest's email, so only a signed-in customer can change saved details.
   if (customerId) {
-    if (userId) await db.from("customers").update({ address, phone, auth_user_id: userId }).eq("id", customerId);
+    if (userId) await db.from("customers").update({ address, phone, auth_user_id: userId, ...(known?.name ? {} : { name }) }).eq("id", customerId);
   } else {
     const { data: created, error } = await db.from("customers").insert({ name, email, phone, address, auth_user_id: userId }).select("id").single();
     if (error) throw error;
     customerId = created.id;
+  }
+  // A signed-in customer's first delivery address is saved to their account, so next time checkout fills itself in.
+  if (userId && ship.ship_line1) {
+    const { count } = await db.from("customer_addresses").select("id", { count: "exact", head: true }).eq("auth_user_id", userId);
+    if (!count) await db.from("customer_addresses").insert({ auth_user_id: userId, label: "Home", name, line1: ship.ship_line1, line2: ship.ship_line2 ?? "", suburb: ship.ship_city ?? "", state: ship.ship_state ?? "", postcode: ship.ship_postcode ?? "" });
   }
 
   const intentId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;
