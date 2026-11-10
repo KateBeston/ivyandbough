@@ -973,3 +973,6 @@ button{font:inherit;color:inherit}
 .pre-lines{white-space:pre-line}
 .detail-list li{white-space:pre-line}
 .blocked-note{font-size:13px;line-height:1.5;color:#7A3B2E;background:#F8EFEA;border-left:3px solid #B5654F;padding:8px 12px;margin:10px 0}
+/* Product photos are square, so card frames are square and the whole photo shows. Cards keep their size when there are only a few. */
+.product-card .card-photo{aspect-ratio:1 / 1;height:auto}
+.product-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
