@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getProductsInCategories, type Product } from "@/lib/catalogue";
+import { focus, getProductsByListingIds, getProductsInCategories, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
 import { Price } from "./Price";
 import { DeliveryCheck } from "./DeliveryCheck";
@@ -20,9 +20,10 @@ export async function ProductView({ product: listing, preview = false, colour }:
   const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
   const product: Product = chosen ? { ...chosen, name: listing.name, kind: listing.kind, description: listing.description, slug: listing.slug, themes: listing.themes, categories: listing.categories, category_id: listing.category_id, theme_id: listing.theme_id, product_themes: listing.product_themes, listing_id: listing.listing_id, listing_type: listing.listing_type, short_description: listing.short_description } : listing;
   const theme = product.themes;
-  const [{ data: settings }, related, { data: palette }] = await Promise.all([
+  const [{ data: settings }, related, picked, { data: palette }] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
+    preview ? Promise.resolve([] as Product[]) : getProductsByListingIds(listing.similar_ids ?? []),
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
   ]);
   const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
@@ -51,7 +52,13 @@ export async function ProductView({ product: listing, preview = false, colour }:
     product.warranty && ["Warranty", product.warranty],
     product.sku && ["Item no.", product.sku],
   ].filter(Boolean) as [string, React.ReactNode][];
-  const more = related.filter((p) => p.slug !== listing.slug && p.price_cents && p.availability !== "Sold out").slice(0, 4);
+  // "Similar to this": hand-picked listings first, then the family's other colours, then the same category.
+  const otherVersions = listing.listing_type === "group" && chosen ? versions.filter((v) => v.id !== chosen.id).map((v) => focus(listing, v.id)) : [];
+  const seen = new Set<string>();
+  const more = [...picked, ...otherVersions, ...related.filter((p) => p.slug !== listing.slug)]
+    .filter((p) => p.price_cents && p.availability !== "Sold out")
+    .filter((p) => { const k = `${p.slug}|${p.pick_sku ?? ""}`; if (seen.has(k) || (p.slug === listing.slug && !p.pick_sku)) return false; seen.add(k); return true; })
+    .slice(0, 8);
   const qualities = ["Packaging", "Production", "Materials", "Certifications"].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
@@ -150,7 +157,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
       )}
       {more.length > 0 && (
         <section className="related">
-          <h2 className="heading">You may also like</h2>
+          <h2 className="heading">Similar to this</h2>
           <ProductGrid products={more} />
         </section>
       )}
