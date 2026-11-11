@@ -8,6 +8,7 @@ import { RichText } from "@/components/RichText";
 import { absolute } from "@/lib/seo";
 import { SignupForm } from "@/components/SignupForm";
 import { ShareBar } from "@/components/ShareBar";
+import { catHref } from "@/components/EditCards";
 import { designStyle, ratio, type ArticleDesign } from "@/lib/article-design";
 import { formatPrice, getArticleDesign, getPost, getPostCategories, getPosts, getProductsBySlugs, getWelcomeOffer, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
 
@@ -194,11 +195,12 @@ export default async function PostPage({ params }: Props) {
           <h2 id="read-more">Read more</h2>
           <div className="read-more-grid">
             {more.map((p) => (
-              <Link key={p.id} href={`/the-christmas-edit/${p.slug}`} className="read-more-card">
-                <div className="frame"><Image src={p.image_url} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: p.image_position }} /></div>
-                <strong>{p.title}</strong>
+              <div key={p.id} className="read-more-card">
+                <Link href={`/the-christmas-edit/${p.slug}`} tabIndex={-1} aria-hidden="true" className="frame"><Image src={p.image_url} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: p.image_position }} /></Link>
+                {p.category && <Link href={catHref(p.category)} className="edit-label">{p.category}</Link>}
+                <Link href={`/the-christmas-edit/${p.slug}`} className="read-more-title"><strong>{p.title}</strong></Link>
                 <span>By {p.author}</span>
-              </Link>
+              </div>
             ))}
           </div>
         </section>

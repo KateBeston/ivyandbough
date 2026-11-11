@@ -1024,3 +1024,8 @@ button{font:inherit;color:inherit}
 .signup form .form-offer{width:100%}
 .signup form .turnstile{margin:0}
 .signup form label{flex-basis:100%}
+.edit-card a,.read-more-card a{text-decoration:none;color:inherit}
+.edit-card a.edit-label,.read-more-card a.edit-label{color:var(--brown);align-self:flex-start}
+.edit-card a.edit-label:hover,.read-more-card a.edit-label:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.edit-card-photo,.read-more-card>.frame{display:block}
+.read-more-card:hover .read-more-title strong{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
