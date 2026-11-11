@@ -266,4 +266,5 @@ function FoodInfo({ product }: { product: Product }) {
 const pillList = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
 
 // Ingredients are saved one per line, in label order; customers see them as one list.
-const ingredientText = (v?: string) => (v ?? "").split("\n").map((x) => x.trim()).filter(Boolean).join(", ") + ".";
+// One ingredient per line becomes a sentence; a list of several labels ("Hazelnut Gianduja: …") keeps each label as its own sentence.
+const ingredientText = (v?: string) => { const lines = (v ?? "").split("\n").map((x) => x.trim().replace(/\.$/, "")).filter(Boolean); return lines.length ? (lines.some((x) => /^[^:()]{2,50}:\s/.test(x)) ? lines.join(". ") : lines.join(", ")) + "." : ""; };
