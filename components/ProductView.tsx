@@ -27,7 +27,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
     product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
     preview ? Promise.resolve([] as Product[]) : getProductsByListingIds(listing.similar_ids ?? []),
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
-    product.product_type === "bundle" ? getBundleItems(product.bundle_items ?? []) : Promise.resolve([] as BundleItem[]),
+    ["bundle", "pack"].includes(product.product_type ?? "") ? getBundleItems(product.bundle_items ?? []) : Promise.resolve([] as BundleItem[]),
     getLabelMeanings(),
   ]);
   const colourOf = (n: string) => ((palette ?? []) as { name: string; hex: string; hex2: string }[]).find((c) => c.name === n);
