@@ -8,6 +8,8 @@ import { Countdown } from "@/components/Countdown";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { ShopTheLook } from "@/components/ShopTheLook";
+
+const SHOW_SHOP_THE_LOOK = false;
 import { SignupForm } from "@/components/SignupForm";
 import { ProductGrid } from "@/components/ProductGrid";
 import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
@@ -96,7 +98,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <ShopTheLook productHref={products[0] ? `/products/${products[0].slug}` : "/#edit"} />
+        {/* Hidden until there are our own products to style in it. Set SHOW_SHOP_THE_LOOK to true to bring it back. */}
+        {SHOW_SHOP_THE_LOOK && <ShopTheLook productHref={products[0] ? `/products/${products[0].slug}` : "/#edit"} />}
 
         <section id="delivery" className="delivery">
           <h2 className="heading">Under the tree in time</h2>
