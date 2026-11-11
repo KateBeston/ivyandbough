@@ -1092,3 +1092,11 @@ button{font:inherit;color:inherit}
 .carousel-card.right{transform:translateX(calc(-50% + 64vw)) scale(.8)}
 .carousel-photo strong,.carousel-card.left strong,.carousel-card.right strong{font-size:24px;left:18px;bottom:16px}
 }
+.carousel-stage{height:820px}
+.carousel-card{width:540px;height:700px}
+.carousel-card.left{transform:translateX(calc(-50% - 472px)) scale(.66)}
+.carousel-card.right{transform:translateX(calc(-50% + 472px)) scale(.66)}
+@media (min-width:1500px){.carousel-card.left{transform:translateX(calc(-50% - 520px)) scale(.7)}.carousel-card.right{transform:translateX(calc(-50% + 520px)) scale(.7)}}
+@media (max-width:1240px){.carousel-stage{height:720px}.carousel-card{width:480px;height:620px}.carousel-card.left{transform:translateX(calc(-50% - 400px)) scale(.62)}.carousel-card.right{transform:translateX(calc(-50% + 400px)) scale(.62)}}
+@media (max-width:1000px){.carousel-stage{height:640px}.carousel-card{width:420px;height:540px}.carousel-card.left{transform:translateX(calc(-50% - 320px)) scale(.6)}.carousel-card.right{transform:translateX(calc(-50% + 320px)) scale(.6)}}
+@media (max-width:760px){.carousel-stage{height:580px}.carousel-card{width:76vw;height:490px}.carousel-card.left{transform:translateX(calc(-50% - 64vw)) scale(.8)}.carousel-card.right{transform:translateX(calc(-50% + 64vw)) scale(.8)}}
