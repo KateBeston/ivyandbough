@@ -27,6 +27,20 @@ const places = [
   { title: "The Front Door", href: "/shop/wreaths-garlands", src: "/images/home-door.jpg", alt: "Silver wreath on a black front door" },
 ];
 
+// A short, varied pick for the homepage: one piece from each category (the first in shop order), up to 8.
+function favourites<T extends { category_id: string | null }>(all: T[], max = 8): T[] {
+  const seen = new Set<string>();
+  const picked: T[] = [];
+  for (const p of all) {
+    const key = p.category_id ?? "none";
+    if (seen.has(key)) continue;
+    seen.add(key);
+    picked.push(p);
+    if (picked.length === max) break;
+  }
+  return picked;
+}
+
 export default async function HomePage() {
   const [themes, categories, allCategories, products, dates, offer, offers] = await Promise.all([getThemes(), getStockedCategories(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks()]);
   return (
@@ -41,7 +55,7 @@ export default async function HomePage() {
               <h2 className="heading">Christmas Favourites</h2>
               <Link href="/shop" className="text-link">View all</Link>
             </div>
-            <ProductGrid products={products} />
+            <ProductGrid products={favourites(products)} />
           </div>
         </section>}
 
