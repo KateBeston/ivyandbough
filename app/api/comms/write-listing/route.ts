@@ -113,7 +113,7 @@ export async function POST(request: Request) {
             size_label: str("Size name only if stated, such as Large or 30 cm; otherwise empty"),
             brand: str("Brand only if stated in the supplier details; otherwise empty"),
             made_in: str("Country of origin only if stated, such as Australia; otherwise empty"),
-            ingredients: str("Full ingredients list exactly as stated in the supplier details; otherwise empty"),
+            ingredients: str("What it is made of or contains, listed in the supplier's order and exact wording, one item per line. Use any list headed Ingredients, Contains, The mix contains, Made with, Composition or similar, for any product (seed species in a seed mix, oils in a spray, components of a soap or candle), and the ingredients on a label in the photos. Leave out marketing lines, quantities like seeds per gram, packaging and dimensions. Empty only if no such list is given."),
             safety_notes: str("Safety or warning wording exactly as stated in the supplier details (such as For external use only); otherwise empty"),
             warranty: str("Manufacturer's warranty only if stated; otherwise empty"),
             needs_checking: { type: "array", items: { type: "string" }, description: "Facts to confirm before publishing, such as measurements, materials or quantity" },
