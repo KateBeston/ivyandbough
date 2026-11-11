@@ -8,7 +8,7 @@ import { RichText } from "@/components/RichText";
 import { absolute } from "@/lib/seo";
 import { SignupForm } from "@/components/SignupForm";
 import { designStyle, ratio, type ArticleDesign } from "@/lib/article-design";
-import { formatPrice, getArticleDesign, getPost, getPosts, getProductsBySlugs, getWelcomeOffer, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
+import { formatPrice, getArticleDesign, getPost, getPostCategories, getPosts, getProductsBySlugs, getWelcomeOffer, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
 
 export const revalidate = 60;
 
@@ -121,7 +121,9 @@ export default async function PostPage({ params }: Props) {
   if (!post) notFound();
   const more = (await getPosts()).filter((p) => p.id !== post.id).slice(0, 8);
   const slugs = post.sections.flatMap((s) => (s.products ?? []).flatMap((p) => (p.slug ? [p.slug] : [])));
-  const [catalogue, design] = await Promise.all([getProductsBySlugs([...new Set(slugs)]), getArticleDesign()]);
+  const [catalogue, design, cats] = await Promise.all([getProductsBySlugs([...new Set(slugs)]), getArticleDesign(), getPostCategories()]);
+  const cat = cats.find((c) => c.name === post.category);
+  const catHref = cat ? `/the-christmas-edit/category/${cat.slug}` : "/the-christmas-edit";
   const stacked = design.heroSide === "stacked";
   // "1/10" under each photo when the article is a numbered list.
   const photoTotal = post.sections.filter(isPhoto).length;
@@ -132,7 +134,7 @@ export default async function PostPage({ params }: Props) {
     <main className="article-page" style={designStyle(design)}>
       {stacked ? (
         <header className="post-head">
-          <Link href="/the-christmas-edit" className="post-label">{post.category}</Link>
+          <Link href={catHref} className="post-label">{post.category}</Link>
           {meta}
           <h1>{post.title}</h1>
           {post.excerpt && <p className="post-dek">{post.excerpt}</p>}
@@ -149,7 +151,7 @@ export default async function PostPage({ params }: Props) {
         <>
           <section className={`post-hero ${design.heroSide === "left" ? "photo-left" : ""}`}>
             <div className="post-hero-copy">
-              <Link href="/the-christmas-edit" className="eyebrow">{post.category}</Link>
+              <Link href={catHref} className="eyebrow">{post.category}</Link>
               {meta}
               <h1>{post.title}</h1>
               <p>{post.excerpt}</p>

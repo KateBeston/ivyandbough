@@ -2,26 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { designStyle } from "@/lib/article-design";
-import { getArticleDesign, getPosts, type Post } from "@/lib/catalogue";
+import { Card, EditNav, href } from "@/components/EditCards";
+import { getArticleDesign, getPostCategories, getPosts } from "@/lib/catalogue";
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: "The Christmas Edit | Ivy & Bough", description: "Christmas decorating ideas, styling guides and table inspiration from Ivy & Bough.", alternates: { canonical: "/the-christmas-edit" } };
 
-const href = (p: Post) => `/the-christmas-edit/${p.slug}`;
-
-function Card({ p, shape = "square", size = "", sizes = "(max-width: 760px) 50vw, 25vw" }: { p: Post; shape?: "square" | "circle" | "tall" | "wide"; size?: string; sizes?: string }) {
-  return (
-    <Link href={href(p)} className={`edit-card ${size}`}>
-      <div className={`frame edit-card-photo ${shape}`}><Image src={p.image_url} alt="" fill sizes={sizes} className="cover" style={{ objectPosition: p.image_position }} /></div>
-      <span className="edit-label">{p.category}</span>
-      <strong>{p.title}</strong>
-      <span className="edit-by">By {p.author}</span>
-    </Link>
-  );
-}
 
 export default async function ChristmasEditPage() {
-  const [posts, design] = await Promise.all([getPosts(), getArticleDesign()]);
+  const [posts, design, cats] = await Promise.all([getPosts(), getArticleDesign(), getPostCategories()]);
   // Each story is shown once, filling the page from the top: the lead story, a row of circles, a feature block, then a section per label.
   const lead = posts.find((p) => p.featured) ?? posts[0];
   const rest = posts.filter((p) => p !== lead);
@@ -32,6 +21,7 @@ export default async function ChristmasEditPage() {
   return (
     <main className="edit-page" style={designStyle(design)}>
       <h1 className="sr-only">The Christmas Edit</h1>
+      <EditNav cats={cats} posts={posts} />
       {!lead && <p className="centre" style={{ padding: "80px 16px" }}>New stories are on the way.</p>}
       {lead && (
         <Link href={href(lead)} className="edit-lead">

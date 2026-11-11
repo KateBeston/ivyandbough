@@ -187,6 +187,14 @@ export async function getPosts(): Promise<Post[]> {
   return must(data, error) as Post[];
 }
 
+export type PostCategory = { id: string; name: string; slug: string; description: string; sort_order: number };
+
+// Editorial categories for The Christmas Edit, in the order set in the portal.
+export async function getPostCategories(): Promise<PostCategory[]> {
+  const { data, error } = await supabase.from("post_categories").select("id,name,slug,description,sort_order").order("sort_order").order("name");
+  return must(data, error) as PostCategory[];
+}
+
 export async function getPost(slug: string): Promise<Post | null> {
   const { data, error } = await supabase.from("posts").select("*").eq("slug", slug).maybeSingle();
   if (error) throw new Error(error.message);

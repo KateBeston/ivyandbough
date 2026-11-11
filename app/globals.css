@@ -991,3 +991,25 @@ button{font:inherit;color:inherit}
 .footer-contact{display:flex;flex-direction:column;margin-top:16px;font-style:normal;font-size:14px}
 .footer-contact a{padding:3px 0}
 .footer-contact span{padding:3px 0;opacity:.8;font-size:13px}
+.edit-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 26px;margin:0 auto 32px;padding:0 0 16px;border-bottom:1px solid var(--line);font-family:var(--sans);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.edit-nav a{text-decoration:none;color:var(--brown);padding:4px 0;border-bottom:1px solid transparent}
+.edit-nav a:hover,.edit-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.edit-cat-head{max-width:720px;margin:0 auto 28px;text-align:center}
+.edit-cat-head p{margin-top:12px;color:var(--brown)}
+@media (max-width:640px){.edit-nav{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;gap:22px;white-space:nowrap}}
+.calc{margin:28px 0 36px;padding:24px;border:1px solid var(--line);background:#fff}
+.calc-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;align-items:end}
+.calc-inputs label{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.calc-inputs input,.calc-inputs select{padding:10px;border:1px solid var(--line);font:inherit;background:#fff}
+.calc-inputs fieldset{border:0;padding:0;margin:0;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.calc-inputs legend{font-size:13px;margin-bottom:6px;width:100%}
+.calc-radio{flex-direction:row!important;align-items:center}
+.calc-lead{margin:24px 0 16px;font-size:18px}
+.calc-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.calc-results div{padding:14px;border:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.calc-results span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brown)}
+.calc-results strong{font-family:var(--serif);font-size:26px;font-weight:400}
+.calc-results small{font-size:12px;color:var(--brown)}
+.calc-note{margin-top:14px;font-size:14px;color:var(--brown)}
+.calc-links{display:flex;gap:12px;flex-wrap:wrap}
+.calc-links .solid{margin-top:12px}
