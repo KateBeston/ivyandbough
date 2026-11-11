@@ -47,6 +47,13 @@ export async function quoteDelivery(db: Db, items: { id: string; quantity: numbe
     db.from("delivery_settings").select("free_over,live_postage").maybeSingle(),
   ]);
   if (products.error || zones.error || settings.error) throw new Error("Delivery can't be calculated right now.");
+  // Some suppliers can't post to certain remote postcodes. Stop before payment and say which item.
+  const { data: noPost } = await db.from("supplier_items").select("product_id,suppliers(no_delivery_postcodes)").in("product_id", items.map((i) => i.id));
+  const stoppedId = ((noPost ?? []) as unknown as { product_id: string; suppliers: { no_delivery_postcodes: string | null } | null }[]).find((l) => (l.suppliers?.no_delivery_postcodes ?? "").match(/\d{4}/g)?.includes(postcode))?.product_id;
+  if (stoppedId) {
+    const name = ((products.data ?? []) as { id: string; name: string }[]).find((p) => p.id === stoppedId)?.name ?? "One item";
+    throw new Error(`Sorry, ${name} can't be delivered to postcode ${postcode}. Please remove it from your basket or use another delivery address.`);
+  }
   const zone = pickZone(zones.data as Zone[], postcode);
   if (!zone) throw new Error("Delivery can't be calculated right now.");
   const quote = price(products.data as Row[], items, zone, settings.data?.free_over === null || settings.data?.free_over === undefined ? null : Number(settings.data.free_over));
