@@ -28,6 +28,7 @@ export function RequestFlow({ signedIn, startKind, onClose, onSubmitted }: { sig
   const [photos, setPhotos] = useState<File[]>([]);
   const [comment, setComment] = useState("");
   const [guest, setGuest] = useState({ name: "", email: "", phone: "", orderNumber: "", itemNumbers: "" });
+  const [trap, setTrap] = useState(""); // hidden field only bots fill in
   const [token, setToken] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -74,6 +75,7 @@ export function RequestFlow({ signedIn, startKind, onClose, onSubmitted }: { sig
     const form = new FormData();
     form.set("data", JSON.stringify({ kind, category, issues, comment, orderId, itemIds, token, ...guest }));
     photos.forEach((p) => form.append("photos", p));
+    if (trap) form.set("company", trap);
     const res = await fetch("/api/requests", { method: "POST", headers: signedIn ? await authHeader() : {}, body: form }).catch(() => null);
     const data = await res?.json().catch(() => null);
     setBusy(false);
@@ -99,6 +101,7 @@ export function RequestFlow({ signedIn, startKind, onClose, onSubmitted }: { sig
 
   return (
     <div className="request-flow">
+      <label className="hp" aria-hidden="true">Company<input name="company" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} /></label>
       <p className="request-progress">Step {at + 1} of {steps.length}</p>
 
       {step === "kind" && (

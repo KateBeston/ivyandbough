@@ -8,6 +8,7 @@ import { validSetup } from "@/lib/subscribe";
 export async function POST(request: Request) {
   if (!(await allowed(request, "welcome-account", 10, 600))) return NextResponse.json({ error: "Please try again in a few minutes." }, { status: 429 });
   const body = await request.json().catch(() => null);
+  if (body?.company) return NextResponse.json({ error: "That didn't go through. Please try again." }, { status: 400 });
   const email = String(body?.e ?? "").toLowerCase();
   const password = String(body?.password ?? "");
   const db = admin();
