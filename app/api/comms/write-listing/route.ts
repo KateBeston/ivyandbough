@@ -2,6 +2,7 @@ import { FILTER_COLOURS, toFilterColours } from "@/lib/filter-colours";
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { requireAdmin } from "@/lib/comms";
+import { fromDatabase } from "@/lib/hook-key";
 
 export const maxDuration = 120;
 
@@ -46,7 +47,7 @@ Versions:
 type Option = { id: string; name: string; parent?: string };
 
 export async function POST(request: Request) {
-  if (!(await requireAdmin(request))) return NextResponse.json({ error: "Not allowed." }, { status: 401 });
+  if (!(await requireAdmin(request)) && !(await fromDatabase(request))) return NextResponse.json({ error: "Not allowed." }, { status: 401 });
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return NextResponse.json({ error: "The listing writer isn't connected yet. ANTHROPIC_API_KEY needs adding in Vercel." }, { status: 503 });
   const body = (await request.json().catch(() => null)) as { images?: string[]; notes?: string; name?: string; known?: Record<string, unknown>; categories?: Option[]; collections?: Option[]; previous?: { name?: string; short_description?: string; description?: string } } | null;
