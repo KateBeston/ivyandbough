@@ -1020,3 +1020,7 @@ button{font:inherit;color:inherit}
 .share-bar a:hover,.share-bar button:hover{border-bottom-color:currentColor}
 .article-share-end{margin:40px 0 0;padding-top:20px;border-top:1px solid var(--line)}
 .article-share-end .share-bar{margin-top:0;justify-content:center}
+.signup form{justify-content:center;align-items:center}
+.signup form .form-offer{width:100%}
+.signup form .turnstile{margin:0}
+.signup form label{flex-basis:100%}
