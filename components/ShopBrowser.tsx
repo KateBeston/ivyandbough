@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { FILTER_COLOURS } from "@/lib/filter-colours";
 import type { Category, Product, Theme } from "@/lib/catalogue";
 import { ProductGrid } from "./ProductGrid";
 import { SIZES, SORTS, sizeOf, sortProducts } from "@/lib/sizes";
@@ -10,7 +11,7 @@ const blank: Filters = { q: "", sort: "featured", category: [], collection: [], 
 const lists = ["category", "collection", "colour", "size", "material", "brand", "price", "offer"] as const;
 const sorts = SORTS;
 const prices: [string, string, number, number][] = [["under50", "Under $50", 0, 5000], ["50-100", "$50 to $100", 5000, 10000], ["100-200", "$100 to $200", 10000, 20000], ["200", "$200 and over", 20000, Infinity]];
-const colourList = ["Red", "Burgundy", "Green", "Gold", "Silver", "White", "Ivory", "Champagne", "Blush", "Pink", "Blue", "Black", "Brown", "Natural", "Multicolour"];
+const colourList = FILTER_COLOURS;
 const split = (s: string) => s.split(",").map((v) => v.trim()).filter(Boolean);
 
 function Group({ title, open = false, children }: { title: string; open?: boolean; children: React.ReactNode }) {

@@ -1,3 +1,4 @@
+import { FILTER_COLOURS, toFilterColours } from "@/lib/filter-colours";
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { requireAdmin } from "@/lib/comms";
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
             short_description: str("The editorial hook beside the price: 1 to 2 sentences, 12 to 25 words, built around one vivid detail from the supplier description. Written after the long description and taking a different angle from it. Follow the Short description rules."),
             pack_quantity: num("How many pieces come in one pack, only if stated in the supplier details or clearly shown as a set in the photos; 1 if clearly a single piece; otherwise null"),
             materials: str("Materials, only if visible beyond doubt or stated; otherwise empty"),
-            colours: str("Main colours, comma separated, such as Ivory, Gold"),
+            colours: str(`Main colours of the piece itself, comma separated, using only these names (nearest match): ${FILTER_COLOURS.join(", ")}. Use Multicolour for a mix of many colours`),
             care: str("Care and storage, only if stated or obvious and safe (such as wipe with a dry cloth, store in a cool dry place); otherwise empty"),
             dimensions: str("Size text only if stated and not in cm, such as Set of 6; otherwise empty"),
             height_cm: num("Height in cm, only if stated"),
@@ -135,7 +136,9 @@ export async function POST(request: Request) {
     const photo = /image|file format/i.test(json?.error?.message ?? "");
     return NextResponse.json({ error: photo ? "One of the photos is in a format that can't be read. Remove it and upload it again (the portal now converts photos automatically)." : "The listing couldn't be written. Please try again." }, { status: 502 });
   }
-  return NextResponse.json({ listing: tidyDescriptions(listing as Record<string, unknown>) });
+  const tidy = tidyDescriptions(listing as Record<string, unknown>) as Record<string, unknown>;
+  if (typeof tidy.colours === "string") tidy.colours = toFilterColours(tidy.colours);
+  return NextResponse.json({ listing: tidy });
 }
 
 // Makes sure there's always a short description and a two-paragraph long one, even if the model runs them together.
