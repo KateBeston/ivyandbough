@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Ivy & Bough",
   description: "Elegant, unique Christmas pieces for the table, the tree and the front door.",
   robots: { index: SITE_LIVE, follow: SITE_LIVE },
-  openGraph: { type: "website", siteName: "Ivy & Bough", locale: "en_AU", images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Ivy & Bough" }] },
+  openGraph: { type: "website", siteName: "Ivy & Bough", locale: "en_AU", images: [{ url: "/og-image.jpg?v=2", width: 1200, height: 630, alt: "Ivy & Bough" }] },
   twitter: { card: "summary_large_image" },
   other: { "p:domain_verify": "e93d00004715bfb83af1d9e436427150" },
 };
