@@ -4,21 +4,23 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { CONSENT_EVENT, readConsent } from "@/lib/consent";
 
-const ID = process.env.NEXT_PUBLIC_GTM_ID;
-type Tagged = Window & { dataLayer?: unknown[] };
+// Google Analytics for Ivy & Bough only (not TGS). Loaded straight from Google, no Tag Manager.
+const ID = "G-1NFMWB4SQE";
+type Tagged = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 
 function load() {
   const w = window as unknown as Tagged;
-  if (!ID || !/^GTM-[A-Z0-9]+$/.test(ID) || document.getElementById("gtm")) return;
+  if (document.getElementById("ga")) return;
   w.dataLayer = w.dataLayer ?? [];
-  // The container only loads after Accept all, so consent is granted from its first tag.
-  function gtag(...args: unknown[]) { void args; w.dataLayer!.push(arguments); } // eslint-disable-line prefer-rest-params
-  gtag("consent", "default", { analytics_storage: "granted", ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted" });
-  w.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+  // Only loads after Accept all, so consent is granted from the first hit.
+  w.gtag = function gtag() { w.dataLayer!.push(arguments); }; // eslint-disable-line prefer-rest-params
+  w.gtag("consent", "default", { analytics_storage: "granted", ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted" });
+  w.gtag("js", new Date());
+  w.gtag("config", ID);
   const script = document.createElement("script");
-  script.id = "gtm";
+  script.id = "ga";
   script.async = true;
-  script.src = `https://www.googletagmanager.com/gtm.js?id=${ID}`;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${ID}`;
   document.head.appendChild(script);
 }
 
