@@ -76,9 +76,10 @@ export default async function HomePage() {
         </section>
 
         <section id="collections" className="magazine">
-          <div className="magazine-head">
-            <div><div className="eyebrow">Find your Christmas</div>
-            <h2 className="heading">Shop the collection</h2></div>
+          <div className="magazine-head centred">
+            <div className="eyebrow">Find your Christmas</div>
+            <h2 className="heading">Shop the collection</h2>
+            <p className="magazine-sub">Choose the look you love, then bring it together from the tree to the table.</p>
             <Link href="/collections" className="text-link">Explore all collections</Link>
           </div>
           <CollectionCarousel themes={themes.filter((t) => t.is_featured).sort((a, b) => a.feature_order - b.feature_order)} />
