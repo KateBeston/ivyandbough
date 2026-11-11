@@ -4,8 +4,10 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { CONSENT_EVENT, readConsent } from "@/lib/consent";
 
-// Google Analytics for Ivy & Bough only (not TGS). Loaded straight from Google, no Tag Manager.
+// Google Analytics for Ivy & Bough only (not TGS), loaded straight from Google.
 const ID = "G-1NFMWB4SQE";
+// Ivy & Bough's own Tag Manager container, for future tags (e.g. Meta pixel). Don't add a GA tag in it: Analytics is loaded below.
+const GTM = "GTM-N52CVFTX";
 type Tagged = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 
 function load() {
@@ -22,6 +24,12 @@ function load() {
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${ID}`;
   document.head.appendChild(script);
+  w.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+  const gtm = document.createElement("script");
+  gtm.id = "gtm";
+  gtm.async = true;
+  gtm.src = `https://www.googletagmanager.com/gtm.js?id=${GTM}`;
+  document.head.appendChild(gtm);
 }
 
 export function Analytics() {
