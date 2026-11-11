@@ -12,6 +12,7 @@ import { ShopTheLook } from "@/components/ShopTheLook";
 const SHOW_SHOP_THE_LOOK = false;
 import { SignupForm } from "@/components/SignupForm";
 import { ProductGrid } from "@/components/ProductGrid";
+import { CollectionCarousel } from "@/components/CollectionCarousel";
 import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
 
 export const revalidate = 60;
@@ -80,15 +81,7 @@ export default async function HomePage() {
             <h2 className="heading">Shop the collection</h2></div>
             <Link href="/collections" className="text-link">Explore all collections</Link>
           </div>
-          <div className="magazine-grid">
-            {themes.filter((t) => t.is_featured).sort((a, b) => a.feature_order - b.feature_order).slice(0, 5).map((t) => (
-              <Link key={t.id} href={`/collections/${t.slug}`}>
-                <div className="frame"><Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 100vw, 60vw" className="cover" style={{ objectPosition: t.card_position }} /></div>
-                <strong>{t.name}</strong>
-                <span>{t.note}</span>
-              </Link>
-            ))}
-          </div>
+          <CollectionCarousel themes={themes.filter((t) => t.is_featured).sort((a, b) => a.feature_order - b.feature_order)} />
         </section>
 
         <section className="moment">
