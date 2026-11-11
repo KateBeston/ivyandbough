@@ -29,7 +29,6 @@ export function CollectionCarousel({ themes }: { themes: Theme[] }) {
     if (d < -n / 2) d += n;
     return d === 0 ? "centre" : d === -1 ? "left" : d === 1 ? "right" : d < 0 ? "off-left" : "off-right";
   };
-  const current = themes[active];
 
   return (
     <div className="carousel" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
@@ -48,13 +47,12 @@ export function CollectionCarousel({ themes }: { themes: Theme[] }) {
             >
               <div className="carousel-photo">
                 <Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 80vw, 600px" className="cover" style={{ objectPosition: t.card_position ?? "center" }} priority={pos === "centre"} />
-                <strong>{t.name}</strong>
+                <span className="carousel-caption"><strong>{t.name}</strong>{t.note && <span>{t.note}</span>}</span>
               </div>
             </Link>
           );
         })}
       </div>
-      {current.note && <p className="carousel-note">{current.note}</p>}
       <div className="carousel-controls">
         <button type="button" onClick={() => go(active - 1)} aria-label="Previous collection">‹</button>
         <div className="carousel-dots">
