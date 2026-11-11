@@ -70,7 +70,7 @@ export default async function HomePage() {
             <p>Ivy &amp; Bough brings together elegant, unique Christmas pieces for the table, the tree and the front door.</p>
             <a href="#collections" className="text-link">Find your Christmas</a>
           </div>
-          <div className="frame" style={{ height: 620 }}>
+          <div className="frame intro-photo">
             <Image src="/images/theme-woodland.jpg" alt="Lit pillar candles among pine branches and a pine cone" fill sizes="(max-width: 900px) 100vw, 50vw" className="cover" style={{ objectPosition: "40% center" }} />
           </div>
         </section>

@@ -1100,3 +1100,5 @@ button{font:inherit;color:inherit}
 @media (max-width:1240px){.carousel-stage{height:720px}.carousel-card{width:480px;height:620px}.carousel-card.left{transform:translateX(calc(-50% - 400px)) scale(.62)}.carousel-card.right{transform:translateX(calc(-50% + 400px)) scale(.62)}}
 @media (max-width:1000px){.carousel-stage{height:640px}.carousel-card{width:420px;height:540px}.carousel-card.left{transform:translateX(calc(-50% - 320px)) scale(.6)}.carousel-card.right{transform:translateX(calc(-50% + 320px)) scale(.6)}}
 @media (max-width:760px){.carousel-stage{height:580px}.carousel-card{width:76vw;height:490px}.carousel-card.left{transform:translateX(calc(-50% - 64vw)) scale(.8)}.carousel-card.right{transform:translateX(calc(-50% + 64vw)) scale(.8)}}
+.intro .intro-photo{width:100%;max-width:500px;aspect-ratio:1 / 1;height:auto;justify-self:center}
+@media (max-width:900px){.intro .intro-photo{max-width:none}}
