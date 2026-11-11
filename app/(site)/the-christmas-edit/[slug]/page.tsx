@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { RichText } from "@/components/RichText";
 import { absolute } from "@/lib/seo";
 import { SignupForm } from "@/components/SignupForm";
+import { ShareBar } from "@/components/ShareBar";
 import { designStyle, ratio, type ArticleDesign } from "@/lib/article-design";
 import { formatPrice, getArticleDesign, getPost, getPostCategories, getPosts, getProductsBySlugs, getWelcomeOffer, type PostProduct, type PostSection, type Product } from "@/lib/catalogue";
 
@@ -130,6 +131,7 @@ export default async function PostPage({ params }: Props) {
   let photoNo = 0;
   const topics = (post.topics ?? "").split(",").map((t) => t.trim()).filter(Boolean);
   const meta = <JsonLd data={{ "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, datePublished: post.published_at, image: post.image_url ? absolute(post.image_url) : undefined, author: { "@type": "Organization", name: "Ivy & Bough" }, publisher: { "@type": "Organization", name: "Ivy & Bough", logo: absolute("/icon.png") }, mainEntityOfPage: absolute(`/the-christmas-edit/${post.slug}`) }} />;
+  const share = <ShareBar url={absolute(`/the-christmas-edit/${post.slug}`)} title={post.title} text={post.excerpt} image={post.image_url ? absolute(post.image_url) : undefined} />;
   return (
     <main className="article-page" style={designStyle(design)}>
       {stacked ? (
@@ -140,6 +142,7 @@ export default async function PostPage({ params }: Props) {
           {post.excerpt && <p className="post-dek">{post.excerpt}</p>}
           <div className="post-byline">By <span>{post.author}</span></div>
           <div className="post-date">{longDate.format(new Date(post.published_at))}</div>
+          {share}
           {post.image_url && (
             <figure className="post-head-figure">
               <div className="frame post-head-photo"><Image src={post.image_url} alt={post.image_alt} fill priority sizes="(max-width: 760px) 100vw, 860px" className="cover" style={{ objectPosition: post.image_position }} /></div>
@@ -156,6 +159,7 @@ export default async function PostPage({ params }: Props) {
               <h1>{post.title}</h1>
               <p>{post.excerpt}</p>
               <div className="post-meta">By {post.author} | Published: {longDate.format(new Date(post.published_at))}</div>
+              {share}
             </div>
             <div className="frame post-hero-photo">
               <Image src={post.image_url} alt={post.image_alt} fill priority sizes="(max-width: 760px) 100vw, 50vw" className="cover" style={{ objectPosition: post.image_position }} />
@@ -178,6 +182,7 @@ export default async function PostPage({ params }: Props) {
         {topics.length > 0 && (
           <div className="article-topics"><span>Topics</span>{topics.map((t) => <span key={t}>{t}</span>)}</div>
         )}
+        <div className="article-share-end">{share}</div>
         <section className="article-signup">
           <h2>First look at new pieces</h2>
           <p>New collections and Christmas delivery dates, before anyone else.</p>
