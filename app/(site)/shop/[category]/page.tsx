@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!c) return { title: "Ivy & Bough" };
   const stocked = (await getStockedCategories()).some((s) => s.id === c.id);
   const title = c.seo_title || `${c.name} | Ivy & Bough`;
-  const description = c.seo_description || c.intro;
+  const description = c.seo_description || c.intro || `Shop ${c.name.toLowerCase()} at Ivy & Bough: elegant Christmas pieces, delivered across Australia.`;
   // Empty categories stay out of Google until they have products.
   return { title, description, alternates: { canonical: `/shop/${c.slug}` }, ...(stocked ? {} : { robots: { index: false, follow: true } }), openGraph: { title: c.name, description, url: `/shop/${c.slug}`, images: c.image_url ? [c.image_url] : undefined } };
 }

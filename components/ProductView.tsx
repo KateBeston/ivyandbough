@@ -16,7 +16,9 @@ import { ProductGrid } from "./ProductGrid";
 
 const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: n % 1 ? 2 : 0 }).format(n);
 
-export async function ProductView({ product: listing, preview = false, colour }: { product: Product; preview?: boolean; colour?: string }) {
+export async function ProductView({ product: listing, preview = false, colour, secondary = false }: { product: Product; preview?: boolean; colour?: string; secondary?: boolean }) {
+  // Only one main heading per page: other colour versions (hidden until chosen) use a lookalike heading.
+  const Title = secondary ? "p" : "h1";
   // A grouped listing is one page. Choosing a colour swaps the photos, price and item number, never the page.
   const versions = listing.variants ?? [];
   const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
@@ -82,7 +84,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
-            <div className="title-row"><h1>{product.name}</h1>{!preview && <HeartButton productId={product.id} name={fullName(product)} className="page-heart" />}</div>
+            <div className="title-row"><Title className="product-title">{product.name}</Title>{!preview && <HeartButton productId={product.id} name={fullName(product)} className="page-heart" />}</div>
             {product.sale_label && <div className="product-offer-label">{product.sale_label}</div>}
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} gst /></div>
             {!preview && !soldOut && <AfterpayMessage cents={product.price_cents} />}
