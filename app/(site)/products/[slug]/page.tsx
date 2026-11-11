@@ -37,7 +37,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <JsonLd data={schema} />
       <JsonLd data={breadcrumbs(crumbs)} />
       {versions.length > 1
-        ? <VariantSwitch initial={first}>{versions.map((v) => <div key={v.sku} data-sku={v.sku} hidden={v.sku !== first}><ProductView product={product} colour={v.sku} /></div>)}</VariantSwitch>
+        ? <>
+          <VariantSwitch initial={first}>{versions.map((v) => <div key={v.sku} data-sku={v.sku} hidden={v.sku !== first}><ProductView product={product} colour={v.sku} /></div>)}</VariantSwitch>
+          {/* Shows the option in the address straight away, before the page's scripts have loaded. */}
+          <script dangerouslySetInnerHTML={{ __html: `(function(){var s=new URLSearchParams(location.search).get("colour");if(!s)return;var p=document.querySelectorAll("[data-sku]"),t=null;p.forEach(function(e){if(e.getAttribute("data-sku")===s)t=e});if(!t)return;p.forEach(function(e){e.hidden=e!==t})})();` }} />
+        </>
         : <ProductView product={product} />}
     </>
   );
