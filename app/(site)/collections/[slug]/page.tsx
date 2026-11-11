@@ -55,7 +55,7 @@ export default async function CollectionPage({ params }: Props) {
         <section className="collection-more">
           <div className="magazine-head">
             <h2 className="heading">From The Christmas Edit</h2>
-            <Link href="/the-christmas-edit" className="text-link">Read more</Link>
+            <Link href="/the-christmas-edit" className="text-link">More Christmas decorating ideas</Link>
           </div>
           <div className="collections-index three">
             {posts.slice(0, 3).map((p) => (
