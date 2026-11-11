@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "crypto";
 import { revalidatePath } from "next/cache";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { pingIndexNow } from "@/lib/indexnow";
 import { admin } from "@/lib/server";
 
 // Called by the database itself whenever products, listings, photos, categories, collections, articles or settings change,
@@ -21,5 +22,7 @@ export async function POST(request: Request) {
   const expected = Buffer.from(key);
   if (!key || given.length !== expected.length || !timingSafeEqual(given, expected)) return NextResponse.json({ ok: false }, { status: 401 });
   revalidatePath("/", "layout");
+  // Tell Bing the shop changed (at most every 30 minutes), after the reply is sent.
+  after(() => pingIndexNow());
   return NextResponse.json({ ok: true });
 }
