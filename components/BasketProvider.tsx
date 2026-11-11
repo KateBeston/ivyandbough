@@ -1,5 +1,6 @@
 "use client";
 
+import { rememberPurchase, track } from "@/lib/track";
 import { fullName, productPaths } from "@/lib/product-name";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { account, authHeader } from "@/lib/account-client";
@@ -81,13 +82,15 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       .catch(() => null);
   }, [idKey, ready]);
 
-  const add = useCallback((line: Line) => setLines((l) => (l.some((x) => x.id === line.id) ? l.map((x) => (x.id === line.id ? { ...x, quantity: clamp(x.quantity + line.quantity) } : x)) : [...l, { ...line, quantity: clamp(line.quantity) }])), []);
+  const add = useCallback((line: Line) => { track("add_to_cart", [line]); setLines((l) => (l.some((x) => x.id === line.id) ? l.map((x) => (x.id === line.id ? { ...x, quantity: clamp(x.quantity + line.quantity) } : x)) : [...l, { ...line, quantity: clamp(line.quantity) }])); }, []);
   const setQuantity = useCallback((id: string, quantity: number) => setLines((l) => l.map((x) => (x.id === id ? { ...x, quantity: clamp(quantity) } : x))), []);
   const remove = useCallback((id: string) => setLines((l) => l.filter((x) => x.id !== id)), []);
   const clear = useCallback(() => setLines([]), []);
 
   const sessionId = useCallback(() => session.current, []);
   const checkout = useCallback(async (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => {
+    track("begin_checkout", lines);
+    rememberPurchase(lines);
     const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, promoCode, ...guard, items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     const body = await res?.json().catch(() => null);
     if (body?.clientSecret) {

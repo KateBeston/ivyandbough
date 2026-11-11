@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { account } from "@/lib/account-client";
 import { useBasket } from "@/components/BasketProvider";
+import { sendPurchase } from "@/lib/track";
 
 export default function ThanksPage() {
   const { clear } = useBasket();
   const [guest, setGuest] = useState(false);
+  useEffect(() => { sendPurchase(new URLSearchParams(window.location.search).get("session_id") || `order-${Date.now()}`); }, []);
   useEffect(() => { clear(); try { sessionStorage.removeItem("ib-checkout-details"); } catch { /* nothing saved */ } }, [clear]);
   useEffect(() => { account.auth.getSession().then(({ data }) => setGuest(!data.session)); }, []);
   return (
