@@ -44,7 +44,7 @@ export async function ProductView({ product: listing, preview = false, colour }:
   const details = [
     product.size_label && ["Size", product.size_label],
     product.net_quantity && ["Contents", `${Number(product.net_quantity)} ${product.net_unit}`],
-    product.pack_quantity && ["Quantity", product.pack_quantity === 1 ? "Sold individually" : `Pack of ${product.pack_quantity}`],
+    product.pack_quantity && ["Quantity", product.pack_quantity === 1 ? "Sold individually" : `${product.product_type === "set" ? "Set" : "Pack"} of ${product.pack_quantity}`],
     product.materials && ["Materials", product.materials],
     (measured || product.dimensions) && ["Dimensions", measured ? `${measured} cm` : product.dimensions],
     (product.weight_g || product.weight) && ["Weight", product.weight_g ? `${product.weight_g} g` : product.weight],
