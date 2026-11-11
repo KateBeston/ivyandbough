@@ -1031,7 +1031,7 @@ button{font:inherit;color:inherit}
 .read-more-card:hover .read-more-title strong{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 /* Shop the collection: rotating trio */
 .carousel{position:relative}
-.carousel-stage{position:relative;height:640px;overflow:hidden;padding:20px 0 40px}
+.carousel-stage{position:relative;height:690px;overflow:hidden}
 .carousel-card{position:absolute;top:20px;left:50%;width:460px;height:580px;padding:10px;background:#fff;box-shadow:0 24px 50px rgba(30,22,12,.18);transition:transform .7s ease,opacity .7s ease;text-decoration:none;color:#fff}
 .carousel-card.centre{transform:translateX(-50%) scale(1);z-index:3;opacity:1}
 .carousel-card.left{transform:translateX(calc(-50% - 430px)) scale(.76);z-index:2;opacity:1;cursor:pointer}
@@ -1052,7 +1052,7 @@ button{font:inherit;color:inherit}
 .carousel-dots button.on{background:var(--ink)}
 @media (max-width:1000px){.carousel-card.left{transform:translateX(calc(-50% - 340px)) scale(.7)}.carousel-card.right{transform:translateX(calc(-50% + 340px)) scale(.7)}}
 @media (max-width:760px){
-.carousel-stage{height:480px}
+.carousel-stage{height:510px}
 .carousel-card{width:72vw;height:430px;padding:7px}
 .carousel-card.left{transform:translateX(calc(-50% - 62vw)) scale(.8)}
 .carousel-card.right{transform:translateX(calc(-50% + 62vw)) scale(.8)}
