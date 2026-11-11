@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getLabelMeanings } from "@/lib/labels";
-import { focus, getBundleItems, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
+import { focus, getBundleItems, getCategories, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
 import { Price } from "./Price";
 import { DeliveryCheck } from "./DeliveryCheck";
@@ -19,6 +19,10 @@ const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", c
 export async function ProductView({ product: listing, preview = false, colour, secondary = false }: { product: Product; preview?: boolean; colour?: string; secondary?: boolean }) {
   // Only one main heading per page: other colour versions (hidden until chosen) use a lookalike heading.
   const Title = secondary ? "p" : "h1";
+  // The breadcrumb shows the main category above the product's own category (e.g. Lighting / Fairy Lights).
+  const allCats = await getCategories();
+  const ownCat = allCats.find((c) => c.id === listing.category_id);
+  const parentCat = ownCat?.parent_id ? allCats.find((c) => c.id === ownCat.parent_id) : undefined;
   // A grouped listing is one page. Choosing a colour swaps the photos, price and item number, never the page.
   const versions = listing.variants ?? [];
   const chosen = versions.find((v) => v.sku === colour) ?? versions.find((v) => v.id === listing.id) ?? null;
@@ -78,7 +82,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
 
   return (
     <main className="product-page">
-      <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
+      <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{parentCat && <> / <Link href={`/shop/${parentCat.slug}`}>{parentCat.name}</Link></>}{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
         <div className="product-gallery"><Gallery key={product.id} images={product.product_media ?? product.product_images} /></div>
         <div className="details">

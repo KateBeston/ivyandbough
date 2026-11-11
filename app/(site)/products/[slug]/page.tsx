@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductView } from "@/components/ProductView";
 import { VariantSwitch } from "@/components/VariantSwitch";
-import { getProduct, getProducts } from "@/lib/catalogue";
+import { getCategories, getProduct, getProducts } from "@/lib/catalogue";
 import { absolute, breadcrumbs, offerExtras } from "@/lib/seo";
 import { supabase } from "@/lib/supabase";
 
@@ -31,7 +31,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const first = (versions.find((v) => v.id === product.id) ?? versions[0])?.sku ?? "";
   const extras = await offerExtras(supabase);
   const schema = { "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description, sku: product.sku, url, image: product.product_images.map((i) => absolute(i.url)), brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined, category: product.categories?.name, material: product.materials || undefined, offers: product.price_cents === null ? undefined : { "@type": "Offer", url, price: (product.price_cents / 100).toFixed(2), priceCurrency: "AUD", availability: ["Sold out", "Coming soon"].includes(product.availability) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition", hasMerchantReturnPolicy: extras.returns, shippingDetails: extras.shipping ? extras.shipping(product.price_cents) : undefined, seller: { "@type": "Organization", name: "Ivy & Bough" }, priceValidUntil: product.sale_label && product.sale_ends_at ? product.sale_ends_at.slice(0, 10) : undefined } };
-  const crumbs = [{ name: "Home", path: "" }, ...(product.categories ? [{ name: product.categories.name, path: `/shop/${product.categories.slug}` }] : []), { name: product.name, path: `/products/${product.slug}` }];
+  const cats = await getCategories();
+  const own = cats.find((c) => c.id === product.category_id);
+  const parent = own?.parent_id ? cats.find((c) => c.id === own.parent_id) : undefined;
+  const crumbs = [{ name: "Home", path: "" }, ...(parent ? [{ name: parent.name, path: `/shop/${parent.slug}` }] : []), ...(product.categories ? [{ name: product.categories.name, path: `/shop/${product.categories.slug}` }] : []), { name: product.name, path: `/products/${product.slug}` }];
   return (
     <>
       <JsonLd data={schema} />
