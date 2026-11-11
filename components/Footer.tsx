@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CookieSettingsLink } from "./CookieConsent";
 import { SOCIAL_LINKS } from "@/lib/seo";
 import { PaymentMarks } from "./PaymentMarks";
+import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/requests";
 
 export function Footer() {
   return (
@@ -9,6 +10,11 @@ export function Footer() {
       <div className="footer-top">
         <div className="footer-brand">
           <Link href="/" className="footer-logo-link" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-cream.svg" alt="" className="footer-logo" width={150} height={88} /></Link>
+          <address className="footer-contact">
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            {CONTACT_PHONE && <a href={`tel:${CONTACT_PHONE.replace(/\s/g, "")}`}>{CONTACT_PHONE}</a>}
+            <span>Brisbane, QLD · Delivering Australia-wide</span>
+          </address>
           <ul className="footer-social">
             {SOCIAL_LINKS.map((s) => <li key={s.id}><a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`Ivy & Bough on ${s.name}`}><img src={`/social/${s.id}.svg`} alt="" width={20} height={20} /></a></li>)}
           </ul>
