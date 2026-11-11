@@ -4,18 +4,26 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { CONSENT_EVENT, readConsent } from "@/lib/consent";
 
-// Ivy & Bough's own Tag Manager container (not TGS). Its Google tag sends to Analytics G-1NFMWB4SQE,
-// and picks up the shopping events lib/track.ts queues with gtag().
+// Google Analytics for Ivy & Bough only (not TGS), loaded straight from Google.
+const ID = "G-1NFMWB4SQE";
+// Ivy & Bough's own Tag Manager container, for future tags (e.g. Meta pixel). Don't add a GA tag in it: Analytics is loaded below.
 const GTM = "GTM-N52CVFTX";
 type Tagged = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 
 function load() {
   const w = window as unknown as Tagged;
-  if (document.getElementById("gtm")) return;
+  if (document.getElementById("ga")) return;
   w.dataLayer = w.dataLayer ?? [];
   // Only loads after Accept all, so consent is granted from the first hit.
   w.gtag = function gtag() { w.dataLayer!.push(arguments); }; // eslint-disable-line prefer-rest-params
   w.gtag("consent", "default", { analytics_storage: "granted", ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted" });
+  w.gtag("js", new Date());
+  w.gtag("config", ID);
+  const script = document.createElement("script");
+  script.id = "ga";
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${ID}`;
+  document.head.appendChild(script);
   w.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
   const gtm = document.createElement("script");
   gtm.id = "gtm";
