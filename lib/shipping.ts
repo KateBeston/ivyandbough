@@ -72,18 +72,28 @@ async function live(quote: Quote, rows: Row[], items: { id: string; quantity: nu
   // The send-from postcode and supplier details are private, so they're read with the server key.
   const [{ data: s }, { data: links }] = await Promise.all([
     db.from("delivery_settings").select("send_from_postcode").maybeSingle(),
-    db.from("supplier_items").select("product_id,suppliers(dropship,ships_from_postcode)").in("product_id", items.map((i) => i.id)),
+    db.from("supplier_items").select("product_id,supplier_id,suppliers(dropship,posts_free,ships_from_postcode)").in("product_id", items.map((i) => i.id)),
   ]);
   const home = s?.send_from_postcode ?? "";
   if (!/^\d{4}$/.test(home)) return quote;
-  const originOf = (id: string) => {
-    const sup = ((links ?? []) as unknown as { product_id: string; suppliers: { dropship: boolean; ships_from_postcode: string } | null }[]).find((l) => l.product_id === id)?.suppliers;
-    return sup?.dropship && /^\d{4}$/.test(sup.ships_from_postcode) ? sup.ships_from_postcode : home;
+  // Each dropship supplier that charges postage is its own parcel, from its postcode (or yours until it's known).
+  // Dropship suppliers that post free (e.g. Dropshipzone) are priced in with your parcel, as before.
+  type Link = { product_id: string; supplier_id: string; suppliers: { dropship: boolean; posts_free: boolean; ships_from_postcode: string } | null };
+  const parcelOf = (id: string): [string, string] => {
+    const l = ((links ?? []) as unknown as Link[]).find((x) => x.product_id === id);
+    const sup = l?.suppliers;
+    if (!sup?.dropship || sup.posts_free) return ["home", home];
+    return [l!.supplier_id, /^\d{4}$/.test(sup.ships_from_postcode) ? sup.ships_from_postcode : home];
   };
-  const groups = new Map<string, { id: string; quantity: number }[]>();
-  for (const i of items) groups.set(originOf(i.id), [...(groups.get(originOf(i.id)) ?? []), i]);
+  const groups = new Map<string, { from: string; list: { id: string; quantity: number }[] }>();
+  for (const i of items) {
+    const [key, from] = parcelOf(i.id);
+    const g = groups.get(key) ?? { from, list: [] };
+    g.list.push(i);
+    groups.set(key, g);
+  }
   let total = 0;
-  for (const [from, list] of groups) {
+  for (const { from, list } of groups.values()) {
     const parcel = parcelFor(list.map((i) => ({ ...rows.find((r) => r.id === i.id)!, quantity: i.quantity })));
     const cents = parcel && (await parcelPostCents(from, postcode, parcel));
     if (!cents) return quote;
