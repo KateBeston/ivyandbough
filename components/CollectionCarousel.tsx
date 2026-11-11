@@ -18,7 +18,7 @@ export function CollectionCarousel({ themes }: { themes: Theme[] }) {
   useEffect(() => { still.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches; }, []);
   useEffect(() => {
     if (paused || n < 2 || still.current) return;
-    const t = setInterval(() => setActive((a) => (a + 1) % n), 5000);
+    const t = setInterval(() => setActive((a) => (a - 1 + n) % n), 5000);
     return () => clearInterval(t);
   }, [paused, n]);
 

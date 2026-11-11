@@ -1111,3 +1111,4 @@ button{font:inherit;color:inherit}
 .carousel-card.left .carousel-caption span,.carousel-card.right .carousel-caption span{opacity:0}
 .carousel-photo::after{height:55%}
 @media (max-width:760px){.carousel-caption{left:18px;right:18px;bottom:16px}.carousel-caption span{font-size:11px}}
+.carousel-card.left .carousel-caption span,.carousel-card.right .carousel-caption span{opacity:1}
