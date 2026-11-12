@@ -89,7 +89,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
     <main className="product-page">
       <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{parentCat && <> / <Link href={`/shop/${parentCat.slug}`}>{parentCat.name}</Link></>}{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
-        <div className="product-gallery"><Gallery key={product.id} images={product.product_media ?? product.product_images} /></div>
+        <div className="product-gallery">{(product.product_media ?? product.product_images).length ? <Gallery key={product.id} images={product.product_media ?? product.product_images} /> : <div className="frame no-photo gallery-empty"><img src="/brand/wreath-ink.svg" alt="" /><span>Photo coming soon</span></div>}</div>
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
