@@ -14,7 +14,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
         return (
           <div key={`${p.slug}|${p.pick_sku ?? ""}`} className="product-card-wrap">
           <Link href={href} className="product-card">
-            {img && <div className="frame card-photo">{p.sale_label && <em className="offer-badge">{p.sale_label}</em>}<HeartButton productId={p.id} name={p.name} className="card-heart" /><Image src={img.url} alt={img.alt} fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: img.position }} /></div>}
+            {img && <div className="frame card-photo">{p.sale_label && <em className="offer-badge">{p.sale_label}</em>}<HeartButton productId={p.id} name={p.name} className="card-heart" /><Image src={img.url} alt={img.alt} fill sizes="(max-width: 760px) 50vw, 25vw" className={img.position === "contain" ? "cover fit" : "cover"} style={img.position === "contain" ? undefined : { objectPosition: img.position }} /></div>}
             {!img && <div className="frame card-photo no-photo"><HeartButton productId={p.id} name={p.name} className="card-heart" /><img src="/brand/wreath-ink.svg" alt="" /><span>Photo coming soon</span></div>}
             <small>{p.kind}</small>
             <strong>{p.name}</strong>

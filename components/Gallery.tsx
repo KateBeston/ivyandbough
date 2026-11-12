@@ -28,7 +28,7 @@ export function Gallery({ images }: { images: ProductImage[] }) {
       <div className="ic-stage" onClick={() => { const photos = images.filter((x) => x.media_type !== "video"); const k = photos.indexOf(images[idx]); if (k >= 0) { setPaused(true); setZoom(k); } }} role="button" tabIndex={0} aria-label="Open photo to zoom" onKeyDown={(e) => { if (e.key === "Enter") { const photos = images.filter((x) => x.media_type !== "video"); const k = photos.indexOf(images[idx]); if (k >= 0) setZoom(k); } }}>
         {images.map((img, k) => img.media_type === "video"
           ? (k === idx ? <video key={img.url} src={img.url} className="cover ic-slide on ic-video" autoPlay muted loop playsInline controls aria-label={img.alt || "Product video"} onPlay={() => setPaused(true)} /> : null)
-          : <Image key={img.url} src={img.url} alt={k === idx ? img.alt : ""} aria-hidden={k !== idx} fill priority={k === 0} sizes="(max-width: 900px) 100vw, 50vw" quality={85} className={`cover ic-slide${k === idx ? " on" : ""}`} style={{ objectPosition: img.position }} />)}
+          : <Image key={img.url} src={img.url} alt={k === idx ? img.alt : ""} aria-hidden={k !== idx} fill priority={k === 0} sizes="(max-width: 900px) 100vw, 50vw" quality={85} className={`cover ic-slide${k === idx ? " on" : ""}${img.position === "contain" ? " fit" : ""}`} style={img.position === "contain" ? undefined : { objectPosition: img.position }} />)}
       </div>
       {zoom !== null && <Lightbox images={images.filter((x) => x.media_type !== "video")} start={zoom} onClose={() => { setZoom(null); setPaused(false); }} />}
       {images[idx]?.media_type !== "video" && <span className="ic-zoom" aria-hidden="true">⤢ Click to zoom</span>}
