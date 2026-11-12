@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { COLOUR_PAGES, colourPath } from "@/lib/colour-pages";
 import { getOfferLinks, getPostCategories, getPosts, getProducts, getStockedCategories, getThemes } from "@/lib/catalogue";
 import { SITE } from "@/lib/seo";
 
@@ -14,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categories.map((c) => ({ url: `${SITE}/shop/${c.slug}` })),
     ...themes.map((t) => ({ url: `${SITE}/collections/${t.slug}` })),
     ...products.map((p) => ({ url: `${SITE}/products/${p.slug}`, lastModified: p.created_at })),
+    ...COLOUR_PAGES.map((p) => ({ url: `${SITE}${colourPath(p)}` })),
     ...postCats.map((c) => ({ url: `${SITE}/the-christmas-edit/category/${c.slug}` })),
     ...posts.map((p) => ({ url: `${SITE}/the-christmas-edit/${p.slug}`, lastModified: p.published_at })),
   ];

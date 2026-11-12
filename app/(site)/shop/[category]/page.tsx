@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ColourLinks } from "@/components/ColourLinks";
 import { notFound } from "next/navigation";
 import { CollectionHero } from "@/components/CollectionHero";
 import { JsonLd } from "@/components/JsonLd";
@@ -44,6 +45,7 @@ export default async function CategoryPage({ params }: Props) {
         </nav>
         {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
+      <ColourLinks category={parent.slug} title={`${parent.name} by colour`} />
     </main>
   );
 }

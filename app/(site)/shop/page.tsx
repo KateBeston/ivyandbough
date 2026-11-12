@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ColourLinks } from "@/components/ColourLinks";
 import { ShopBrowser } from "@/components/ShopBrowser";
 import { getStockedCategories, getProducts, getThemes } from "@/lib/catalogue";
 
@@ -7,5 +8,10 @@ export const metadata: Metadata = { title: "Shop Christmas Decorations | Ivy & B
 
 export default async function ShopPage() {
   const [categories, products, themes] = await Promise.all([getStockedCategories(), getProducts(), getThemes()]);
-  return <ShopBrowser products={products} categories={categories} themes={themes} />;
+  return (
+    <>
+      <ShopBrowser products={products} categories={categories} themes={themes} />
+      <ColourLinks />
+    </>
+  );
 }
