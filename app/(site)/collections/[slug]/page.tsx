@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CollectionHero } from "@/components/CollectionHero";
+import { ShareBar } from "@/components/ShareBar";
+import { absolute } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductList } from "@/components/ProductList";
 import { RichText } from "@/components/RichText";
@@ -32,6 +34,7 @@ export default async function CollectionPage({ params }: Props) {
       <JsonLd data={breadcrumbs([{ name: "Home", path: "" }, { name: "Collections", path: "/collections" }, { name: theme.name, path: `/collections/${theme.slug}` }])} />
       <CollectionHero title={theme.name} intro={theme.line} src={theme.image_url} alt={theme.image_alt} position={theme.hero_position} />
       {theme.page_intro && <div className="collection-intro"><p>{theme.page_intro}</p></div>}
+      <div className="collection-share"><ShareBar url={absolute(`/collections/${theme.slug}`)} title={`${theme.name} | Ivy & Bough`} text={theme.line || theme.name} image={theme.image_url ? absolute(theme.image_url) : undefined} /></div>
       <div className="collection-body">
         {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>

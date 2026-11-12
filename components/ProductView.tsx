@@ -13,6 +13,8 @@ import { HeartButton } from "./HeartButton";
 import { ShipTo } from "./ShipTo";
 import { fullName } from "@/lib/product-name";
 import { ProductGrid } from "./ProductGrid";
+import { ShareBar } from "./ShareBar";
+import { absolute } from "@/lib/seo";
 
 const aud = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: n % 1 ? 2 : 0 }).format(n);
 
@@ -114,6 +116,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
           )}
           <p className="lede">{product.short_description || product.description}</p>
           {soldOut || comingSoon ? (preview ? <button type="button" className="solid" disabled>{soldOut ? "Sold out" : "Notify me"}</button> : <NotifyMe key={product.id} productId={product.id} soldOut={soldOut} />) : <AddToBasket product={product} preview={preview} />}
+          {!preview && <div className="product-share"><ShareBar url={absolute(`/products/${listing.slug}`)} title={`${product.name} | Ivy & Bough`} text={product.short_description || `${product.name} from Ivy & Bough.`} image={product.product_images[0]?.url ? absolute(product.product_images[0].url) : undefined} /></div>}
 
           <div className="delivery-box">
             {!preview && <ShipTo shipsFrom={product.ships_from} />}

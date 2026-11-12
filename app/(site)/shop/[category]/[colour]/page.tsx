@@ -6,7 +6,8 @@ import { ProductList } from "@/components/ProductList";
 import { RichText } from "@/components/RichText";
 import { getCategories, getProducts } from "@/lib/catalogue";
 import { COLOUR_PAGES, SHOP_WIDE, colourPath, colourSlug, findColourPage, hasColour } from "@/lib/colour-pages";
-import { breadcrumbs } from "@/lib/seo";
+import { absolute, breadcrumbs } from "@/lib/seo";
+import { ShareBar } from "@/components/ShareBar";
 
 export const revalidate = 60;
 type Props = { params: Promise<{ category: string; colour: string }> };
@@ -39,6 +40,7 @@ export default async function ColourPage({ params }: Props) {
         <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link> / <Link href={top ? `/shop/${top.slug}` : "/shop"}>{top?.name ?? "Shop"}</Link> / {page.h1}</nav>
         <h1 className="heading">{page.h1}</h1>
         <p>{page.intro}</p>
+        <ShareBar url={absolute(colourPath(page))} title={`${page.h1} | Ivy & Bough`} text={page.intro} />
       </header>
       <div className="collection-body">
         {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are on the way.</p>}

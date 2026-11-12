@@ -1122,3 +1122,6 @@ button{font:inherit;color:inherit}
 .colour-more h2{font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px}
 .colour-more .pill-row{justify-content:center}
 @media (max-width:760px){.colour-head{padding:36px 20px 4px}.colour-guide{padding:36px 20px 16px}.colour-more{padding:20px 20px 56px}}
+.product-share .share-bar{margin-top:16px}
+.collection-share{display:flex;justify-content:center;margin:0 auto 8px;padding:0 20px}
+.colour-head .share-bar{justify-content:center}
