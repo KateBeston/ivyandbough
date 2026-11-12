@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { formatDate, getDeliveryDates, getDeliverySummary } from "@/lib/catalogue";
+import { formatDate, getDeliveryDates, getDeliverySummary, getPreorderSettings } from "@/lib/catalogue";
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: "Delivery | Ivy & Bough", description: "Delivery costs, dispatch times and Christmas last order dates for Ivy & Bough orders across Australia.", alternates: { canonical: "/delivery" } };
@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Delivery | Ivy & Bough", description
 export default async function DeliveryPage() {
   const dates = await getDeliveryDates();
   const summary = await getDeliverySummary();
+  const pre = await getPreorderSettings();
   return (
     <main className="prose">
       <h1>Delivery</h1>
@@ -26,6 +27,7 @@ export default async function DeliveryPage() {
       <p>If your delivery address is wrong, contact us straight away. We&apos;ll update it if your order hasn&apos;t been dispatched. Once it has, any redirection or redelivery charge is yours to pay. See our <Link href="/terms-of-sale">Terms of Sale</Link> for the details.</p>
       <h2 id="christmas">Under the tree in time</h2>
       <p>Last order dates for Christmas delivery.</p>
+      <p>These dates are for pieces marked Available to order.{pre.cutoff ? ` Pre-order pieces need to be ordered by ${formatDate(pre.cutoff)} to arrive for Christmas.` : ""} Each product page shows the date that applies to it.</p>
       <div className="delivery-grid">
         {dates.map((d) => <div key={d.region}><small>{d.region}</small><strong>{formatDate(d.last_order_date)}</strong></div>)}
       </div>
