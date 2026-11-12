@@ -1,5 +1,6 @@
 import { getProducts, type Product } from "@/lib/catalogue";
 import { absolute, SITE } from "@/lib/seo";
+import { supabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
 
@@ -12,6 +13,9 @@ const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming 
 // One item per thing a customer can buy: each colour in a family is its own item, grouped by the family.
 export async function GET() {
   const listings = await getProducts();
+  // Delivery class per SKU, so Facebook and Google can tell free-delivery items from bulky ones.
+  const { data: cls } = await supabase.from("products").select("sku,shipping_classes(name,free_delivery_applies)");
+  const shipBy = new Map((cls ?? []).map((r: any) => [r.sku, r.shipping_classes as { name: string; free_delivery_applies: boolean } | null]));
   const items = listings.flatMap((l: Product) => {
     const versions = l.variants?.length ? l.variants : [l];
     return versions.filter((v) => v.price_cents !== null && v.product_images.length).map((v) => {
@@ -37,6 +41,8 @@ export async function GET() {
         ["g:color", l.variants?.length ? (/colou?r/i.test(l.option_label || "") ? v.version_name || undefined : v.colour || undefined) : v.colour || undefined],
         ["g:size", l.variants?.length && /size/i.test(l.option_label || "") ? v.version_name || undefined : undefined],
         ["g:material", v.materials || undefined],
+        ["g:shipping_label", shipBy.get(v.sku)?.name || "Standard"],
+        ["g:custom_label_0", (shipBy.get(v.sku)?.free_delivery_applies ?? true) ? "Free delivery over $150" : "No free delivery"],
       ];
       return `    <item>\n${fields.filter(([, val]) => val).map(([k, val]) => `      <${k}>${esc(String(val))}</${k}>`).join("\n")}\n    </item>`;
     });
