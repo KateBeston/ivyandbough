@@ -32,10 +32,30 @@ function load() {
   document.head.appendChild(gtm);
 }
 
+// Kate's own devices: visiting any page with ?notrack=on turns Analytics off on that device (?notrack=off turns it back on).
+const OPT_OUT = "ib_notrack";
+function optedOut() {
+  try {
+    const flag = new URLSearchParams(window.location.search).get("notrack");
+    if (flag === "on") { localStorage.setItem(OPT_OUT, "1"); alertOnce("Analytics is now off on this device. Your visits won't be counted."); }
+    if (flag === "off") { localStorage.removeItem(OPT_OUT); alertOnce("Analytics is back on for this device."); }
+    return localStorage.getItem(OPT_OUT) === "1";
+  } catch { return false; }
+}
+function alertOnce(message: string) {
+  const note = document.createElement("div");
+  note.textContent = message;
+  note.setAttribute("role", "status");
+  note.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#2F2C27;color:#FBF8F2;padding:12px 18px;font:14px/1.4 sans-serif;max-width:90vw;text-align:center";
+  document.body.appendChild(note);
+  setTimeout(() => note.remove(), 6000);
+}
+
 export function Analytics() {
   const path = usePathname();
   useEffect(() => {
     if (path.startsWith("/preview")) return;
+    if (optedOut()) return;
     const check = () => { if (readConsent() === "all") load(); };
     check();
     window.addEventListener(CONSENT_EVENT, check);
