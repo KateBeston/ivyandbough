@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getLabelMeanings } from "@/lib/labels";
-import { focus, getBundleItems, getCategories, getPreorderSettings, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
+import { focus, formatDate, getBundleItems, getCategories, getDeliveryDates, getPreorderSettings, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
 import { preorderLine, preorderNote } from "@/lib/preorder";
 import { Price } from "./Price";
@@ -81,6 +81,15 @@ export async function ProductView({ product: listing, preview = false, colour, s
   const comingSoon = product.availability === "Coming soon";
   const preorder = product.availability === "Pre-order";
   const preSettings = preorder ? await getPreorderSettings() : null;
+  // Ready-to-ship pieces: the Christmas order-by date from the delivery page (earliest mainland/TAS date, plus the NT).
+  let xmas: { main: string; nt: string | null } | null = null;
+  if (!preorder && !soldOut && !comingSoon) {
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Brisbane" });
+    const dates = await getDeliveryDates().catch(() => []);
+    const main = dates.filter((d) => d.region !== "NT" && d.last_order_date).map((d) => d.last_order_date as string).sort()[0];
+    const nt = dates.find((d) => d.region === "NT")?.last_order_date ?? null;
+    if (main && today <= main) xmas = { main, nt: nt && today <= nt ? nt : null };
+  }
   // A range ("1 to 3") when the product has one; otherwise "within" the number of days.
   const dmin = product.dispatch_days_min, dmax = product.dispatch_days;
   const dispatch = dmax === null || dmax === undefined ? "Ready to dispatch" : dmin !== null && dmin !== undefined && dmin < dmax ? `Dispatches in ${dmin} to ${dmax} business days` : dmax === 0 ? "Dispatches the same business day" : `Dispatches within ${dmax} business ${dmax === 1 ? "day" : "days"}`;
@@ -98,7 +107,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} gst /></div>
             {!preview && !soldOut && <AfterpayMessage cents={product.price_cents} />}
             <div className="muted price-note">GST included{product.no_discount ? " · Excluded from offers and discount codes" : ""}</div>
-            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
+            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}{xmas && <> Order by {formatDate(xmas.main)} for Christmas delivery{xmas.nt ? ` (${formatDate(xmas.nt)} for the NT)` : ""}. <Link href="/delivery#christmas">All dates</Link></>}</div>
           </div>
           {versions.length > 1 && chosen && (
             <div className="variant-picker">

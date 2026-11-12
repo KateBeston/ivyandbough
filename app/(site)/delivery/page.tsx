@@ -24,7 +24,7 @@ export default async function DeliveryPage() {
       <p>If your tracking says delivered but you can&apos;t find your parcel, please check around your property and with neighbours, then let us know promptly so we can investigate with the courier.</p>
       <p>If an item arrives damaged, please photograph the item and its packaging and keep the packaging. Then let us know under Returns and disputes in <Link href="/account?tab=requests">your account</Link> or through the <Link href="/contact?type=refund">refund form</Link>.</p>
       <p>If your delivery address is wrong, contact us straight away. We&apos;ll update it if your order hasn&apos;t been dispatched. Once it has, any redirection or redelivery charge is yours to pay. See our <Link href="/terms-of-sale">Terms of Sale</Link> for the details.</p>
-      <h2>Under the tree in time</h2>
+      <h2 id="christmas">Under the tree in time</h2>
       <p>Last order dates for Christmas delivery.</p>
       <div className="delivery-grid">
         {dates.map((d) => <div key={d.region}><small>{d.region}</small><strong>{formatDate(d.last_order_date)}</strong></div>)}
