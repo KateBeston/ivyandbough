@@ -12,5 +12,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api/|_next/|feeds/|images/|brand/|social/|staging-media/|robots.txt|sitemap.xml|llms.txt|favicon.ico|icon.png|apple-icon.png|BingSiteAuth.xml|d3d41c418c5e4253806d759873f364db.txt|.well-known/).*)"],
+  matcher: ["/((?!api/|_next/|feeds/|images/|brand/|social/|staging-media/|robots.txt|sitemap.xml|llms.txt|favicon.ico|icon.png|apple-icon.png|BingSiteAuth.xml|d3d41c418c5e4253806d759873f364db.txt|a5430288ca1f9658e38bdc8d0d455393.txt|.well-known/).*)"],
 };
