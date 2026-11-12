@@ -29,6 +29,13 @@ export function Footer() {
           <Link href="/the-christmas-edit">The Christmas Edit</Link>
           <Link href="/contact">Contact</Link>
         </nav>
+        <nav aria-label="Guides">
+          <Link href="/the-christmas-edit/christmas-tree-guide">Christmas Tree Guide</Link>
+          <Link href="/the-christmas-edit/christmas-lights-guide">Christmas Lights Guide</Link>
+          <Link href="/the-christmas-edit/christmas-decorating-guide">Decorating Guide</Link>
+          <Link href="/the-christmas-edit/christmas-decorations-care-and-storage">Care &amp; Storage</Link>
+          <Link href="/christmas-calculator">Tree &amp; Lights Calculator</Link>
+        </nav>
         <nav aria-label="Help">
           <Link href="/delivery">Delivery</Link>
           <Link href="/returns">Returns</Link>

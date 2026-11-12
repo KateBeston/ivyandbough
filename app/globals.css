@@ -289,7 +289,7 @@ button{font:inherit;color:inherit}
 .product-layout{grid-template-columns:repeat(2,minmax(0,1fr));gap:36px}
 .ic{height:560px}
 .basket-layout{grid-template-columns:minmax(0,1fr) 300px;gap:32px}
-.footer-top{grid-template-columns:repeat(4,minmax(0,1fr));padding-left:24px;padding-right:24px}
+.footer-top{grid-template-columns:repeat(5,minmax(0,1fr));padding-left:24px;padding-right:24px}
 .footer-bottom{padding-left:24px;padding-right:24px}
 }
 @media (max-width:900px){
