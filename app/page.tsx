@@ -71,7 +71,7 @@ export default async function HomePage() {
             <a href="#collections" className="text-link">Find your Christmas</a>
           </div>
           <div className="frame intro-photo">
-            <Image src="/images/theme-woodland.jpg" alt="Lit pillar candles among pine branches and a pine cone" fill sizes="(max-width: 900px) 100vw, 50vw" className="cover" style={{ objectPosition: "40% center" }} />
+            <Image src="/images/edit/u-s7.jpg" alt="Cream knitted stockings hanging from a garland" fill sizes="(max-width: 900px) 100vw, 50vw" className="cover" style={{ objectPosition: "center 35%" }} />
           </div>
         </section>
 
@@ -86,7 +86,7 @@ export default async function HomePage() {
         </section>
 
         <section className="moment">
-          <Image src="/images/fireplace.jpg" alt="Fireplace dressed with garland, fairy lights and knitted stockings" fill sizes="100vw" className="cover" style={{ objectPosition: "center 30%" }} />
+          <Image src="/images/edit/u-s1.jpg" alt="Stockings hanging by the fireplace beside a decorated Christmas tree and gifts" fill sizes="100vw" className="cover" style={{ objectPosition: "center 45%" }} />
           <div className="shade" />
           <div className="moment-inner">
             <p>The stockings are out. The candles are lit. The house smells like pine.</p>
@@ -120,7 +120,7 @@ export default async function HomePage() {
         </section>
 
         <section className="signup">
-          <Image src="/images/theme-modern.jpg" alt="" fill sizes="100vw" className="cover" style={{ objectPosition: "center 40%" }} />
+          <Image src="/images/edit/u-s8.jpg" alt="" fill sizes="100vw" className="cover" style={{ objectPosition: "center 50%" }} />
           <div className="shade" />
           <div className="signup-inner">
             <h2 className="heading">First look at new pieces</h2>
