@@ -6,7 +6,7 @@ export const revalidate = 3600;
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const plain = (s: string) => s.replace(/\s+/g, " ").trim();
 const money = (cents: number) => `${(cents / 100).toFixed(2)} AUD`;
-const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming soon" ? "preorder" : "in_stock");
+const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming soon" || a === "Pre-order" ? "preorder" : "in_stock");
 
 // The product feed for Google Merchant Center (free listings in Google Shopping and AI shopping answers).
 // One item per thing a customer can buy: each colour in a family is its own item, grouped by the family.
@@ -26,6 +26,7 @@ export async function GET() {
         ["g:image_link", absolute(v.product_images[0].url)],
         ...v.product_images.slice(1, 10).map((i) => ["g:additional_image_link", absolute(i.url)] as [string, string]),
         ["g:availability", stock(v.availability)],
+        ["g:availability_date", stock(v.availability) === "preorder" ? new Date(Date.now() + 21 * 864e5).toISOString().slice(0, 10) + "T00:00+1000" : undefined],
         ["g:price", money(onSale ? v.was_cents! : v.price_cents!)],
         ["g:sale_price", onSale ? money(v.price_cents!) : undefined],
         ["g:brand", v.brand || l.brand || "Ivy & Bough"],

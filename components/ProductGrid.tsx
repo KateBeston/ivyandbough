@@ -23,6 +23,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
             {p.pick_sku ? (p.version_name && <em className="card-options">{p.version_name}</em>)
               : (p.variants?.length ?? 0) > 1 && <em className="card-options">{p.variants!.length} {/ and /i.test(p.option_label || "") ? "options" : `${(p.option_label || "Colour").toLowerCase()}s`}</em>}
             {p.availability === "Coming soon" && <em className="card-soon">Coming soon</em>}
+            {p.availability === "Pre-order" && <em className="card-soon">Pre-order</em>}
           </Link>
           <QuickAdd p={p} href={href} />
           </div>

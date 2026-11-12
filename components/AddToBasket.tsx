@@ -7,13 +7,13 @@ import type { Product } from "@/lib/catalogue";
 import { fullName } from "@/lib/product-name";
 import { useBasket, type Line } from "./BasketProvider";
 
-export function AddToBasket({ product, preview }: { product: Product; preview: boolean }) {
+export function AddToBasket({ product, preview, note }: { product: Product; preview: boolean; note?: string }) {
   const { add } = useBasket();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const off = preview || product.price_cents === null;
-  const line = (): Line => ({ id: product.id, sku: product.sku, slug: product.listing_type === "group" ? `${product.slug}?colour=${encodeURIComponent(product.sku)}` : product.slug, name: fullName(product), price_cents: product.price_cents!, was_cents: product.was_cents, sale_label: product.sale_label, image: product.product_images[0]?.url ?? "", quantity });
+  const line = (): Line => ({ id: product.id, sku: product.sku, slug: product.listing_type === "group" ? `${product.slug}?colour=${encodeURIComponent(product.sku)}` : product.slug, name: fullName(product), price_cents: product.price_cents!, was_cents: product.was_cents, sale_label: product.sale_label, image: product.product_images[0]?.url ?? "", quantity, note });
 
   // Delivery details are needed before payment, so express buyers go through the basket.
   function buyNow() {

@@ -206,6 +206,11 @@ export async function getArticleDesign(): Promise<ArticleDesign> {
   return { ...defaultDesign, ...(data?.value as Partial<ArticleDesign> | undefined) };
 }
 
+export async function getPreorderSettings() {
+  const { data } = await supabase.from("delivery_settings").select("preorder_cutoff,preorder_days_min,preorder_days_max").maybeSingle();
+  return { cutoff: data?.preorder_cutoff ?? null, min: Number(data?.preorder_days_min ?? 7), max: Number(data?.preorder_days_max ?? 15) };
+}
+
 export async function getDeliverySummary() {
   const { data } = await supabase.from("delivery_settings").select("free_over").maybeSingle();
   const over = data?.free_over === null || data?.free_over === undefined ? null : Number(data.free_over);

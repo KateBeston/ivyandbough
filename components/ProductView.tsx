@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getLabelMeanings } from "@/lib/labels";
-import { focus, getBundleItems, getCategories, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
+import { focus, getBundleItems, getCategories, getPreorderSettings, getProductsByListingIds, getProductsInCategories, type BundleItem, type Product } from "@/lib/catalogue";
 import { supabase } from "@/lib/supabase";
+import { preorderLine, preorderNote } from "@/lib/preorder";
 import { Price } from "./Price";
 import { DeliveryCheck } from "./DeliveryCheck";
 import { AddToBasket } from "./AddToBasket";
@@ -78,6 +79,8 @@ export async function ProductView({ product: listing, preview = false, colour, s
   const qualities = [...new Set(["Packaging", "Production", "Materials", "Certifications", ...Object.keys(product.qualities ?? {})])].map((g) => [g, (product.qualities?.[g] ?? []).filter(Boolean)] as [string, string[]]).filter(([, l]) => l.length);
   const soldOut = product.availability === "Sold out";
   const comingSoon = product.availability === "Coming soon";
+  const preorder = product.availability === "Pre-order";
+  const preSettings = preorder ? await getPreorderSettings() : null;
   // A range ("1 to 3") when the product has one; otherwise "within" the number of days.
   const dmin = product.dispatch_days_min, dmax = product.dispatch_days;
   const dispatch = dmax === null || dmax === undefined ? "Ready to dispatch" : dmin !== null && dmin !== undefined && dmin < dmax ? `Dispatches in ${dmin} to ${dmax} business days` : dmax === 0 ? "Dispatches the same business day" : `Dispatches within ${dmax} business ${dmax === 1 ? "day" : "days"}`;
@@ -95,7 +98,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} gst /></div>
             {!preview && !soldOut && <AfterpayMessage cents={product.price_cents} />}
             <div className="muted price-note">GST included{product.no_discount ? " · Excluded from offers and discount codes" : ""}</div>
-            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
+            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}</div>
           </div>
           {versions.length > 1 && chosen && (
             <div className="variant-picker">
@@ -115,7 +118,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             </div>
           )}
           <p className="lede">{product.short_description || product.description}</p>
-          {soldOut || comingSoon ? (preview ? <button type="button" className="solid" disabled>{soldOut ? "Sold out" : "Notify me"}</button> : <NotifyMe key={product.id} productId={product.id} soldOut={soldOut} />) : <AddToBasket product={product} preview={preview} />}
+          {soldOut || comingSoon ? (preview ? <button type="button" className="solid" disabled>{soldOut ? "Sold out" : "Notify me"}</button> : <NotifyMe key={product.id} productId={product.id} soldOut={soldOut} />) : <AddToBasket product={product} preview={preview} note={preSettings ? preorderNote(preSettings) : undefined} />}
           {!preview && <div className="product-share"><ShareBar url={absolute(`/products/${listing.slug}`)} title={`${product.name} | Ivy & Bough`} text={product.short_description || `${product.name} from Ivy & Bough.`} image={product.product_images[0]?.url ? absolute(product.product_images[0].url) : undefined} /></div>}
 
           <div className="delivery-box">

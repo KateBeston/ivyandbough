@@ -23,7 +23,7 @@ export function QuickAdd({ p, href }: { p: Product; href: string }) {
   if (!chosen || chosen.price_cents === null) return null;
   const label = /size/i.test(p.option_label || "") ? "Size" : /scent/i.test(p.option_label || "") ? "Scent" : / and |style/i.test(p.option_label || "") ? "Option" : "Colour";
   const addIt = () => {
-    add({ id: chosen.id, sku: chosen.sku, slug: p.listing_type === "group" ? `${p.slug}?colour=${encodeURIComponent(chosen.sku)}` : p.slug, name: fullName({ name: p.name, version_name: p.listing_type === "group" ? chosen.version_name : "" }), price_cents: chosen.price_cents!, was_cents: chosen.was_cents, sale_label: chosen.sale_label, image: chosen.product_images[0]?.url ?? p.product_images[0]?.url ?? "", quantity: 1 });
+    add({ id: chosen.id, sku: chosen.sku, slug: p.listing_type === "group" ? `${p.slug}?colour=${encodeURIComponent(chosen.sku)}` : p.slug, name: fullName({ name: p.name, version_name: p.listing_type === "group" ? chosen.version_name : "" }), price_cents: chosen.price_cents!, was_cents: chosen.was_cents, sale_label: chosen.sale_label, image: chosen.product_images[0]?.url ?? p.product_images[0]?.url ?? "", quantity: 1, note: chosen.availability === "Pre-order" ? "Pre-order: ships with our next supplier batch" : undefined });
     setAdded(true);
   };
 

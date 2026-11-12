@@ -1,3 +1,4 @@
+import { afterCutoff } from "@/lib/preorder";
 import { SOCIAL_LINKS } from "./seo";
 import { createClient } from "@supabase/supabase-js";
 import type { InvoiceData } from "./invoice";
@@ -161,11 +162,14 @@ export function smsSegments(text: string) {
 }
 
 async function orderData(db: Db, orderId: string) {
-  const { data } = await db.from("orders").select("order_number,track_token,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,discount_total,promo_code,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,themes!products_theme_id_fkey(name),product_images(url,sort_order)))").eq("id", orderId).single();
+  const { data } = await db.from("orders").select("order_number,track_token,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,discount_total,promo_code,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,availability,themes!products_theme_id_fkey(name),product_images(url,sort_order)))").eq("id", orderId).single();
   if (!data) return null;
   const order = data as unknown as { order_number: string; track_token: string; placed_on: string; paid_at: string | null; payment_intent_id: string | null; payment_method: string; customer_email: string; subtotal: number; discount_total: number; promo_code: string; total: number; shipping_total: number; gst_total: number; shipping_name: string; shipping_address: string; shipping_phone: string; customers: { name: string; phone: string; customer_number: string } | null; order_items: { name: string; sku: string; quantity: number; unit_price: number; carrier: string; tracking_number: string; products: { dispatch_days: number | null; themes: { name: string } | null; product_images: { url: string; sort_order: number }[] } | null }[] };
   const name = order.customers?.name || order.shipping_name || "";
   const dispatchDays = order.order_items.flatMap((i) => (i.products?.dispatch_days ? [i.products.dispatch_days] : []));
+  const hasPreorder = order.order_items.some((i) => (i.products as { availability?: string } | null)?.availability === "Pre-order");
+  const preRow = hasPreorder ? (await db.from("delivery_settings").select("preorder_cutoff,preorder_days_min,preorder_days_max").maybeSingle()).data : null;
+  const pre = preRow ? { cutoff: preRow.preorder_cutoff ?? null, min: Number(preRow.preorder_days_min ?? 7), max: Number(preRow.preorder_days_max ?? 15) } : null;
   // Every tracking link goes to the branded tracking page, which links on to the courier.
   const trackUrl = order.track_token ? `${SITE_URL}/track/${order.track_token}` : "";
   const tracked = order.order_items.filter((i) => i.tracking_number).map((i) => {
@@ -197,7 +201,7 @@ async function orderData(db: Db, orderId: string) {
       delivery_name: order.shipping_name, delivery_address: order.shipping_address,
       tracking: tracked.join("\n") || "You can check your order in your account.",
       track_url: trackUrl || `${SITE_URL}/account`,
-      dispatch_estimate: dispatchDays.length ? `Your order is usually dispatched within ${Math.max(...dispatchDays)} business ${Math.max(...dispatchDays) === 1 ? "day" : "days"}.` : "Dispatch times are shown on each product page.",
+      dispatch_estimate: pre ? (afterCutoff(pre) ? "Your order includes pre-order pieces, which ship in January. We'll send your whole order together." : `Your order includes pre-order pieces, which ship with our next supplier batch, usually within ${pre.min} to ${pre.max} business days. We'll send your whole order together.`) : dispatchDays.length ? `Your order is usually dispatched within ${Math.max(...dispatchDays)} business ${Math.max(...dispatchDays) === 1 ? "day" : "days"}.` : "Dispatch times are shown on each product page.",
     } as Record<string, string>,
   };
 }

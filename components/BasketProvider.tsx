@@ -7,7 +7,7 @@ import { account, authHeader } from "@/lib/account-client";
 import { CheckoutModal } from "./CheckoutModal";
 
 export type DeliveryDetails = { name: string; phone: string; line1: string; line2: string; city: string; state: string; postcode: string; smsUpdates: boolean; marketing: boolean; authorityToLeave: boolean; instructions: string };
-export type Line = { id: string; sku?: string; slug: string; name: string; price_cents: number; was_cents?: number | null; sale_label?: string; image: string; quantity: number };
+export type Line = { id: string; sku?: string; slug: string; name: string; price_cents: number; was_cents?: number | null; sale_label?: string; image: string; quantity: number; note?: string };
 export type Welcome = { code: string; offer: string; terms: string };
 type Basket = { paying?: string | null; payFail?: string; lines: Line[]; count: number; subtotal: number; add: (line: Line) => void; setQuantity: (id: string, quantity: number) => void; remove: (id: string) => void; clear: () => void; sessionId: () => string; welcome: Welcome | null; checkout: (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => Promise<string | null> };
 
