@@ -71,7 +71,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
           <div className="themes-menu-inner">
             {themes.map((t) => (
               <Link key={t.id} href={`/collections/${t.slug}`} onClick={closeAll}>
-                <span className="frame themes-menu-photo"><Image src={t.image_url} alt="" fill sizes="240px" className="cover" style={{ objectPosition: t.card_position }} /></span>
+                <span className="frame themes-menu-photo"><Image src={t.card_image_url || t.image_url} alt="" fill sizes="240px" className="cover" style={{ objectPosition: t.card_position }} /></span>
                 <strong>{t.name}</strong>
               </Link>
             ))}

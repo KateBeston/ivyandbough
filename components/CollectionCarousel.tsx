@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Theme = { id: string; slug: string; name: string; note: string | null; image_url: string; card_position: string | null };
+type Theme = { id: string; slug: string; name: string; note: string | null; image_url: string; card_image_url?: string | null; card_position: string | null };
 
 // Featured collections as a rotating trio: the current collection large in the middle, its neighbours either side.
 // Turns every few seconds, pauses on hover or focus, and stays still for people who prefer less motion.
@@ -46,7 +46,7 @@ export function CollectionCarousel({ themes }: { themes: Theme[] }) {
               onClick={(e) => { if (side) { e.preventDefault(); go(i); } }}
             >
               <div className="carousel-photo">
-                <Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 80vw, 600px" className="cover" style={{ objectPosition: t.card_position ?? "center" }} priority={pos === "centre"} />
+                <Image src={t.card_image_url || t.image_url} alt="" fill sizes="(max-width: 760px) 80vw, 600px" className="cover" style={{ objectPosition: t.card_position ?? "center" }} priority={pos === "centre"} />
                 <span className="carousel-caption"><strong>{t.name}</strong>{t.note && <span>{t.note}</span>}</span>
               </div>
             </Link>

@@ -47,7 +47,7 @@ export default async function CollectionPage({ params }: Props) {
         <div className="collections-index three">
           {related.map((t) => (
             <Link key={t.id} href={`/collections/${t.slug}`}>
-              <div className="frame"><Image src={t.image_url} alt="" fill sizes="(max-width: 760px) 50vw, 33vw" className="cover" style={{ objectPosition: t.card_position }} /></div>
+              <div className="frame"><Image src={t.card_image_url || t.image_url} alt="" fill sizes="(max-width: 760px) 50vw, 33vw" className="cover" style={{ objectPosition: t.card_position }} /></div>
               <strong>{t.name}</strong>
               <span>{t.note}</span>
             </Link>
