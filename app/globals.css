@@ -603,8 +603,9 @@ button{font:inherit;color:inherit}
 .checkout-address select{display:block;width:100%;margin-top:6px}
 .checkout-terms{margin:4px 0 12px;font-size:13px}
 .price-note{margin-top:2px;font-size:11px}
-.stock-line{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px}
-.stock-dot{width:8px;height:8px;border-radius:50%;background:#3B7A3E}
+.stock-line{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:13px;line-height:1.5}
+.stock-link{white-space:nowrap}
+.stock-dot{flex:none;width:8px;height:8px;margin-top:6px;border-radius:50%;background:#3B7A3E}
 .delivery-box{margin:18px 0;padding:14px 16px;border:1px solid var(--line);font-size:13px}
 .delivery-box ul{margin:0;padding-left:18px}
 .delivery-box li{margin:0 0 6px}

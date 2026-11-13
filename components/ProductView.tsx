@@ -107,7 +107,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} gst /></div>
             {!preview && !soldOut && <AfterpayMessage cents={product.price_cents} />}
             <div className="muted price-note">GST included{product.no_discount ? " · Excluded from offers and discount codes" : ""}</div>
-            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" />{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}{xmas && <> Order by {formatDate(xmas.main)} for Christmas delivery{xmas.nt ? ` (${formatDate(xmas.nt)} for the NT)` : ""}. <Link href="/delivery#christmas">All dates</Link></>}</div>
+            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" /><span>{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}{xmas && <> Order by {formatDate(xmas.main)} for Christmas delivery{xmas.nt ? ` (${formatDate(xmas.nt)} for the NT)` : ""}. <Link href="/delivery#christmas" className="stock-link">All dates</Link></>}</span></div>
           </div>
           {versions.length > 1 && chosen && (
             <div className="variant-picker">
