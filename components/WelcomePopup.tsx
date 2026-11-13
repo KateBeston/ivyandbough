@@ -47,6 +47,8 @@ export function WelcomePopup() {
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
   const [attempt, setAttempt] = useState(0);
+  // Small "$10 off" tab, shown after the popup has been closed without joining, so the offer can be found again.
+  const [tab, setTab] = useState<Offer | null>(null);
 
   useEffect(() => {
     if (QUIET.test(path) || !due()) return;
@@ -65,10 +67,26 @@ export function WelcomePopup() {
   }, [path]);
 
   useEffect(() => {
+    const seen = readSeen();
+    if (QUIET.test(path) || seen.joined || !seen.shows) { setTab(null); return; }
+    let live = true;
+    (async () => {
+      const { data: auth } = await account.auth.getSession();
+      if (auth.session || !live) return;
+      const { data } = await supabase.from("promotions").select("discount_type,discount_value,min_order,valid_days,applies_to_sale").eq("trigger", "Newsletter sign-up").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (live && data) setTab(data as Offer);
+    })();
+    return () => { live = false; };
+  }, [path]);
+
+  useEffect(() => {
     if (offer && box.current && !box.current.open) { box.current.showModal(); box.current.focus(); }
   }, [offer]);
 
-  if (!offer) return null;
+  const reopen = () => { if (tab) { setState("idle"); setOffer(tab); } };
+  const closed = () => { setOffer(null); if (!readSeen().joined) setTab((t) => t ?? offer); else setTab(null); };
+
+  if (!offer) return tab ? <button type="button" className="welcome-tab" onClick={reopen}>{offerAmount(tab)}</button> : null;
   const amount = offerAmount(offer);
   const min = Number(offer.min_order);
   const close = () => box.current?.close();
@@ -82,12 +100,13 @@ export function WelcomePopup() {
     setAttempt((n) => n + 1);
     if (!res?.ok) return setState("error");
     remember({ ...readSeen(), joined: true });
+    setTab(null);
     setEmail(address);
     setState("done");
   }
 
   return (
-    <dialog ref={box} tabIndex={-1} className="welcome-pop" aria-labelledby="welcome-pop-title" onClose={() => setOffer(null)} onClick={(e) => { if (e.target === box.current) close(); }}>
+    <dialog ref={box} tabIndex={-1} className="welcome-pop" aria-labelledby="welcome-pop-title" onClose={closed} onClick={(e) => { if (e.target === box.current) close(); }}>
       <div className="welcome-pop-card">
         <div className="welcome-pop-image"><img src="/images/popup-tree.jpg" alt="" /><img src="/brand/stacked-cream.svg" alt="" className="welcome-pop-logo" /></div>
         <div className="welcome-pop-body">

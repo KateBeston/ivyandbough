@@ -1139,3 +1139,23 @@ button{font:inherit;color:inherit}
 
 img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .ic:has(.ic-slide.on.fit){background:#fff}
+
+/* Footer sign-up band */
+.footer-signup{max-width:1360px;margin:0 auto;padding:48px 40px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:32px;align-items:center;border-bottom:1px solid rgba(233,227,216,.18)}
+.footer-signup h2{margin:0 0 6px;font-size:22px;font-weight:400;letter-spacing:.11em;text-transform:uppercase}
+.footer-signup p{margin:0;font-size:14px;opacity:.85}
+.footer-signup form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.footer-signup .form-offer{width:100%;margin:0 0 2px;font-size:14px;color:var(--pale-gold)}
+.footer-signup label{flex:1 1 240px;display:flex;flex-direction:column;gap:4px;font-size:12px}
+.footer-signup input{height:48px;padding:0 14px;border:1px solid var(--pale-gold);background:rgba(255,255,255,.95);font:inherit;color:var(--ink)}
+.footer-signup button{height:48px;padding:0 28px;border:1px solid var(--pale-gold);background:var(--pale-gold);color:var(--ink);font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
+.footer-signup .turnstile{width:100%;margin:0}
+.footer-signup .msg{width:100%;margin-top:8px;font-size:14px}
+.footer-signup .form-note{width:100%;font-size:12px;opacity:.75}
+.footer-signup .form-note a{color:inherit}
+@media (max-width:760px){.footer-signup{grid-template-columns:1fr;padding:40px 24px 32px;gap:18px}}
+
+/* Reopen tab for the welcome offer */
+.welcome-tab{position:fixed;left:0;top:50%;z-index:60;transform:translateY(-50%) rotate(180deg);writing-mode:vertical-rl;padding:16px 10px;border:0;background:var(--night);color:var(--pale-gold);font:inherit;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 24px rgba(21,19,15,.25)}
+.welcome-tab:hover,.welcome-tab:focus-visible{background:var(--ink);color:#fff}
+@media print{.welcome-tab{display:none}}

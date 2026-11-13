@@ -3,10 +3,23 @@ import { CookieSettingsLink } from "./CookieConsent";
 import { SOCIAL_LINKS } from "@/lib/seo";
 import { PaymentMarks } from "./PaymentMarks";
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/requests";
+import { getWelcomeOffer } from "@/lib/catalogue";
+import { SignupForm } from "./SignupForm";
 
-export function Footer() {
+// signup={false} where the page already has its own sign-up section (the home page).
+export async function Footer({ signup = true }: { signup?: boolean } = {}) {
+  const offer = signup ? await getWelcomeOffer("Newsletter sign-up").catch(() => "") : "";
   return (
     <footer className="footer">
+      {signup && (
+        <section className="footer-signup" aria-labelledby="footer-signup-title">
+          <div className="footer-signup-copy">
+            <h2 id="footer-signup-title">First look at new pieces</h2>
+            <p>New collections and Christmas delivery dates, before anyone else.</p>
+          </div>
+          <SignupForm offer={offer} />
+        </section>
+      )}
       <div className="footer-top">
         <div className="footer-brand">
           <Link href="/" className="footer-logo-link" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-cream.svg" alt="" className="footer-logo" width={150} height={88} /></Link>
