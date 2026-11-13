@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
+import { ProductReviews } from "@/components/ProductReviews";
 import { ProductView } from "@/components/ProductView";
 import { VariantSwitch } from "@/components/VariantSwitch";
 import { getCategories, getProduct, getProducts } from "@/lib/catalogue";
+import { getReviews } from "@/lib/reviews";
 import { absolute, breadcrumbs, offerExtras } from "@/lib/seo";
 import { supabase } from "@/lib/supabase";
 
@@ -30,7 +32,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const versions = product.variants ?? [];
   const first = (versions.find((v) => v.id === product.id) ?? versions[0])?.sku ?? "";
   const extras = await offerExtras(supabase);
-  const schema = { "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description, sku: product.sku, url, image: product.product_images.map((i) => absolute(i.url)), brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined, category: product.categories?.name, material: product.materials || undefined, offers: product.price_cents === null ? undefined : { "@type": "Offer", url, price: (product.price_cents / 100).toFixed(2), priceCurrency: "AUD", availability: ["Sold out", "Coming soon"].includes(product.availability) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition", hasMerchantReturnPolicy: extras.returns, shippingDetails: extras.shipping ? extras.shipping(product.price_cents) : undefined, seller: { "@type": "Organization", name: "Ivy & Bough" }, priceValidUntil: product.sale_label && product.sale_ends_at ? product.sale_ends_at.slice(0, 10) : undefined } };
+  const rated = await getReviews([...new Set([product.id, ...versions.map((v) => v.id)])]).catch(() => ({ reviews: [], average: 0, count: 0 }));
+  const schema = { "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description, sku: product.sku, url, image: product.product_images.map((i) => absolute(i.url)), brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined, category: product.categories?.name, material: product.materials || undefined, aggregateRating: rated.count ? { "@type": "AggregateRating", ratingValue: rated.average.toFixed(1), reviewCount: rated.count, bestRating: 5, worstRating: 1 } : undefined, review: rated.count ? rated.reviews.slice(0, 5).map((r) => ({ "@type": "Review", reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 }, author: { "@type": "Person", name: r.display_name || "Customer" }, datePublished: (r.approved_at ?? r.created_at).slice(0, 10), reviewBody: r.body || undefined })) : undefined, offers: product.price_cents === null ? undefined : { "@type": "Offer", url, price: (product.price_cents / 100).toFixed(2), priceCurrency: "AUD", availability: ["Sold out", "Coming soon"].includes(product.availability) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition", hasMerchantReturnPolicy: extras.returns, shippingDetails: extras.shipping ? extras.shipping(product.price_cents) : undefined, seller: { "@type": "Organization", name: "Ivy & Bough" }, priceValidUntil: product.sale_label && product.sale_ends_at ? product.sale_ends_at.slice(0, 10) : undefined } };
   const cats = await getCategories();
   const own = cats.find((c) => c.id === product.category_id);
   const parent = own?.parent_id ? cats.find((c) => c.id === own.parent_id) : undefined;
@@ -46,6 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <script dangerouslySetInnerHTML={{ __html: `(function(){var s=new URLSearchParams(location.search).get("colour");if(!s)return;var p=document.querySelectorAll("[data-sku]"),t=null;p.forEach(function(e){if(e.getAttribute("data-sku")===s)t=e});if(!t)return;p.forEach(function(e){e.hidden=e!==t})})();` }} />
         </>
         : <ProductView product={product} />}
+      <ProductReviews {...rated} />
     </>
   );
 }

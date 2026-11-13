@@ -1,6 +1,7 @@
 import { Footer } from "@/components/Footer";
 import { GoogleBadge } from "@/components/GoogleBadge";
 import { Nav } from "@/components/Nav";
+import { ReviewToast } from "@/components/ReviewToast";
 import { getOfferLinks, getStockedCategories, getThemes } from "@/lib/catalogue";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -11,6 +12,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {children}
       <Footer />
       <GoogleBadge />
+      <ReviewToast />
     </>
   );
 }

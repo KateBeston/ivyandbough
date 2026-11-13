@@ -11,6 +11,7 @@ import { ShopTheLook } from "@/components/ShopTheLook";
 
 const SHOW_SHOP_THE_LOOK = false;
 import { SignupForm } from "@/components/SignupForm";
+import { ReviewToast } from "@/components/ReviewToast";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CollectionCarousel } from "@/components/CollectionCarousel";
 import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
@@ -130,6 +131,7 @@ export default async function HomePage() {
         </section>
       </main>
       <Footer signup={false} />
+      <ReviewToast />
     </>
   );
 }
