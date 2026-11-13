@@ -2,12 +2,12 @@ const supabase = "https://pexlozjdgwrygzwiaivm.supabase.co";
 const portal = "https://ivy-and-bough-portal.vercel.app";
 const csp = (frameAncestors) => [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://challenges.cloudflare.com https://js.stripe.com https://*.js.stripe.com",
+  "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://challenges.cloudflare.com https://js.stripe.com https://*.js.stripe.com https://apis.google.com https://www.gstatic.com https://ssl.gstatic.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  `img-src 'self' data: blob: ${supabase} https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://*.google-analytics.com https://*.stripe.com`,
+  `img-src 'self' data: blob: ${supabase} https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://*.google-analytics.com https://*.stripe.com https://www.gstatic.com https://ssl.gstatic.com https://www.google.com`,
   "font-src 'self' data: https://fonts.gstatic.com",
-  `connect-src 'self' ${supabase} https://maps.googleapis.com https://places.googleapis.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://api.stripe.com https://*.stripe.com`,
-  "frame-src https://challenges.cloudflare.com https://js.stripe.com https://*.stripe.com",
+  `connect-src 'self' ${supabase} https://maps.googleapis.com https://places.googleapis.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://api.stripe.com https://*.stripe.com https://www.google.com`,
+  "frame-src https://challenges.cloudflare.com https://js.stripe.com https://*.stripe.com https://www.google.com https://*.google.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
