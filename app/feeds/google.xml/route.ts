@@ -14,9 +14,11 @@ const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming 
 export async function GET() {
   const listings = await getProducts();
   // Delivery class per SKU, so Facebook and Google can tell free-delivery items from bulky ones.
-  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies)");
+  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies),themes(name)");
   const shipBy = new Map((cls ?? []).map((r: any) => [r.sku, r.shipping_classes as { name: string; free_delivery_applies: boolean } | null]));
   // Packed weight per SKU. Google needs it to work out delivery cost from the account's weight-based rates.
+  // Collection (theme) per SKU, so Meta and Google can build product sets by collection.
+  const collectionBy = new Map((cls ?? []).map((r: any) => [r.sku, (r.themes?.name as string | undefined) ?? ""]));
   const weightBy = new Map((cls ?? []).map((r: any) => [r.sku, Number(r.weight_g) || 0]));
   const items = listings.flatMap((l: Product) => {
     const versions = l.variants?.length ? l.variants : [l];
@@ -46,6 +48,7 @@ export async function GET() {
         ["g:shipping_weight", weightBy.get(v.sku) ? `${weightBy.get(v.sku)} g` : undefined],
         ["g:shipping_label", shipBy.get(v.sku)?.name || "Standard"],
         ["g:custom_label_0", (shipBy.get(v.sku)?.free_delivery_applies ?? true) ? "Free delivery over $150" : "No free delivery"],
+        ["g:custom_label_1", collectionBy.get(v.sku) || undefined],
       ];
       return `    <item>\n${fields.filter(([, val]) => val).map(([k, val]) => `      <${k}>${esc(String(val))}</${k}>`).join("\n")}\n    </item>`;
     });
