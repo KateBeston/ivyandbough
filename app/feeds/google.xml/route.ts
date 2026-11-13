@@ -14,7 +14,7 @@ const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming 
 export async function GET() {
   const listings = await getProducts();
   // Delivery class per SKU, so Facebook and Google can tell free-delivery items from bulky ones.
-  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies),themes(name)");
+  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies),themes!products_theme_id_fkey(name)");
   const shipBy = new Map((cls ?? []).map((r: any) => [r.sku, r.shipping_classes as { name: string; free_delivery_applies: boolean } | null]));
   // Packed weight per SKU. Google needs it to work out delivery cost from the account's weight-based rates.
   // Collection (theme) per SKU, so Meta and Google can build product sets by collection.
