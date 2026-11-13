@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   robots: { index: SITE_LIVE, follow: SITE_LIVE },
   openGraph: { type: "website", siteName: "Ivy & Bough", locale: "en_AU", images: [{ url: "/og-image.jpg?v=2", width: 1200, height: 630, alt: "Ivy & Bough" }] },
   twitter: { card: "summary_large_image" },
-  other: { "p:domain_verify": "e93d00004715bfb83af1d9e436427150" },
+  other: { "p:domain_verify": "e93d00004715bfb83af1d9e436427150", "facebook-domain-verification": "d50cypumwmgvk814y45u2643i83uz7" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
