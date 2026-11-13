@@ -1227,7 +1227,8 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .footer-pay{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .footer-pay>span{font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.7}
 .pay-marks-quiet{gap:16px;align-items:center}
-.pay-marks-quiet li{width:auto;height:20px;padding:0;background:none;border-radius:0}
-.pay-marks-quiet img{height:20px;width:auto;max-width:none;filter:brightness(0) invert(1);opacity:.72;transition:opacity .2s}
+.pay-marks-quiet{gap:8px}
+.pay-marks-quiet li{width:46px;height:30px;padding:6px 8px;background:none;border:1px solid rgba(233,227,216,.35);border-radius:4px}
+.pay-marks-quiet img{max-height:100%;max-width:100%;opacity:.8;transition:opacity .2s}
 .pay-marks-quiet li:hover img{opacity:1}
 @media (max-width:760px){.footer-pay{align-items:flex-start}}
