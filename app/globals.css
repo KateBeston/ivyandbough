@@ -1207,3 +1207,9 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .review-toast-close{position:absolute;top:6px;right:6px;width:26px;height:26px;border:0;background:#fff;font-size:18px;line-height:1;cursor:pointer;color:var(--ink)}
 @media (max-width:600px){.review-toast{bottom:76px}}
 @media print{.review-toast{display:none}}
+
+/* Home page: The Christmas Edit stories */
+.home-stories{padding-top:40px;text-align:left}
+.home-story-label{display:block;margin-top:16px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--brown, #6B5B4B)}
+.home-stories .home-grid h3{margin-top:8px}
+.home-stories-all{display:table;margin:44px auto 0}

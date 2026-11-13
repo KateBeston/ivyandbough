@@ -14,7 +14,8 @@ import { SignupForm } from "@/components/SignupForm";
 import { ReviewToast } from "@/components/ReviewToast";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CollectionCarousel } from "@/components/CollectionCarousel";
-import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
+import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getPosts, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
+import { href as storyHref } from "@/components/EditCards";
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: "Ivy & Bough | Elegant Christmas Decorations Australia", description: "Elegant, unique Christmas pieces for the table, the tree and the front door, delivered Australia-wide.", alternates: { canonical: "/" } };
@@ -44,7 +45,9 @@ function favourites<T extends { category_id: string | null }>(all: T[], max = 8)
 }
 
 export default async function HomePage() {
-  const [themes, categories, allCategories, products, dates, offer, offers] = await Promise.all([getThemes(), getStockedCategories(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks()]);
+  const [themes, categories, allCategories, products, dates, offer, offers, posts] = await Promise.all([getThemes(), getStockedCategories(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks(), getPosts().catch(() => [])]);
+  // Three stories for the home page: featured first, then the newest.
+  const stories = [...posts.filter((p) => p.featured), ...posts.filter((p) => !p.featured)].slice(0, 3);
   return (
     <>
       <div className="window-bar"><p className="window-tagline">It&apos;s beginning to look a lot like Christmas&hellip;</p><Countdown /></div>
@@ -106,6 +109,23 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
+
+        {stories.length > 0 && (
+          <section id="stories" className="home home-stories">
+            <div className="eyebrow">The Christmas Edit</div>
+            <h2 className="heading">Ideas, styling and inspiration</h2>
+            <div className="home-grid">
+              {stories.map((p) => (
+                <Link key={p.id} href={storyHref(p)}>
+                  <div className="frame" style={{ height: 420 }}><Image src={p.image_url} alt={p.image_alt || ""} fill sizes="(max-width: 900px) 100vw, 33vw" className="cover" style={{ objectPosition: p.image_position }} /></div>
+                  <span className="home-story-label">{p.category}</span>
+                  <h3>{p.title}</h3>
+                </Link>
+              ))}
+            </div>
+            <Link href="/the-christmas-edit" className="solid home-stories-all">Read The Christmas Edit</Link>
+          </section>
+        )}
 
         {/* Hidden until there are our own products to style in it. Set SHOW_SHOP_THE_LOOK to true to bring it back. */}
         {SHOW_SHOP_THE_LOOK && <ShopTheLook productHref={products[0] ? `/products/${products[0].slug}` : "/#edit"} />}
