@@ -1,9 +1,10 @@
 import { readConsent } from "@/lib/consent";
 
-// Google Analytics shopping events.
+// Google Analytics and Meta pixel shopping events.
 // Only sent when the customer accepted all cookies, the same rule that loads Analytics.
 type TrackLine = { id: string; sku?: string; name: string; price_cents: number; quantity: number };
-type Tagged = Window & { gtag?: (...args: unknown[]) => void };
+type Tagged = Window & { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void };
+const META_EVENT = { add_to_cart: "AddToCart", begin_checkout: "InitiateCheckout", purchase: "Purchase" } as const;
 
 const items = (lines: TrackLine[]) => lines.map((l) => ({ item_id: l.sku || l.id, item_name: l.name, price: l.price_cents / 100, quantity: l.quantity }));
 const total = (lines: TrackLine[]) => Math.round(lines.reduce((n, l) => n + l.price_cents * l.quantity, 0)) / 100;
@@ -12,6 +13,9 @@ export function track(event: "add_to_cart" | "begin_checkout" | "purchase", line
   if (typeof window === "undefined" || readConsent() !== "all" || !lines.length) return;
   const w = window as unknown as Tagged;
   w.gtag?.("event", event, { currency: "AUD", value: total(lines), items: items(lines), ...extra });
+  // Meta pixel: content_ids match the catalogue feed's ids (SKUs).
+  const meta = { currency: "AUD", value: total(lines), content_type: "product", content_ids: lines.map((l) => l.sku || l.id), contents: lines.map((l) => ({ id: l.sku || l.id, quantity: l.quantity })), num_items: lines.reduce((n, l) => n + l.quantity, 0) };
+  w.fbq?.("track", META_EVENT[event], meta, extra.transaction_id ? { eventID: String(extra.transaction_id) } : undefined);
 }
 
 // The basket is cleared once payment succeeds, so checkout keeps a copy for the thank-you page's purchase event.
