@@ -4,12 +4,38 @@ import { SOCIAL_LINKS } from "@/lib/seo";
 import { PaymentMarks } from "./PaymentMarks";
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/requests";
 import { getWelcomeOffer } from "@/lib/catalogue";
+import { supabase } from "@/lib/supabase";
 import { SignupForm } from "./SignupForm";
 
 // signup={false} where the page already has its own sign-up section (the home page).
 export async function Footer({ signup = true }: { signup?: boolean } = {}) {
   const offer = signup ? await getWelcomeOffer("Newsletter sign-up").catch(() => "") : "";
+  const { data: delivery } = await supabase.from("delivery_settings").select("free_over").maybeSingle();
+  const freeOver = delivery?.free_over === null || delivery?.free_over === undefined ? null : Number(delivery.free_over);
   return (
+    <>
+    <section className="trust-band" aria-label="Shopping with Ivy &amp; Bough">
+      <ul>
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /><circle cx="12" cy="15" r="1.2" /></svg>
+          <span><strong>Secure payments</strong>Encrypted checkout with Visa, Mastercard, Amex, Apple Pay and Google Pay</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z" /><path d="M14 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.6" /><circle cx="17.5" cy="17.5" r="1.6" /></svg>
+          <span><strong>Delivered Australia-wide</strong>Carefully packed and sent to your door</span>
+        </li>
+        {freeOver !== null ? (
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1" /><path d="M3 9h18v-2.5H3z" /><path d="M12 6.5V20" /><path d="M12 6.5c-1.5-3-5-3.2-5-1.2 0 1.6 3 1.2 5 1.2zM12 6.5c1.5-3 5-3.2 5-1.2 0 1.6-3 1.2-5 1.2z" /></svg>
+            <span><strong>Free delivery over ${freeOver % 1 ? freeOver.toFixed(2) : freeOver}</strong>On standard items, Australia-wide</span>
+          </li>
+        ) : null}
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7" /><path d="M4 4v4h4" /></svg>
+          <span><strong>Easy returns</strong>14 days to change your mind</span>
+        </li>
+      </ul>
+    </section>
     <footer className="footer">
       {signup && (
         <section className="footer-signup" aria-labelledby="footer-signup-title">
@@ -57,7 +83,7 @@ export async function Footer({ signup = true }: { signup?: boolean } = {}) {
       </div>
       <div className="footer-bottom">
         <div>© 2026 Aurella Group Pty Ltd trading as Ivy &amp; Bough · ABN 70 649 742 423<br />All prices are in AUD and include GST.</div>
-        <PaymentMarks />
+        <div className="footer-pay"><span>Secure checkout</span><PaymentMarks tone="quiet" /></div>
       </div>
       <nav className="footer-legal" aria-label="Legal">
         <Link href="/privacy">Privacy Policy</Link>
@@ -68,5 +94,6 @@ export async function Footer({ signup = true }: { signup?: boolean } = {}) {
         <CookieSettingsLink />
       </nav>
     </footer>
+    </>
   );
 }

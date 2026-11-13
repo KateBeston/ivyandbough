@@ -1213,3 +1213,21 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .home-story-label{display:block;margin-top:16px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--brown, #6B5B4B)}
 .home-stories .home-grid h3{margin-top:8px}
 .home-stories-all{display:table;margin:44px auto 0}
+
+/* Trust band above the footer */
+.trust-band{background:#F3EEE5;border-top:1px solid #E5DED1}
+.trust-band ul{max-width:1360px;margin:0 auto;padding:34px 40px;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.trust-band li{display:flex;align-items:flex-start;gap:14px}
+.trust-band svg{width:30px;height:30px;flex:none;fill:none;stroke:#8A6A3B;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+.trust-band span{display:grid;gap:3px;font-size:13px;line-height:1.45;color:var(--brown, #6B5B4B)}
+.trust-band strong{font-family:var(--serif);font-weight:400;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+@media (max-width:760px){.trust-band ul{padding:28px 24px;grid-template-columns:1fr 1fr;gap:20px 16px}.trust-band li{flex-direction:column;gap:8px}}
+
+/* Quieter payment marks in the footer */
+.footer-pay{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.footer-pay>span{font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.7}
+.pay-marks-quiet{gap:16px;align-items:center}
+.pay-marks-quiet li{width:auto;height:20px;padding:0;background:none;border-radius:0}
+.pay-marks-quiet img{height:20px;width:auto;max-width:none;filter:brightness(0) invert(1);opacity:.72;transition:opacity .2s}
+.pay-marks-quiet li:hover img{opacity:1}
+@media (max-width:760px){.footer-pay{align-items:flex-start}}
