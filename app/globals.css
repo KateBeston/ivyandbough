@@ -734,6 +734,7 @@ button{font:inherit;color:inherit}
 .track-help{margin-top:34px;font-size:15px}
 @media (max-width:600px){.track-steps{font-size:9px;letter-spacing:.08em}.track-parcel{padding:20px 16px}}
 .card-options{display:block;margin-top:2px;font-style:normal;font-size:12px;color:var(--brown)}
+.card-size{display:block;margin-top:2px;font-style:normal;font-size:12px;color:var(--brown)}
 .food-info p{font-size:14px;line-height:1.6;margin:0 0 4px}
 .nip-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
 .nip-table th,.nip-table td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
