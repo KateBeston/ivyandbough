@@ -25,9 +25,9 @@ const organisation = { "@context": "https://schema.org", "@graph": [
 ] };
 
 const places = [
-  { title: "The Table", href: "/shop/tableware", src: "/images/home-table.jpg", alt: "Candlelit table set with gold accents" },
-  { title: "The Tree", href: "/shop/tree-decorations", src: "/images/home-tree.jpg", alt: "Softly lit Christmas tree by a fireplace" },
-  { title: "The Front Door", href: "/shop/wreaths-garlands", src: "/images/home-door.jpg", alt: "Silver wreath on a black front door" },
+  { title: "The Table", text: "Candlelight, linen and glassware for long Christmas lunches.", href: "/shop/tableware", src: "/images/home-table.jpg", alt: "Candlelit table set with gold accents" },
+  { title: "The Tree", text: "Baubles, toppers and lights to make it the heart of the room.", href: "/shop/tree-decorations", src: "/images/home-tree.jpg", alt: "Softly lit Christmas tree by a fireplace" },
+  { title: "The Front Door", text: "Wreaths and garlands that welcome guests before they knock.", href: "/shop/wreaths-garlands", src: "/images/home-door.jpg", alt: "Silver wreath on a black front door" },
 ];
 
 // A short, varied pick for the homepage: one piece from each category (the first in shop order), up to 8.
@@ -105,25 +105,41 @@ export default async function HomePage() {
               <Link key={p.title} href={p.href}>
                 <div className="frame" style={{ height: 520 }}><Image src={p.src} alt={p.alt} fill sizes="(max-width: 900px) 100vw, 33vw" className="cover" /></div>
                 <h3>{p.title}</h3>
+                <p className="home-place-text">{p.text}</p>
               </Link>
             ))}
           </div>
         </section>
 
         {stories.length > 0 && (
-          <section id="stories" className="home home-stories">
-            <div className="eyebrow">The Christmas Edit</div>
-            <h2 className="heading">Ideas, styling and inspiration</h2>
-            <div className="home-grid">
-              {stories.map((p) => (
-                <Link key={p.id} href={storyHref(p)}>
-                  <div className="frame" style={{ height: 420 }}><Image src={p.image_url} alt={p.image_alt || ""} fill sizes="(max-width: 900px) 100vw, 33vw" className="cover" style={{ objectPosition: p.image_position }} /></div>
-                  <span className="home-story-label">{p.category}</span>
-                  <h3>{p.title}</h3>
+          <section id="stories" className="stories-band">
+            <div className="stories-inner">
+              <div className="stories-head">
+                <div className="eyebrow">The Christmas Edit</div>
+                <h2 className="heading">Ideas, styling and inspiration</h2>
+                <Link href="/the-christmas-edit" className="stories-all">Read The Christmas Edit</Link>
+              </div>
+              <div className="stories-layout">
+                <Link href={storyHref(stories[0])} className="story-lead">
+                  <div className="frame"><Image src={stories[0].image_url} alt={stories[0].image_alt || ""} fill sizes="(max-width: 900px) 100vw, 50vw" className="cover" style={{ objectPosition: stories[0].image_position }} /></div>
+                  <span className="home-story-label">{stories[0].category}</span>
+                  <h3>{stories[0].title}</h3>
+                  {stories[0].excerpt && <p>{stories[0].excerpt}</p>}
                 </Link>
-              ))}
+                <div className="story-list">
+                  {stories.slice(1).map((p) => (
+                    <Link key={p.id} href={storyHref(p)} className="story-row">
+                      <div className="frame"><Image src={p.image_url} alt={p.image_alt || ""} fill sizes="160px" className="cover" style={{ objectPosition: p.image_position }} /></div>
+                      <span>
+                        <span className="home-story-label">{p.category}</span>
+                        <strong>{p.title}</strong>
+                        {p.excerpt && <span className="story-row-text">{p.excerpt}</span>}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
-            <Link href="/the-christmas-edit" className="solid home-stories-all">Read The Christmas Edit</Link>
           </section>
         )}
 
