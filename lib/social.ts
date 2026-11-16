@@ -11,7 +11,7 @@ const GRAPH_VERSION = process.env.META_GRAPH_VERSION ?? "v26.0";
 const GRAPH = `https://graph.facebook.com/${GRAPH_VERSION}`;
 const PINTEREST = "https://api.pinterest.com/v5";
 // Instagram scopes are opt-in (META_INSTAGRAM_SCOPES) because Meta rejects them until the app has the Instagram product added.
-const META_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "business_management", "ads_management", "ads_read", ...(process.env.META_INSTAGRAM_SCOPES ?? "").split(",").map((s) => s.trim()).filter(Boolean)].join(",");
+const META_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "pages_manage_engagement", "business_management", "ads_management", "ads_read", ...(process.env.META_INSTAGRAM_SCOPES ?? "").split(",").map((s) => s.trim()).filter(Boolean)].join(",");
 const PINTEREST_SCOPES = "boards:read,pins:read,pins:write,user_accounts:read,ads:read,ads:write";
 
 export const redirectUri = (platform: "meta" | "pinterest") => `${SITE_URL}/api/social/callback/${platform}`;
