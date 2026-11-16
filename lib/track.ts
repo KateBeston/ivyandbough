@@ -1,9 +1,11 @@
 import { readConsent } from "@/lib/consent";
 
-// Google Analytics and Meta pixel shopping events.
+// Google Analytics, Meta pixel and Pinterest tag shopping events.
 // Only sent when the customer accepted all cookies, the same rule that loads Analytics.
 type TrackLine = { id: string; sku?: string; name: string; price_cents: number; quantity: number };
-type Tagged = Window & { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void };
+type Tagged = Window & { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void; pintrk?: (...args: unknown[]) => void };
+// Pinterest calls a completed purchase "checkout".
+const PIN_EVENT = { add_to_cart: "addtocart", begin_checkout: "", purchase: "checkout" } as const;
 const META_EVENT = { add_to_cart: "AddToCart", begin_checkout: "InitiateCheckout", purchase: "Purchase" } as const;
 
 const items = (lines: TrackLine[]) => lines.map((l) => ({ item_id: l.sku || l.id, item_name: l.name, price: l.price_cents / 100, quantity: l.quantity }));
@@ -16,6 +18,7 @@ export function track(event: "add_to_cart" | "begin_checkout" | "purchase", line
   // Meta pixel: content_ids match the catalogue feed's ids (SKUs).
   const meta = { currency: "AUD", value: total(lines), content_type: "product", content_ids: lines.map((l) => l.sku || l.id), contents: lines.map((l) => ({ id: l.sku || l.id, quantity: l.quantity })), num_items: lines.reduce((n, l) => n + l.quantity, 0) };
   w.fbq?.("track", META_EVENT[event], meta, extra.transaction_id ? { eventID: String(extra.transaction_id) } : undefined);
+  if (PIN_EVENT[event]) w.pintrk?.("track", PIN_EVENT[event], { currency: "AUD", value: total(lines), order_quantity: meta.num_items, ...(extra.transaction_id ? { order_id: String(extra.transaction_id), event_id: String(extra.transaction_id) } : {}), line_items: lines.map((l) => ({ product_id: l.sku || l.id, product_name: l.name, product_price: l.price_cents / 100, product_quantity: l.quantity })) });
 }
 
 // The basket is cleared once payment succeeds, so checkout keeps a copy for the thank-you page's purchase event.

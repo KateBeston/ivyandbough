@@ -11,7 +11,22 @@ const GTM = "GTM-N52CVFTX";
 // Meta (Facebook and Instagram) pixel, for ad measurement. Same consent rule as Analytics.
 const META_PIXEL = "3833433373475898";
 type Fbq = ((...args: unknown[]) => void) & { callMethod?: (...a: unknown[]) => void; queue?: unknown[]; push?: unknown; loaded?: boolean; version?: string };
-type Tagged = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void; fbq?: Fbq; _fbq?: Fbq };
+type Pintrk = ((...args: unknown[]) => void) & { queue?: unknown[]; version?: string };
+type Tagged = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void; fbq?: Fbq; _fbq?: Fbq; pintrk?: Pintrk };
+
+// Pinterest tag, for pin and ad measurement. Same consent rule as Analytics.
+const PINTEREST_TAG = "2614123289524";
+function loadPinterest() {
+  const w = window as unknown as Tagged;
+  if (w.pintrk) return;
+  const n = function (...args: unknown[]) { n.queue!.push(args); } as Pintrk;
+  n.queue = []; n.version = "3.0"; w.pintrk = n;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://s.pinimg.com/ct/core.js";
+  document.head.appendChild(script);
+  n("load", PINTEREST_TAG);
+}
 
 function loadMeta() {
   const w = window as unknown as Tagged;
@@ -57,6 +72,7 @@ function load() {
   gtm.src = `https://www.googletagmanager.com/gtm.js?id=${GTM}`;
   document.head.appendChild(gtm);
   loadMeta();
+  loadPinterest();
 }
 
 // Kate's own devices: visiting any page with ?notrack=on turns Analytics off on that device (?notrack=off turns it back on).
@@ -88,9 +104,16 @@ export function Analytics() {
       load();
       const fbq = (window as unknown as Tagged).fbq;
       fbq?.("track", "PageView");
+      const pintrk = (window as unknown as Tagged).pintrk;
+      pintrk?.("page");
       if (path.startsWith("/products/")) {
         // Wait a tick so the page's structured data is in place after client navigation.
-        setTimeout(() => { const p = productSku(); if (p) fbq?.("track", "ViewContent", { content_ids: [p.sku], content_type: "product", content_name: p.name, value: p.price, currency: "AUD" }); }, 300);
+        setTimeout(() => {
+          const p = productSku();
+          if (!p) return;
+          fbq?.("track", "ViewContent", { content_ids: [p.sku], content_type: "product", content_name: p.name, value: p.price, currency: "AUD" });
+          pintrk?.("track", "pagevisit", { currency: "AUD", value: p.price, line_items: [{ product_id: p.sku, product_name: p.name, product_price: p.price }] });
+        }, 300);
       }
     };
     check();
