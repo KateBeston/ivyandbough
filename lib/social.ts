@@ -115,11 +115,32 @@ export async function pinterestBoards(db: Db) {
   return (json.items ?? []).map((b: { id: string; name: string }) => ({ id: b.id, name: b.name }));
 }
 
-type Post = { id: string; caption: string; image_url: string; image_urls: string[] | null; link_url: string; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
+type Post = { id: string; caption: string; image_url: string; image_urls: string[] | null; link_url: string; first_comment: string | null; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
 type Sent = { id: string; permalink: string | null };
 
+// The call to action sits just above the hashtags. Facebook takes the shop link as the first comment; Instagram points to the bio link.
+function withCta(caption: string, cta: string) {
+  const parts = caption.trimEnd().split(/\n\n/);
+  const last = parts[parts.length - 1] ?? "";
+  if (/^#/.test(last.trim())) parts.splice(parts.length - 1, 0, cta); else parts.push(cta);
+  return parts.join("\n\n");
+}
+
+async function commentLink(post: Post, token: Token, postId: string) {
+  const text = post.first_comment?.trim() || (post.link_url ? `Shop here: ${post.link_url}` : "");
+  if (!text) return;
+  // A failed comment shouldn't undo a post that is already live.
+  await graphPost(`/${postId}/comments`, { message: text, access_token: token.access_token }).catch(() => null);
+}
+
 async function toFacebook(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
-  const message = post.link_url ? `${post.caption}\n\n${post.link_url}` : post.caption;
+  const sent = await facebookPost(post, token, image, images);
+  await commentLink(post, token, sent.id);
+  return sent;
+}
+
+async function facebookPost(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
+  const message = post.link_url || post.first_comment ? withCta(post.caption, "Link in the comments.") : post.caption;
   if (images.length > 1) {
     // A carousel on Facebook is a multi-photo post: upload each photo unpublished, then attach them all.
     const ids: string[] = [];
@@ -139,13 +160,14 @@ async function toFacebook(post: Post, token: Token, image: string, images: strin
 
 async function toInstagram(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
   if (!image) throw new Error("Instagram needs an image.");
+  const igCaption = post.link_url ? withCta(post.caption, "Link in bio.") : post.caption;
   let container: { id: string };
   if (images.length > 1) {
     // Instagram carousels take 2 to 10 slides, each made as its own item first.
     const children: string[] = [];
     for (const url of images.slice(0, 10)) children.push((await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: url, is_carousel_item: "true", access_token: token.access_token })).id);
-    container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { media_type: "CAROUSEL", children: children.join(","), caption: post.caption, access_token: token.access_token });
-  } else container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: image, caption: post.caption, access_token: token.access_token });
+    container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { media_type: "CAROUSEL", children: children.join(","), caption: igCaption, access_token: token.access_token });
+  } else container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: image, caption: igCaption, access_token: token.access_token });
   for (let i = 0; i < 10; i += 1) {
     const check = await graphGet<{ status_code?: string }>(`/${container.id}`, { fields: "status_code", access_token: token.access_token });
     if (check.status_code === "ERROR") throw new Error("Instagram couldn't use this image. It must be a JPEG between 4:5 and 1.91:1.");
