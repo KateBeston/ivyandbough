@@ -114,11 +114,20 @@ export async function pinterestBoards(db: Db) {
   return (json.items ?? []).map((b: { id: string; name: string }) => ({ id: b.id, name: b.name }));
 }
 
-type Post = { id: string; caption: string; image_url: string; link_url: string; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
+type Post = { id: string; caption: string; image_url: string; image_urls: string[] | null; link_url: string; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
 type Sent = { id: string; permalink: string | null };
 
-async function toFacebook(post: Post, token: Token, image: string): Promise<Sent> {
+async function toFacebook(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
   const message = post.link_url ? `${post.caption}\n\n${post.link_url}` : post.caption;
+  if (images.length > 1) {
+    // A carousel on Facebook is a multi-photo post: upload each photo unpublished, then attach them all.
+    const ids: string[] = [];
+    for (const url of images) ids.push((await graphPost<{ id: string }>(`/${token.external_id}/photos`, { url, published: "false", access_token: token.access_token })).id);
+    const body: Record<string, string> = { message, access_token: token.access_token };
+    ids.forEach((fbid, i) => { body[`attached_media[${i}]`] = JSON.stringify({ media_fbid: fbid }); });
+    const r = await graphPost<{ id: string }>(`/${token.external_id}/feed`, body);
+    return { id: r.id, permalink: `https://www.facebook.com/${r.id}` };
+  }
   if (image) {
     const r = await graphPost<{ id: string; post_id?: string }>(`/${token.external_id}/photos`, { url: image, caption: message, access_token: token.access_token });
     return { id: r.post_id ?? r.id, permalink: `https://www.facebook.com/${r.post_id ?? r.id}` };
@@ -127,9 +136,15 @@ async function toFacebook(post: Post, token: Token, image: string): Promise<Sent
   return { id: r.id, permalink: `https://www.facebook.com/${r.id}` };
 }
 
-async function toInstagram(post: Post, token: Token, image: string): Promise<Sent> {
+async function toInstagram(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
   if (!image) throw new Error("Instagram needs an image.");
-  const container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: image, caption: post.caption, access_token: token.access_token });
+  let container: { id: string };
+  if (images.length > 1) {
+    // Instagram carousels take 2 to 10 slides, each made as its own item first.
+    const children: string[] = [];
+    for (const url of images.slice(0, 10)) children.push((await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: url, is_carousel_item: "true", access_token: token.access_token })).id);
+    container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { media_type: "CAROUSEL", children: children.join(","), caption: post.caption, access_token: token.access_token });
+  } else container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: image, caption: post.caption, access_token: token.access_token });
   for (let i = 0; i < 10; i += 1) {
     const check = await graphGet<{ status_code?: string }>(`/${container.id}`, { fields: "status_code", access_token: token.access_token });
     if (check.status_code === "ERROR") throw new Error("Instagram couldn't use this image. It must be a JPEG between 4:5 and 1.91:1.");
@@ -140,7 +155,7 @@ async function toInstagram(post: Post, token: Token, image: string): Promise<Sen
   return { id: published.id, permalink: null };
 }
 
-async function toPinterest(post: Post, token: Token, image: string): Promise<Sent> {
+async function toPinterest(post: Post, token: Token, image: string, _images: string[]): Promise<Sent> {
   if (!image) throw new Error("Pinterest needs an image.");
   if (!post.pinterest_board_id) throw new Error("Choose a Pinterest board.");
   const res = await fetch(`${PINTEREST}/pins`, { method: "POST", cache: "no-store", signal: AbortSignal.timeout(45000), headers: { Authorization: `Bearer ${token.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ board_id: post.pinterest_board_id, title: post.pin_title.slice(0, 100) || undefined, description: (post.pin_description || post.caption).slice(0, 800), link: post.link_url || undefined, media_source: { source_type: "image_url", url: image } }) });
@@ -166,7 +181,9 @@ export async function publishPost(db: Db, postId: string) {
 
   const { data: done } = await db.from("social_publishes").select("channel").eq("post_id", postId).eq("outcome", "Published");
   const sent = new Set((done ?? []).map((d) => d.channel));
-  const image = post.image_url.startsWith("/") ? `${SITE_URL}${post.image_url}` : post.image_url;
+  const full = (url: string) => (url.startsWith("/") ? `${SITE_URL}${url}` : url);
+  const image = post.image_url ? full(post.image_url) : "";
+  const images = [post.image_url, ...(post.image_urls ?? [])].filter(Boolean).map(full);
   const errors: string[] = [];
 
   for (const channel of post.channels) {
@@ -176,7 +193,7 @@ export async function publishPost(db: Db, postId: string) {
       if (!route) throw new Error("There's no publishing route for this channel.");
       const token = await liveToken(db, route[0]);
       if (!token) throw new Error("This account isn't connected.");
-      const result = await route[1](post, token, image);
+      const result = await route[1](post, token, image, images);
       await db.from("social_publishes").insert({ post_id: postId, channel, outcome: "Published", external_post_id: result.id, permalink: result.permalink });
       sent.add(channel);
     } catch (e) {
