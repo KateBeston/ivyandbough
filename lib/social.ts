@@ -228,3 +228,24 @@ export async function publishPost(db: Db, postId: string) {
   if (!errors.length) return finish("Published", null);
   return finish(sent.size ? "Partly published" : "Failed", errors.join(" "));
 }
+
+// Takes a published post down from Facebook and Instagram. Set a post to "Remove requested" and the next cron run does it.
+export async function removePost(db: Db, postId: string) {
+  const { data: sent } = await db.from("social_publishes").select("id,channel,external_post_id").eq("post_id", postId).eq("outcome", "Published");
+  const errors: string[] = [];
+  for (const row of sent ?? []) {
+    const kind = row.channel === "facebook" ? "facebook_page" : row.channel === "instagram" ? "instagram_business" : "";
+    if (!kind || !row.external_post_id) continue;
+    const token = await liveToken(db, kind);
+    if (!token) { errors.push(`${row.channel} isn't connected`); continue; }
+    try {
+      const res = await fetch(`${GRAPH}/${row.external_post_id}?access_token=${encodeURIComponent(token.access_token)}`, { method: "DELETE", cache: "no-store", signal: AbortSignal.timeout(30000) });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.error) throw new Error(json?.error?.message ?? `Meta returned ${res.status}.`);
+      await db.from("social_publishes").update({ outcome: "Removed" }).eq("id", row.id);
+    } catch (e) { errors.push(`${row.channel}: ${(e as Error).message}`); }
+  }
+  const status = errors.length ? "Remove failed" : "Removed";
+  await db.from("social_posts").update({ status, last_error: errors.join(" ") || null, updated_at: new Date().toISOString() }).eq("id", postId);
+  return { ok: !errors.length, status };
+}

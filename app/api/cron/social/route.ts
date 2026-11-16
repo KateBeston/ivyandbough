@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { admin } from "@/lib/server";
-import { publishPost } from "@/lib/social";
+import { publishPost, removePost } from "@/lib/social";
 
 export const maxDuration = 60;
 
@@ -19,6 +19,8 @@ export async function GET(request: Request) {
   // A run that died part-way is shown as failed. Retrying skips what already went out.
   await db.from("social_posts").update({ status: "Failed", last_error: "Publishing was interrupted." }).eq("status", "Publishing").lt("updated_at", new Date(Date.now() - 600000).toISOString());
   const { data } = await db.from("social_posts").select("id").eq("status", "Scheduled").lte("scheduled_at", new Date().toISOString()).order("scheduled_at").limit(5);
+  const { data: removals } = await db.from("social_posts").select("id").eq("status", "Remove requested").limit(10);
+  for (const post of removals ?? []) await removePost(db, post.id);
   const results = [];
   for (const post of data ?? []) results.push(await publishPost(db, post.id));
   return NextResponse.json({ due: results.length, published: results.filter((r) => r.ok).length });
