@@ -56,7 +56,14 @@ function Divider({ style }: { style: string }) {
 }
 
 // What's in the photo, then who took and styled it.
-function Caption({ text, credit, count, className = "article-caption" }: { text?: string; credit?: string; count?: string; className?: string }) {
+// Credit the photographer only: the photo library's name stays in the portal for licence records.
+const photographer = (credit?: string) => {
+  const c = (credit ?? "").replace(/\s*(\/|\||-|–|via|on)\s*(unsplash|pexels|pixabay)\s*$/i, "").trim();
+  return /^(photo:?\s*)?(unsplash|pexels|pixabay)?$/i.test(c) ? "" : c;
+};
+
+function Caption({ text, credit: raw, count, className = "article-caption" }: { text?: string; credit?: string; count?: string; className?: string }) {
+  const credit = photographer(raw);
   if (!text?.trim() && !credit?.trim() && !count) return null;
   return (
     <figcaption className={className}>
