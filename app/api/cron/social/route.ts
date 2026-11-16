@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { admin } from "@/lib/server";
 import { publishPost, removePost } from "@/lib/social";
 
-export const maxDuration = 60;
+// Instagram carousels are made slide by slide, so a run with several posts needs longer than a minute.
+export const maxDuration = 300;
 
 function authorised(request: Request) {
   const secret = process.env.CRON_SECRET;
