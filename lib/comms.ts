@@ -201,7 +201,7 @@ async function orderData(db: Db, orderId: string) {
       delivery_name: order.shipping_name, delivery_address: order.shipping_address,
       tracking: tracked.join("\n") || "You can check your order in your account.",
       track_url: trackUrl || `${SITE_URL}/account`,
-      dispatch_estimate: pre ? (afterCutoff(pre) ? "Your order includes pre-order pieces, which ship in January. We'll send your whole order together." : `Your order includes pre-order pieces, which ship with our next supplier batch, usually within ${pre.min} to ${pre.max} business days. We'll send your whole order together.`) : dispatchDays.length ? `Your order is usually dispatched within ${Math.max(...dispatchDays)} business ${Math.max(...dispatchDays) === 1 ? "day" : "days"}.` : "Dispatch times are shown on each product page.",
+      dispatch_estimate: pre ? (afterCutoff(pre) ? "Your order includes made-to-order pieces, which ship in January. We'll send your whole order together." : `Your order includes made-to-order pieces, which ship with the next batch, usually within ${pre.min} to ${pre.max} business days. We'll send your whole order together.`) : dispatchDays.length ? `Your order is usually dispatched within ${Math.max(...dispatchDays)} business ${Math.max(...dispatchDays) === 1 ? "day" : "days"}.` : "Dispatch times are shown on each product page.",
     } as Record<string, string>,
   };
 }
