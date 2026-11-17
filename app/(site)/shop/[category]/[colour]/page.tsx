@@ -29,7 +29,9 @@ export default async function ColourPage({ params }: Props) {
   if (!page) notFound();
   const [all, categories] = await Promise.all([getProducts(), getCategories()]);
   const top = page.category_slug ? categories.find((c) => c.slug === page.category_slug) : undefined;
-  const ids = top ? [top.id, ...categories.filter((c) => c.parent_id === top.id).map((c) => c.id)] : [];
+  // Accessories (stands, storage, skirts) live under Trees but aren't trees, so they stay off the tree colour pages.
+  const accessory = (slug: string) => /stand|storage|skirt/.test(slug);
+  const ids = top ? [top.id, ...categories.filter((c) => c.parent_id === top.id && !accessory(c.slug)).map((c) => c.id)] : [];
   const products = all.filter((p) => hasColour(p, page.colour) && (!top || ids.includes(p.category_id ?? "") || (p.extra_category_ids ?? []).some((id) => ids.includes(id))));
   const siblings = COLOUR_PAGES.filter((p) => p !== page && p.category_slug === page.category_slug);
   const crumbs = [{ name: "Home", path: "" }, { name: top?.name ?? "Shop", path: top ? `/shop/${top.slug}` : "/shop" }, { name: page.h1, path: colourPath(page) }];
