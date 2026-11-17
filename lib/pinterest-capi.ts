@@ -5,10 +5,10 @@ import { createHash } from "crypto";
 type Line = { id: string; name: string; price: number; quantity: number };
 const sha = (v: string) => createHash("sha256").update(v.trim().toLowerCase()).digest("hex");
 
-export async function pinterestCheckout(o: { eventId: string; orderId: string; email: string; ip?: string; ua?: string; clickId?: string; value: number; lines: Line[] }) {
+export async function pinterestCheckout(o: { eventId: string; orderId: string; email: string; ip?: string; ua?: string; clickId?: string; value: number; lines: Line[]; test?: boolean }) {
   const token = process.env.PINTEREST_CONVERSIONS_TOKEN;
   const account = process.env.PINTEREST_AD_ACCOUNT_ID;
-  if (!token || !account) return;
+  if (!token || !account) return { skipped: "token or ad account missing" };
   const user_data: Record<string, unknown> = {};
   if (o.email) user_data.em = [sha(o.email)];
   if (o.ip) user_data.client_ip_address = o.ip;
@@ -19,7 +19,8 @@ export async function pinterestCheckout(o: { eventId: string; orderId: string; e
     event_source_url: "https://ivyandbough.com/order/thanks", user_data,
     custom_data: { currency: "AUD", value: o.value.toFixed(2), order_id: o.orderId, num_items: o.lines.reduce((n, l) => n + l.quantity, 0), content_ids: o.lines.map((l) => l.id), contents: o.lines.map((l) => ({ id: l.id, item_name: l.name, item_price: l.price.toFixed(2), quantity: l.quantity })) },
   };
-  const test = process.env.PINTEREST_CAPI_TEST === "true" ? "?test=true" : "";
+  const test = o.test || process.env.PINTEREST_CAPI_TEST === "true" ? "?test=true" : "";
   const res = await fetch(`https://api.pinterest.com/v5/ad_accounts/${account}/events${test}`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ data: [event] }) });
   if (!res.ok) throw new Error(`Pinterest ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  return res.json();
 }
