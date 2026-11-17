@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Product } from "@/lib/catalogue";
 import { fullName } from "@/lib/product-name";
 import { useBasket, type Line } from "./BasketProvider";
+import { QtyStepper } from "./QtyStepper";
 
 export function AddToBasket({ product, preview, note }: { product: Product; preview: boolean; note?: string }) {
   const { add } = useBasket();
@@ -25,7 +26,7 @@ export function AddToBasket({ product, preview, note }: { product: Product; prev
     <>
       <div className="buy">
         <div className="buy-row">
-          <label className="qty">Quantity<input type="number" min={1} max={20} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} /></label>
+          <QtyStepper value={quantity} onChange={setQuantity} size="large" />
           <button type="button" className="solid" disabled={off} onClick={() => { add(line()); setAdded(true); }}>Add to basket</button>
         </div>
         <div className="express"><button type="button" disabled={off} onClick={buyNow}>Apple Pay</button><button type="button" disabled={off} onClick={buyNow}>Google Pay</button></div>

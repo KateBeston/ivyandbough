@@ -6,6 +6,7 @@ import type { Product } from "@/lib/catalogue";
 import { formatPrice } from "@/lib/catalogue";
 import { fullName } from "@/lib/product-name";
 import { useBasket } from "./BasketProvider";
+import { QtyStepper } from "./QtyStepper";
 
 // The quick add under a product card. Things with no choices add in one click; families get a dropdown to pick
 // the colour, size or scent right there, then add. Sold out and coming soon items link to their page to be notified.
@@ -15,6 +16,7 @@ export function QuickAdd({ p, href }: { p: Product; href: string }) {
   const buyable = versions.filter((v) => v.price_cents !== null && v.availability !== "Sold out" && v.availability !== "Coming soon");
   const [pick, setPick] = useState(buyable[0]?.sku ?? "");
   const [added, setAdded] = useState(false);
+  const [qty, setQty] = useState(1);
 
   if (!versions.length && (p.availability === "Sold out" || p.availability === "Coming soon")) return <Link href={href} className="quick-add">Notify me</Link>;
   if (versions.length && !buyable.length) return <Link href={href} className="quick-add">Notify me</Link>;
@@ -23,7 +25,7 @@ export function QuickAdd({ p, href }: { p: Product; href: string }) {
   if (!chosen || chosen.price_cents === null) return null;
   const label = /size/i.test(p.option_label || "") ? "Size" : /scent/i.test(p.option_label || "") ? "Scent" : / and |style/i.test(p.option_label || "") ? "Option" : "Colour";
   const addIt = () => {
-    add({ id: chosen.id, sku: chosen.sku, slug: p.listing_type === "group" ? `${p.slug}?colour=${encodeURIComponent(chosen.sku)}` : p.slug, name: fullName({ name: p.name, version_name: p.listing_type === "group" ? chosen.version_name : "" }), price_cents: chosen.price_cents!, was_cents: chosen.was_cents, sale_label: chosen.sale_label, image: chosen.product_images[0]?.url ?? p.product_images[0]?.url ?? "", quantity: 1, note: chosen.availability === "Pre-order" ? "Made to order: ships with the next batch" : undefined });
+    add({ id: chosen.id, sku: chosen.sku, slug: p.listing_type === "group" ? `${p.slug}?colour=${encodeURIComponent(chosen.sku)}` : p.slug, name: fullName({ name: p.name, version_name: p.listing_type === "group" ? chosen.version_name : "" }), price_cents: chosen.price_cents!, was_cents: chosen.was_cents, sale_label: chosen.sale_label, image: chosen.product_images[0]?.url ?? p.product_images[0]?.url ?? "", quantity: qty, note: chosen.availability === "Pre-order" ? "Made to order: ships with the next batch" : undefined });
     setAdded(true);
   };
 
@@ -38,8 +40,8 @@ export function QuickAdd({ p, href }: { p: Product; href: string }) {
         </select>
       )}
       {added
-        ? <span className="quick-add done" role="status">Added · <Link href="/basket">View basket</Link></span>
-        : <button type="button" className="quick-add" onClick={addIt}>Add to basket</button>}
+        ? <span className="quick-add done" role="status">{qty > 1 ? `${qty} added` : "Added"} · <Link href="/basket">View basket</Link> · <button type="button" className="quick-again" onClick={() => { setAdded(false); setQty(1); }}>Add more</button></span>
+        : <><QtyStepper value={qty} onChange={setQty} label={`Quantity of ${p.name}`} /><button type="button" className="quick-add" onClick={addIt}>Add to basket</button></>}
     </div>
   );
 }
