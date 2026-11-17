@@ -28,6 +28,7 @@ export default async function CollectionPage({ params }: Props) {
   const [products, themes, posts] = await Promise.all([getProductsByTheme(theme.id), getThemes(), getPosts()]);
   const others = themes.filter((t) => t.id !== theme.id);
   const start = Math.max(0, themes.findIndex((t) => t.id === theme.id));
+  const faqs = (theme.faqs ?? []).filter((f) => f?.q && f?.a);
   const related = [0, 1, 2].map((n) => others[(start + n) % others.length]);
   return (
     <main>
@@ -39,6 +40,18 @@ export default async function CollectionPage({ params }: Props) {
         {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
       {theme.page_content && <section className="collection-copy"><RichText text={theme.page_content} /></section>}
+      {faqs.length > 0 && (
+        <section className="collection-copy collection-faq">
+          <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />
+          <h2>Questions</h2>
+          {faqs.map((f) => (
+            <details key={f.q}>
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </section>
+      )}
       <section className="collection-more">
         <div className="magazine-head">
           <h2 className="heading">More collections</h2>

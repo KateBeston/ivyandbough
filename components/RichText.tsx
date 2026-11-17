@@ -19,5 +19,5 @@ function inline(text: string) {
 
 export function RichText({ text }: { text: string }) {
   const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  return <div className="article-text">{paragraphs.map((p, i) => <p key={i}>{inline(p)}</p>)}</div>;
+  return <div className="article-text">{paragraphs.map((p, i) => (p.startsWith("## ") ? <h2 key={i}>{p.slice(3)}</h2> : <p key={i}>{inline(p)}</p>))}</div>;
 }
