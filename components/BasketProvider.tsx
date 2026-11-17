@@ -92,7 +92,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   const checkout = useCallback(async (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => {
     track("begin_checkout", lines);
     rememberPurchase(lines);
-    const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, promoCode, ...guard, adConsent: readConsent() === "all", pinClick: readConsent() === "all" ? (document.cookie.match(/(?:^|; )_epik=([^;]+)/)?.[1] ?? "") : "", items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
+    const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, promoCode, ...guard, adConsent: readConsent() === "all", pinClick: readConsent() === "all" ? (document.cookie.match(/(?:^|; )_epik=([^;]+)/)?.[1] ?? "") : "", metaFbp: readConsent() === "all" ? (document.cookie.match(/(?:^|; )_fbp=([^;]+)/)?.[1] ?? "") : "", metaFbc: readConsent() === "all" ? (document.cookie.match(/(?:^|; )_fbc=([^;]+)/)?.[1] ?? "") : "", items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     const body = await res?.json().catch(() => null);
     if (body?.clientSecret) {
       setPayFail("");
