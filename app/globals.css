@@ -1280,3 +1280,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .article-products.small .article-product h3{font-size:14px;margin:8px 0 6px;letter-spacing:.04em}
 .article-products.small .article-buy{font-size:11px}
 @media (max-width:760px){.article-products.small{grid-template-columns:repeat(2,1fr)}}
+.article-products.small .article-buy{background:none;color:var(--ink);padding:0 0 2px;border:0;border-bottom:1px solid var(--gold);display:inline-block;letter-spacing:.12em;font-size:11px;min-height:0;width:auto}

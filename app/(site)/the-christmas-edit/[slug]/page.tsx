@@ -38,7 +38,7 @@ function ArticleProduct({ item, catalogue }: { item: PostProduct; catalogue: Pro
   const url = own ? `/products/${own.slug}` : item.url || "";
   const price = own ? (own.price_cents === null ? "" : formatPrice(own.price_cents)) : item.price;
   const shop = own ? "Ivy & Bough" : item.shop;
-  const label = price ? `${price}${shop ? ` at ${shop}` : ""}` : "View piece";
+  const label = price ? (own ? `${price} · View` : `${price}${shop ? ` at ${shop}` : ""}`) : "View piece";
   const external = url.startsWith("http");
   return (
     <div className="article-product">
