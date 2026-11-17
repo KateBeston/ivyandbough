@@ -157,7 +157,7 @@ export default async function HomePage() {
         </section>
 
         <section className="signup">
-          <Image src="/images/edit/u-s8.jpg" alt="" fill sizes="100vw" className="cover" style={{ objectPosition: "center 50%" }} />
+          <Image src="/images/edit/u-s8.jpg" alt="Christmas decorations styled at home" fill sizes="100vw" className="cover" style={{ objectPosition: "center 50%" }} />
           <div className="shade" />
           <div className="signup-inner">
             <h2 className="heading">First look at new pieces</h2>

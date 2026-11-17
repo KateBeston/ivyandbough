@@ -127,7 +127,7 @@ export default function BasketPage() {
           <div>
             {lines.map((l) => (
               <div key={l.id} className="basket-line">
-                <div className="frame">{l.image && <Image src={l.image} alt="" fill sizes="110px" className="cover" />}</div>
+                <div className="frame">{l.image && <Image src={l.image} alt={l.name} fill sizes="110px" className="cover" />}</div>
                 <div>
                   <Link href={`/products/${l.slug}`} className="basket-name">{l.name.split(" – ")[0]}</Link>{l.name.includes(" – ") && <small className="basket-version">{l.name.split(" – ").slice(1).join(" – ")}</small>}
                   {l.sku && <div className="muted">Item no. {l.sku}</div>}

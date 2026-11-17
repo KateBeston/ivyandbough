@@ -105,7 +105,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
     <main className="product-page">
       <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{parentCat && <> / <Link href={`/shop/${parentCat.slug}`}>{parentCat.name}</Link></>}{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
-        <div className="product-gallery">{(product.product_media ?? product.product_images).length ? <Gallery key={product.id} images={product.product_media ?? product.product_images} /> : <div className="frame no-photo gallery-empty"><img src="/brand/wreath-ink.svg" alt="" /><span>Photo coming soon</span></div>}</div>
+        <div className="product-gallery">{(product.product_media ?? product.product_images).length ? <Gallery key={product.id} images={product.product_media ?? product.product_images} /> : <div className="frame no-photo gallery-empty"><img src="/brand/wreath-ink.svg" alt="Photo coming soon" /><span>Photo coming soon</span></div>}</div>
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
@@ -123,7 +123,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
                 {versions.map((v) => {
                   const photo = (v.product_images ?? [])[0];
                   const tile = <>
-                    <span className="variant-photo">{photo ? <Image src={photo.url} alt="" fill sizes="80px" className="cover" style={{ objectPosition: photo.position }} /> : null}</span>
+                    <span className="variant-photo">{photo ? <Image src={photo.url} alt={`${product.name} in ${v.version_name || v.sku}`} fill sizes="80px" className="cover" style={{ objectPosition: photo.position }} /> : null}</span>
                     <span className="variant-name">{v.version_name || v.sku}{v.availability === "Sold out" ? " (sold out)" : ""}</span>
                   </>;
                   return v.id === chosen.id

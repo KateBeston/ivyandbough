@@ -46,7 +46,7 @@ export function CollectionCarousel({ themes }: { themes: Theme[] }) {
               onClick={(e) => { if (side) { e.preventDefault(); go(i); } }}
             >
               <div className="carousel-photo">
-                <Image src={t.card_image_url || t.image_url} alt="" fill sizes="(max-width: 760px) 80vw, 600px" className="cover" style={{ objectPosition: t.card_position ?? "center" }} priority={pos === "centre"} />
+                <Image src={t.card_image_url || t.image_url} alt={`${t.name} Christmas collection`} fill sizes="(max-width: 760px) 80vw, 600px" className="cover" style={{ objectPosition: t.card_position ?? "center" }} priority={pos === "centre"} />
                 <span className="carousel-caption"><strong>{t.name}</strong>{t.note && <span>{t.note}</span>}</span>
               </div>
             </Link>

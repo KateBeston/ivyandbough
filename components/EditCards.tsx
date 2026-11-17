@@ -22,7 +22,7 @@ export function EditNav({ cats, posts, current }: { cats: PostCategory[]; posts:
 export function Card({ p, shape = "square", size = "", sizes = "(max-width: 760px) 50vw, 25vw" }: { p: Post; shape?: "square" | "circle" | "tall" | "wide"; size?: string; sizes?: string }) {
   return (
     <div className={`edit-card ${size}`}>
-      <Link href={href(p)} tabIndex={-1} aria-hidden="true" className={`frame edit-card-photo ${shape}`}><Image src={p.image_url} alt="" fill sizes={sizes} className="cover" style={{ objectPosition: p.image_position }} /></Link>
+      <Link href={href(p)} tabIndex={-1} aria-hidden="true" className={`frame edit-card-photo ${shape}`}><Image src={p.image_url} alt={p.image_alt || p.title} fill sizes={sizes} className="cover" style={{ objectPosition: p.image_position }} /></Link>
       {p.category && <Link href={catHref(p.category)} className="edit-label">{p.category}</Link>}
       <Link href={href(p)} className="edit-card-title"><strong>{p.title}</strong></Link>
       <span className="edit-by">By {p.author}</span>

@@ -25,7 +25,7 @@ export default async function ChristmasEditPage() {
       {!lead && <p className="centre" style={{ padding: "80px 16px" }}>New stories are on the way.</p>}
       {lead && (
         <Link href={href(lead)} className="edit-lead">
-          <div className="frame edit-lead-photo"><Image src={lead.image_url} alt="" fill priority sizes="100vw" className="cover" style={{ objectPosition: lead.image_position }} /></div>
+          <div className="frame edit-lead-photo"><Image src={lead.image_url} alt={lead.image_alt || lead.title} fill priority sizes="100vw" className="cover" style={{ objectPosition: lead.image_position }} /></div>
           <span className="edit-label">{lead.category}</span>
           <strong>{lead.title}</strong>
           <span className="edit-by">By {lead.author}</span>
@@ -45,7 +45,7 @@ export default async function ChristmasEditPage() {
             {block.latest.map((p) => (
               <Link key={p.id} href={href(p)}>
                 <span><span className="edit-label">{p.category}</span><strong>{p.title}</strong><span className="edit-by">By {p.author}</span></span>
-                <span className="frame"><Image src={p.image_url} alt="" fill sizes="80px" className="cover" style={{ objectPosition: p.image_position }} /></span>
+                <span className="frame"><Image src={p.image_url} alt={p.image_alt || p.title} fill sizes="80px" className="cover" style={{ objectPosition: p.image_position }} /></span>
               </Link>
             ))}
           </aside>

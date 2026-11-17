@@ -50,7 +50,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
     <div className={`site-nav ${solid ? "nav-solid" : "nav-light"}${showLogo ? "" : " no-logo"}`} onMouseLeave={() => setPanel(null)}>
       <header className="nav">
         <button type="button" className="menu-toggle" aria-expanded={mobileOpen} aria-controls="main-menu" onClick={() => setMobileOpen(!mobileOpen)}>Menu</button>
-        {showLogo && <Link href="/" className="logo" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-ink.svg" alt="" width={120} height={70} /></Link>}
+        {showLogo && <Link href="/" className="logo" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-ink.svg" alt="Ivy & Bough" width={120} height={70} /></Link>}
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
           <Link href="/collections" onClick={closeAll} onPointerEnter={hoverOpen("themes")} onFocus={focusOpen("themes")}>Shop the collection</Link>
           <Link href="/shop" onClick={closeAll} onPointerEnter={hoverOpen("shop")} onFocus={focusOpen("shop")}>Shop</Link>
@@ -71,7 +71,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
           <div className="themes-menu-inner">
             {themes.map((t) => (
               <Link key={t.id} href={`/collections/${t.slug}`} onClick={closeAll}>
-                <span className="frame themes-menu-photo"><Image src={t.card_image_url || t.image_url} alt="" fill sizes="240px" className="cover" style={{ objectPosition: t.card_position }} /></span>
+                <span className="frame themes-menu-photo"><Image src={t.card_image_url || t.image_url} alt={`${t.name} Christmas collection`} fill sizes="240px" className="cover" style={{ objectPosition: t.card_position }} /></span>
                 <strong>{t.name}</strong>
               </Link>
             ))}

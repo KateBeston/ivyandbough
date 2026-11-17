@@ -50,7 +50,7 @@ function ArticleProduct({ item, catalogue }: { item: PostProduct; catalogue: Pro
 }
 
 function Divider({ style }: { style: string }) {
-  if (style === "wreath") return <img className="article-divider-wreath" src="/brand/wreath-ink.svg" alt="" width={96} height={96} />;
+  if (style === "wreath") return <img className="article-divider-wreath" src="/brand/wreath-ink.svg" alt="Ivy & Bough wreath motif" width={96} height={96} />;
   if (style === "space") return <div className="article-divider-space" />;
   return <hr className={`article-divider ${style === "short" ? "short" : ""}`} />;
 }
@@ -203,7 +203,7 @@ export default async function PostPage({ params }: Props) {
           <div className="read-more-grid">
             {more.map((p) => (
               <div key={p.id} className="read-more-card">
-                <Link href={`/the-christmas-edit/${p.slug}`} tabIndex={-1} aria-hidden="true" className="frame"><Image src={p.image_url} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: p.image_position }} /></Link>
+                <Link href={`/the-christmas-edit/${p.slug}`} tabIndex={-1} aria-hidden="true" className="frame"><Image src={p.image_url} alt={p.image_alt || p.title} fill sizes="(max-width: 760px) 50vw, 25vw" className="cover" style={{ objectPosition: p.image_position }} /></Link>
                 {p.category && <Link href={categoryHref(p.category)} className="edit-label">{p.category}</Link>}
                 <Link href={`/the-christmas-edit/${p.slug}`} className="read-more-title"><strong>{p.title}</strong></Link>
                 <span>By {p.author}</span>

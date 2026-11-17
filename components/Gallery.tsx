@@ -38,7 +38,7 @@ export function Gallery({ images }: { images: ProductImage[] }) {
           <div className="ic-strip">
             {others.map((k) => (
               <button key={images[k].url} type="button" className="ic-thumb" onClick={() => setI(k)} aria-label={images[k].media_type === "video" ? "Play video" : `Show image ${k + 1}`}>
-                {images[k].media_type === "video" ? <><video src={`${images[k].url}#t=0.1`} className="cover" muted playsInline preload="metadata" /><span className="ic-play" aria-hidden="true">▶</span></> : <Image src={images[k].url} alt="" fill sizes="60px" className="cover" />}
+                {images[k].media_type === "video" ? <><video src={`${images[k].url}#t=0.1`} className="cover" muted playsInline preload="metadata" /><span className="ic-play" aria-hidden="true">▶</span></> : <Image src={images[k].url} alt={`Image ${k + 1}`} fill sizes="60px" className="cover" />}
               </button>
             ))}
           </div>
