@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { admin } from "@/lib/server";
-import { publishPost, removePost } from "@/lib/social";
+import { publishPost, removePost, resolvePinterestBoards } from "@/lib/social";
 
 // Instagram carousels are made slide by slide, so a run with several posts needs longer than a minute.
 export const maxDuration = 300;
@@ -19,6 +19,7 @@ export async function GET(request: Request) {
   if (!db) return NextResponse.json({ ok: false }, { status: 503 });
   // A run that died part-way is shown as failed. Retrying skips what already went out.
   await db.from("social_posts").update({ status: "Failed", last_error: "Publishing was interrupted." }).eq("status", "Publishing").lt("updated_at", new Date(Date.now() - 600000).toISOString());
+  await resolvePinterestBoards(db).catch((e) => console.warn("Pinterest boards", e));
   const { data } = await db.from("social_posts").select("id").eq("status", "Scheduled").lte("scheduled_at", new Date().toISOString()).order("scheduled_at").limit(5);
   const { data: removals } = await db.from("social_posts").select("id").eq("status", "Remove requested").limit(10);
   for (const post of removals ?? []) await removePost(db, post.id);

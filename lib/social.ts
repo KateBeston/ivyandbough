@@ -12,7 +12,7 @@ const GRAPH = `https://graph.facebook.com/${GRAPH_VERSION}`;
 const PINTEREST = "https://api.pinterest.com/v5";
 // Instagram scopes are opt-in (META_INSTAGRAM_SCOPES) because Meta rejects them until the app has the Instagram product added.
 const META_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "pages_manage_engagement", "business_management", "ads_management", "ads_read", ...(process.env.META_INSTAGRAM_SCOPES ?? "").split(",").map((s) => s.trim()).filter(Boolean)].join(",");
-const PINTEREST_SCOPES = "boards:read,pins:read,pins:write,user_accounts:read,ads:read,ads:write";
+const PINTEREST_SCOPES = "boards:read,boards:write,pins:read,pins:write,user_accounts:read,ads:read,ads:write";
 
 export const redirectUri = (platform: "meta" | "pinterest") => `${SITE_URL}/api/social/callback/${platform}`;
 export const socialStatus = () => ({ meta: Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET), pinterest: Boolean(process.env.PINTEREST_APP_ID && process.env.PINTEREST_APP_SECRET), redirects: { meta: redirectUri("meta"), pinterest: redirectUri("pinterest") } });
@@ -113,6 +113,30 @@ export async function pinterestBoards(db: Db) {
   const json = await res.json();
   if (!res.ok) throw new Error(json?.message ?? "Pinterest wouldn't share the boards.");
   return (json.items ?? []).map((b: { id: string; name: string }) => ({ id: b.id, name: b.name }));
+}
+
+// Posts can name a board as "name:Board name"; the board is found or made on Pinterest and the post updated with its id.
+export async function resolvePinterestBoards(db: Db) {
+  const { data: posts } = await db.from("social_posts").select("id,pinterest_board_id").like("pinterest_board_id", "name:%").in("status", ["Draft", "Scheduled"]);
+  if (!posts?.length) return 0;
+  const token = await liveToken(db, "pinterest");
+  if (!token) return 0;
+  const boards: { id: string; name: string }[] = await pinterestBoards(db);
+  let made = 0;
+  for (const post of posts) {
+    const name = String(post.pinterest_board_id).slice(5).trim();
+    let board = boards.find((b) => b.name.toLowerCase() === name.toLowerCase());
+    if (!board) {
+      const res = await fetch(`${PINTEREST}/boards`, { method: "POST", cache: "no-store", headers: { Authorization: `Bearer ${token.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ name, privacy: "PUBLIC" }) });
+      const json = await res.json();
+      if (!res.ok) { await db.from("social_posts").update({ last_error: `Pinterest board: ${json?.message ?? res.status}` }).eq("id", post.id); continue; }
+      board = { id: json.id, name: json.name };
+      boards.push(board);
+      made++;
+    }
+    await db.from("social_posts").update({ pinterest_board_id: board.id, last_error: null }).eq("id", post.id);
+  }
+  return made;
 }
 
 type Post = { id: string; caption: string; image_url: string; image_urls: string[] | null; link_url: string; first_comment: string | null; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
