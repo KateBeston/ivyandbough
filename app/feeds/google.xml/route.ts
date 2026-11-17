@@ -42,7 +42,7 @@ export async function GET() {
         ["g:identifier_exists", "no"],
         ["g:product_type", l.categories?.name],
         ["g:item_group_id", l.variants?.length ? l.slug : undefined],
-        ["g:color", l.variants?.length ? (/colou?r/i.test(l.option_label || "") ? v.version_name || undefined : v.colour || undefined) : v.colour || undefined],
+        ["g:color", l.variants?.length ? (/colou?r/i.test(l.option_label || "") ? v.version_name || undefined : v.colour || v.colours || undefined) : (v.colour || v.colours || "").slice(0, 100) || undefined],
         ["g:size", l.variants?.length && /size/i.test(l.option_label || "") ? v.version_name || undefined : undefined],
         ["g:material", v.materials || undefined],
         ["g:shipping_weight", weightBy.get(v.sku) ? `${weightBy.get(v.sku)} g` : undefined],
