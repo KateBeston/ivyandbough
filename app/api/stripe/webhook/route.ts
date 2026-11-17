@@ -5,6 +5,7 @@ import type Stripe from "stripe";
 import { generateReceipt, sendMessage } from "@/lib/comms";
 import { admin, stripe } from "@/lib/server";
 import { startSubscription } from "@/lib/subscribe";
+import { pinterestCheckout } from "@/lib/pinterest-capi";
 
 type Address = { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null };
 const addressText = (a?: Address | null) => (a ? [a.line1, a.line2, [a.city, a.state, a.postal_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") : "");
@@ -33,6 +34,7 @@ async function saveItems(client: Stripe, db: NonNullable<ReturnType<typeof admin
     return { order_id: orderId, product_id: product?.metadata?.product_id || null, sku: product?.metadata?.sku ?? "", name: i.description ?? product?.name ?? "", quantity, unit_price: i.amount_subtotal / quantity / 100 };
   }));
   if (error) throw error;
+  return items;
 }
 
 async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
@@ -79,14 +81,18 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
     throw error;
   }
 
+  let lines: Awaited<ReturnType<typeof saveItems>> = [];
   try {
-    await saveItems(client, db, session.id, order.id);
+    lines = await saveItems(client, db, session.id, order.id);
   } catch (e) {
     // Remove the half-saved order so Stripe's retry can record it whole.
     await db.from("orders").delete().eq("id", order.id);
     throw e;
   }
 
+
+  // Server copy of the browser purchase event; same event id, so Pinterest counts it once.
+  if (ship.ad_consent === "yes") await pinterestCheckout({ eventId: session.id, orderId: session.id, email, ip: ship.ad_ip, ua: ship.ad_ua, clickId: ship.ad_epik, value: total, lines: lines.map((i) => { const p = i.price?.product as Stripe.Product | undefined; return { id: p?.metadata?.sku ?? "", name: i.description ?? "", price: i.amount_subtotal / (i.quantity ?? 1) / 100, quantity: i.quantity ?? 1 }; }) }).catch((e) => console.warn("Pinterest conversion not sent", e));
 
   if (promoCode) await db.from("promo_codes").update({ used_at: new Date().toISOString(), order_id: order.id, reserved_until: null }).eq("code", promoCode);
   if (session.metadata?.cart_session) await db.from("cart_items").update({ status: "Converted" }).eq("session_id", session.metadata.cart_session).eq("status", "In cart");

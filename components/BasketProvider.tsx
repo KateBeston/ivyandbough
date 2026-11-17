@@ -5,6 +5,7 @@ import { fullName, productPaths } from "@/lib/product-name";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { account, authHeader } from "@/lib/account-client";
 import { CheckoutModal } from "./CheckoutModal";
+import { readConsent } from "@/lib/consent";
 
 export type DeliveryDetails = { name: string; phone: string; line1: string; line2: string; city: string; state: string; postcode: string; smsUpdates: boolean; marketing: boolean; authorityToLeave: boolean; instructions: string };
 export type Line = { id: string; sku?: string; slug: string; name: string; price_cents: number; was_cents?: number | null; sale_label?: string; image: string; quantity: number; note?: string };
@@ -91,7 +92,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   const checkout = useCallback(async (delivery: DeliveryDetails, promoCode?: string, guard?: { token: string; company: string; terms: boolean }) => {
     track("begin_checkout", lines);
     rememberPurchase(lines);
-    const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, promoCode, ...guard, items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
+    const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, delivery, promoCode, ...guard, adConsent: readConsent() === "all", pinClick: readConsent() === "all" ? (document.cookie.match(/(?:^|; )_epik=([^;]+)/)?.[1] ?? "") : "", items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     const body = await res?.json().catch(() => null);
     if (body?.clientSecret) {
       setPayFail("");
