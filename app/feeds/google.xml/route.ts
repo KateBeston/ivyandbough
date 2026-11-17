@@ -1,3 +1,4 @@
+import { googleCategory } from "@/lib/google-category";
 import { getProducts, type Product } from "@/lib/catalogue";
 import { absolute, SITE } from "@/lib/seo";
 import { supabase } from "@/lib/supabase";
@@ -43,6 +44,7 @@ export async function GET() {
         ["g:brand", v.brand || l.brand || "Ivy & Bough"],
         ["g:condition", "new"],
         ["g:identifier_exists", "no"],
+        ["g:google_product_category", googleCategory(l.categories?.name)],
         ["g:product_type", l.categories?.name],
         ["g:item_group_id", l.variants?.length ? l.slug : undefined],
         ["g:color", l.variants?.length ? (/colou?r/i.test(l.option_label || "") ? v.version_name || undefined : v.colour || v.colours || undefined) : (v.colour || v.colours || "").slice(0, 100) || undefined],
