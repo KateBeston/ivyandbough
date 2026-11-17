@@ -1,5 +1,6 @@
 "use client";
 
+import { pinEvent } from "@/lib/track";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -99,6 +100,7 @@ export function WelcomePopup() {
     const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: address, company: data.get("company"), token, source: "popup" }) }).catch(() => null);
     setAttempt((n) => n + 1);
     if (!res?.ok) return setState("error");
+    pinEvent("lead", { lead_type: "Newsletter" });
     remember({ ...readSeen(), joined: true });
     setTab(null);
     setEmail(address);

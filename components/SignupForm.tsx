@@ -1,5 +1,6 @@
 "use client";
 
+import { pinEvent } from "@/lib/track";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Honeypot } from "./Honeypot";
@@ -18,6 +19,7 @@ export function SignupForm({ offer = "" }: { offer?: string }) {
     const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), company: data.get("company"), token }) }).catch(() => null);
     setAttempt((n) => n + 1);
     if (res?.ok) {
+      pinEvent("lead", { lead_type: "Newsletter" });
       form.reset();
       setState("done");
     } else {

@@ -1,5 +1,6 @@
 "use client";
 
+import { pinEvent } from "@/lib/track";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { CONSENT_EVENT, readConsent } from "@/lib/consent";
@@ -106,13 +107,15 @@ export function Analytics() {
       fbq?.("track", "PageView");
       const pintrk = (window as unknown as Tagged).pintrk;
       pintrk?.("page");
+      if (path.startsWith("/shop") || path.startsWith("/collections/")) pinEvent("viewcategory");
+      if (path === "/search") { const q = new URLSearchParams(window.location.search).get("q"); if (q) pinEvent("search", { search_query: q }); }
       if (path.startsWith("/products/")) {
         // Wait a tick so the page's structured data is in place after client navigation.
         setTimeout(() => {
           const p = productSku();
           if (!p) return;
           fbq?.("track", "ViewContent", { content_ids: [p.sku], content_type: "product", content_name: p.name, value: p.price, currency: "AUD" });
-          pintrk?.("track", "pagevisit", { currency: "AUD", value: p.price, line_items: [{ product_id: p.sku, product_name: p.name, product_price: p.price }] });
+          pintrk?.("track", "pagevisit", { event_id: `pagevisit-${Date.now()}`, currency: "AUD", value: p.price, line_items: [{ product_id: p.sku, product_name: p.name, product_price: p.price }] });
         }, 300);
       }
     };

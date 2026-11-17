@@ -1,5 +1,6 @@
 "use client";
 
+import { pinEvent } from "@/lib/track";
 import Link from "next/link";
 import { Honeypot } from "./Honeypot";
 import { useState, type FormEvent } from "react";
@@ -31,6 +32,7 @@ export function WelcomeAccount({ email, setup }: { email: string; setup: string 
     const data = await res?.json().catch(() => null);
     if (!res?.ok) { setState("idle"); return setError(data?.error ?? "That didn't go through. Please try again."); }
     await account.auth.signInWithPassword({ email, password, options: token ? { captchaToken: token } : {} });
+    pinEvent("signup");
     setState("done");
   }
 

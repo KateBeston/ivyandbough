@@ -18,7 +18,13 @@ export function track(event: "add_to_cart" | "begin_checkout" | "purchase", line
   // Meta pixel: content_ids match the catalogue feed's ids (SKUs).
   const meta = { currency: "AUD", value: total(lines), content_type: "product", content_ids: lines.map((l) => l.sku || l.id), contents: lines.map((l) => ({ id: l.sku || l.id, quantity: l.quantity })), num_items: lines.reduce((n, l) => n + l.quantity, 0) };
   w.fbq?.("track", META_EVENT[event], meta, extra.transaction_id ? { eventID: String(extra.transaction_id) } : undefined);
-  if (PIN_EVENT[event]) w.pintrk?.("track", PIN_EVENT[event], { currency: "AUD", value: total(lines), order_quantity: meta.num_items, ...(extra.transaction_id ? { order_id: String(extra.transaction_id), event_id: String(extra.transaction_id) } : {}), line_items: lines.map((l) => ({ product_id: l.sku || l.id, product_name: l.name, product_price: l.price_cents / 100, product_quantity: l.quantity })) });
+  if (PIN_EVENT[event]) w.pintrk?.("track", PIN_EVENT[event], { currency: "AUD", value: total(lines), order_quantity: meta.num_items, event_id: extra.transaction_id ? String(extra.transaction_id) : `${event}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, ...(extra.transaction_id ? { order_id: String(extra.transaction_id) } : {}), line_items: lines.map((l) => ({ product_id: l.sku || l.id, product_name: l.name, product_price: l.price_cents / 100, product_quantity: l.quantity })) });
+}
+
+// Pinterest's other standard events (sign up, lead, search, category view). Same consent rule.
+export function pinEvent(event: "signup" | "lead" | "search" | "viewcategory" | "pagevisit", data: Record<string, unknown> = {}) {
+  if (typeof window === "undefined" || readConsent() !== "all") return;
+  (window as unknown as Tagged).pintrk?.("track", event, { event_id: `${event}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, ...data });
 }
 
 // The basket is cleared once payment succeeds, so checkout keeps a copy for the thank-you page's purchase event.
