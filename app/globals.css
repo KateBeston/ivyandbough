@@ -1272,3 +1272,11 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .quick-again{border:0;background:none;padding:0;font:inherit;text-decoration:underline;cursor:pointer;color:inherit}
 .buy-row{grid-template-columns:auto minmax(0,1fr)}
 .buy-row .stepper.large{height:52px}
+
+.article-picks{margin:56px 0 0;padding-top:32px;border-top:1px solid #d9d2c5}
+.article-picks>h2{font-family:var(--a-head);font-weight:400;font-size:24px;letter-spacing:.08em;text-transform:uppercase;text-align:center;margin:0 0 6px}
+.article-picks-group{font-family:var(--a-head);font-weight:400;font-size:17px;letter-spacing:.06em;margin:26px 0 0}
+.article-products.small{grid-template-columns:repeat(4,1fr);gap:24px 14px;margin-top:18px}
+.article-products.small .article-product h3{font-size:14px;margin:8px 0 6px;letter-spacing:.04em}
+.article-products.small .article-buy{font-size:11px}
+@media (max-width:760px){.article-products.small{grid-template-columns:repeat(2,1fr)}}

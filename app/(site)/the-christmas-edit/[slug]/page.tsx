@@ -112,7 +112,6 @@ function Block({ s, catalogue, count }: { s: PostSection; catalogue: Product[]; 
       <Caption text={s.caption} credit={s.credit} />
       {s.note && <div className="article-note">{s.note}</div>}
       {s.text && <RichText text={s.text} />}
-      {!!s.products?.length && <div className={`article-products ${s.columns === 3 ? "three" : ""}`}>{s.products.map((item, n) => <ArticleProduct key={n} item={item} catalogue={catalogue} />)}</div>}
     </section>
   );
 }
@@ -137,6 +136,15 @@ export default async function PostPage({ params }: Props) {
   // "1/10" under each photo when the article is a numbered list.
   const photoTotal = post.sections.filter(isPhoto).length;
   let photoNo = 0;
+  // Advice first: product suggestions are gathered into one small "From Ivy & Bough" section after the article.
+  // Gift guides keep their groups (e.g. "For the host"); other posts get one tidy, de-duplicated row.
+  const grouped = /gift/.test(post.slug);
+  const seen = new Set<string>();
+  const picks = post.sections
+    .filter((sec) => sec.products?.length)
+    .map((sec) => ({ heading: grouped ? sec.heading : "", items: (sec.products ?? []).filter((it) => { const k = it.slug || it.url || it.name || ""; if (seen.has(k)) return false; seen.add(k); return true; }) }))
+    .filter((g) => g.items.length)
+    .reduce<{ heading: string; items: PostProduct[] }[]>((acc, g) => (grouped || !acc.length ? [...acc, g] : [{ heading: "", items: [...acc[0].items, ...g.items] }]), []);
   const topics = (post.topics ?? "").split(",").map((t) => t.trim()).filter(Boolean);
   const meta = <JsonLd data={{ "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, datePublished: post.published_at, image: post.image_url ? absolute(post.image_url) : undefined, author: { "@type": "Organization", name: "Ivy & Bough" }, publisher: { "@type": "Organization", name: "Ivy & Bough", logo: absolute("/icon.png") }, mainEntityOfPage: absolute(`/the-christmas-edit/${post.slug}`) }} />;
   const share = <ShareBar url={absolute(`/the-christmas-edit/${post.slug}`)} title={post.title} text={post.excerpt} image={post.image_url ? absolute(post.image_url) : undefined} />;
@@ -187,6 +195,17 @@ export default async function PostPage({ params }: Props) {
             </Fragment>
           );
         })}
+        {picks.length > 0 && (
+          <section className="article-picks" aria-labelledby="article-picks">
+            <h2 id="article-picks">From Ivy &amp; Bough</h2>
+            {picks.map((g, gi) => (
+              <Fragment key={gi}>
+                {g.heading && <h3 className="article-picks-group">{g.heading}</h3>}
+                <div className="article-products small">{g.items.map((item, n) => <ArticleProduct key={n} item={item} catalogue={catalogue} />)}</div>
+              </Fragment>
+            ))}
+          </section>
+        )}
         {topics.length > 0 && (
           <div className="article-topics"><span>Topics</span>{topics.map((t) => <span key={t}>{t}</span>)}</div>
         )}
