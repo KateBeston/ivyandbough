@@ -92,7 +92,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
 
   // Server copy of the browser purchase event; same event id, so Pinterest counts it once.
-  if (ship.ad_consent === "yes") await pinterestCheckout({ eventId: session.id, orderId: session.id, email, ip: ship.ad_ip, ua: ship.ad_ua, clickId: ship.ad_epik, value: total, lines: lines.map((i) => { const p = i.price?.product as Stripe.Product | undefined; return { id: p?.metadata?.sku ?? "", name: i.description ?? "", price: i.amount_subtotal / (i.quantity ?? 1) / 100, quantity: i.quantity ?? 1 }; }) }).catch((e) => console.warn("Pinterest conversion not sent", e));
+  if (ship.ad_consent === "yes") await pinterestCheckout({ eventId: session.id, orderId: session.id, email, externalId: customerId ? String(customerId) : undefined, ip: ship.ad_ip, ua: ship.ad_ua, clickId: ship.ad_epik, value: total, lines: lines.map((i) => { const p = i.price?.product as Stripe.Product | undefined; return { id: p?.metadata?.sku ?? "", name: i.description ?? "", price: i.amount_subtotal / (i.quantity ?? 1) / 100, quantity: i.quantity ?? 1 }; }) }).catch((e) => console.warn("Pinterest conversion not sent", e));
 
   if (promoCode) await db.from("promo_codes").update({ used_at: new Date().toISOString(), order_id: order.id, reserved_until: null }).eq("code", promoCode);
   if (session.metadata?.cart_session) await db.from("cart_items").update({ status: "Converted" }).eq("session_id", session.metadata.cart_session).eq("status", "In cart");

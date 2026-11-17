@@ -5,12 +5,13 @@ import { createHash } from "crypto";
 type Line = { id: string; name: string; price: number; quantity: number };
 const sha = (v: string) => createHash("sha256").update(v.trim().toLowerCase()).digest("hex");
 
-export async function pinterestCheckout(o: { eventId: string; orderId: string; email: string; ip?: string; ua?: string; clickId?: string; value: number; lines: Line[]; test?: boolean }) {
+export async function pinterestCheckout(o: { eventId: string; orderId: string; email: string; externalId?: string; ip?: string; ua?: string; clickId?: string; value: number; lines: Line[]; test?: boolean }) {
   const token = process.env.PINTEREST_CONVERSIONS_TOKEN;
   const account = process.env.PINTEREST_AD_ACCOUNT_ID;
   if (!token || !account) return { skipped: "token or ad account missing" };
   const user_data: Record<string, unknown> = {};
   if (o.email) user_data.em = [sha(o.email)];
+  if (o.externalId) user_data.external_id = [sha(o.externalId)];
   if (o.ip) user_data.client_ip_address = o.ip;
   if (o.ua) user_data.client_user_agent = o.ua;
   if (o.clickId) user_data.click_id = o.clickId;
