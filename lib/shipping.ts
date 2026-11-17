@@ -6,7 +6,7 @@ import { OFFER_COLUMNS, offerPrice, type OfferFields } from "./pricing";
 type Db = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type Zone = { id: string; name: string; postcodes: string; rate: number; is_default: boolean; sort_order: number };
-export type Quote = { source: "auspost" | "rate"; zone: string; subtotalCents: number; baseCents: number; surchargeCents: number; deliveryCents: number; free: boolean; freeOverCents: number | null; lines: { id: string; name: string; quantity: number; className: string; surchargeCents: number }[] };
+export type Quote = { source: "auspost" | "rate"; zone: string; subtotalCents: number; baseCents: number; surchargeCents: number; deliveryCents: number; free: boolean; freeOverCents: number | null; lines: { id: string; name: string; quantity: number; className: string; surchargeCents: number }[]; estimate?: boolean };
 
 const cents = (n: unknown) => Math.round(Number(n ?? 0) * 100);
 
@@ -36,7 +36,7 @@ export function price(rows: Row[], items: { id: string; quantity: number }[], zo
   const free = freeOverCents !== null && subtotalCents >= freeOverCents && lines.every((l) => l.eligible);
   const baseCents = free ? 0 : cents(zone.rate);
   const surchargeCents = free ? 0 : lines.reduce((n, l) => n + l.surchargeCents, 0);
-  return { source: "rate", zone: zone.name, subtotalCents, baseCents, surchargeCents, deliveryCents: baseCents + surchargeCents, free, freeOverCents, lines: lines.map(({ id, name, quantity, className, surchargeCents: s }) => ({ id, name, quantity, className, surchargeCents: s })) };
+  return { source: "rate", zone: zone.name, subtotalCents, baseCents, surchargeCents, deliveryCents: baseCents + surchargeCents, free, freeOverCents, estimate: !free && surchargeCents > 0, lines: lines.map(({ id, name, quantity, className, surchargeCents: s }) => ({ id, name, quantity, className, surchargeCents: s })) };
 }
 
 export async function quoteDelivery(db: Db, items: { id: string; quantity: number }[], postcode: string) {
@@ -66,7 +66,7 @@ export async function quoteDelivery(db: Db, items: { id: string; quantity: numbe
 // Falls back to the zone rate for trees (they go by courier), items without a weight, parcels over Australia Post's limits,
 // or if Australia Post doesn't answer.
 async function live(quote: Quote, rows: Row[], items: { id: string; quantity: number }[], postcode: string, settings: { live_postage?: boolean } | null): Promise<Quote> {
-  if (quote.free || !settings?.live_postage || quote.lines.some((l) => /tree/i.test(l.className))) return quote;
+  if (quote.free || !settings?.live_postage || quote.lines.some((l) => /tree|courier|extra large/i.test(l.className))) return quote;
   const db = admin();
   if (!db) return quote;
   // The send-from postcode and supplier details are private, so they're read with the server key.

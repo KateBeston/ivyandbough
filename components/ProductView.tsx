@@ -81,6 +81,9 @@ export async function ProductView({ product: listing, preview = false, colour, s
   const comingSoon = product.availability === "Coming soon";
   const preorder = product.availability === "Pre-order";
   const preSettings = preorder ? await getPreorderSettings() : null;
+  // Large pieces carry an estimated courier surcharge.
+  const { data: shipClass } = await supabase.from("products").select("shipping_classes(surcharge)").eq("id", product.id).maybeSingle();
+  const courierFee = Number((shipClass as { shipping_classes?: { surcharge?: number } | null } | null)?.shipping_classes?.surcharge ?? 0);
   // Made-to-order pieces and anything that takes a week or more to dispatch share the earlier Christmas order-by date, shown as a banner.
   const slow = !soldOut && !comingSoon && (preorder || (product.dispatch_days ?? 0) >= 7);
   const batch = slow ? preSettings ?? await getPreorderSettings() : null;
@@ -139,6 +142,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             <ul>
               <li>{dispatch}, then delivered Australia-wide.</li>
               <li>Delivery is calculated at checkout from your postcode.</li>
+              {courierFee > 0 && <li>Large item: includes an estimated courier surcharge of {aud(courierFee)}. If the cost to your postcode is higher, we&apos;ll contact you before dispatch so you can go ahead or cancel for a full refund.</li>}
               {freeOver !== null && <li>Free standard delivery on orders over {aud(freeOver)}, excluding large items and Christmas trees. <Link href="/delivery">Conditions apply</Link>.</li>}
               <li>{product.final_sale ? <>Final sale: no change-of-mind returns. See our <Link href="/returns">Returns Policy</Link>.</> : product.returns_note ? `Returns: ${product.returns_note}` : <>Easy returns under our <Link href="/returns">Returns Policy</Link>.</>}</li>
             </ul>

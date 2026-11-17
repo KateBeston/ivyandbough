@@ -24,7 +24,7 @@ const Req = () => <span className="req" aria-hidden="true">*</span>;
 // It's cleared when the tab closes or the order is placed. Card details are never here; they go straight to Stripe.
 const DRAFT_KEY = "ib-checkout-details";
 const readDraft = () => { try { return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "null") as Partial<typeof blank> | null; } catch { return null; } };
-type Quote = { deliveryCents: number; free: boolean; zone: string };
+type Quote = { deliveryCents: number; free: boolean; zone: string; estimate?: boolean };
 type Promo = { code: string; discountCents: number; label: string };
 
 export default function BasketPage() {
@@ -175,6 +175,7 @@ export default function BasketPage() {
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
             {promo && <div><span>Discount <button type="button" className="link-button" onClick={removeCode}>Remove</button></span><span>-{formatPrice(discount)}</span></div>}
             <div><span>{quote ? <>Delivery to {details.postcode} <button type="button" className="link-button" onClick={() => { setCalc(details.postcode); set({ postcode: "" }); }}>Change</button></> : "Delivery"}</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : ""}</span></div>
+            {quote?.estimate && <p className="muted estimate-note">Large item delivery is an estimate. If the courier cost to your postcode is higher, we&apos;ll contact you before dispatch so you can choose to go ahead or cancel for a full refund.</p>}
             {!quote && (
               <form className="delivery-calc" onSubmit={(e) => { e.preventDefault(); if (/^\d{4}$/.test(calc)) set({ postcode: calc }); }}>
                 <input inputMode="numeric" maxLength={4} placeholder="Postcode" aria-label="Postcode for delivery" value={calc} onChange={(e) => setCalc(e.target.value.replace(/\D/g, ""))} />

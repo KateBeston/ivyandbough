@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   if (!items.length) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });
   try {
     const quote = await quoteDelivery(supabase, items, String(body?.postcode ?? "").trim());
-    return NextResponse.json({ zone: quote.zone, deliveryCents: quote.deliveryCents, free: quote.free, subtotalCents: quote.subtotalCents });
+    return NextResponse.json({ zone: quote.zone, deliveryCents: quote.deliveryCents, free: quote.free, subtotalCents: quote.subtotalCents, estimate: Boolean(quote.estimate) });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Delivery can't be calculated right now." }, { status: 422 });
   }
