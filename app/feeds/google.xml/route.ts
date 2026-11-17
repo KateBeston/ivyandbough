@@ -14,8 +14,11 @@ const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming 
 export async function GET() {
   const listings = await getProducts();
   // Delivery class per SKU, so Facebook and Google can tell free-delivery items from bulky ones.
-  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies),themes!products_theme_id_fkey(name)");
-  const shipBy = new Map((cls ?? []).map((r: any) => [r.sku, r.shipping_classes as { name: string; free_delivery_applies: boolean } | null]));
+  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies,surcharge),themes!products_theme_id_fkey(name)");
+  const shipBy = new Map((cls ?? []).map((r: any) => [r.sku, r.shipping_classes as { name: string; free_delivery_applies: boolean; surcharge: number } | null]));
+  // Courier pieces carry their own delivery price in the feed (base rate plus the class surcharge), matching checkout.
+  const { data: zone } = await supabase.from("delivery_zones").select("rate").eq("is_default", true).maybeSingle();
+  const baseRate = Number(zone?.rate ?? 0);
   // Packed weight per SKU. Google needs it to work out delivery cost from the account's weight-based rates.
   // Collection (theme) per SKU, so Meta and Google can build product sets by collection.
   const collectionBy = new Map((cls ?? []).map((r: any) => [r.sku, (r.themes?.name as string | undefined) ?? ""]));
@@ -50,7 +53,10 @@ export async function GET() {
         ["g:custom_label_0", (shipBy.get(v.sku)?.free_delivery_applies ?? true) ? "Free delivery over $150" : "No free delivery"],
         ["g:custom_label_1", collectionBy.get(v.sku) || undefined],
       ];
-      return `    <item>\n${fields.filter(([, val]) => val).map(([k, val]) => `      <${k}>${esc(String(val))}</${k}>`).join("\n")}\n    </item>`;
+      const sc = shipBy.get(v.sku);
+      const courier = sc && /courier|extra large/i.test(sc.name) ? (baseRate + Number(sc.surcharge || 0)).toFixed(2) : null;
+      const ship = courier ? `\n      <g:shipping><g:country>AU</g:country><g:service>Courier</g:service><g:price>${courier} AUD</g:price></g:shipping>` : "";
+      return `    <item>\n${fields.filter(([, val]) => val).map(([k, val]) => `      <${k}>${esc(String(val))}</${k}>`).join("\n")}${ship}\n    </item>`;
     });
   });
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">\n  <channel>\n    <title>Ivy &amp; Bough</title>\n    <link>${SITE}</link>\n    <description>Christmas decorations and gifts from Ivy &amp; Bough, delivered across Australia.</description>\n${items.join("\n")}\n  </channel>\n</rss>\n`;
