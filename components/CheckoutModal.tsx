@@ -21,7 +21,7 @@ function loadStripe() {
 
 // Stripe's secure payment form, shown over the basket instead of on a separate page.
 // Card details go straight to Stripe; they never touch this site.
-export function CheckoutModal({ secret, onClose, onFail }: { secret: string; onClose: () => void; onFail: () => void }) {
+export function CheckoutModal({ secret, onClose, onFail }: { secret: string; onClose: () => void; onFail: (reason: string) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -32,7 +32,7 @@ export function CheckoutModal({ secret, onClose, onFail }: { secret: string; onC
       if (gone) return c.destroy();
       checkout = c;
       if (box.current) c.mount(box.current);
-    }).catch(onFail);
+    }).catch((e) => { const reason = e instanceof Error ? e.message : String(e); console.error("Stripe checkout failed:", reason); fetch("/api/client-error", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ where: "checkout", reason, ua: navigator.userAgent }) }).catch(() => {}); onFail(reason); });
     return () => { gone = true; checkout?.destroy(); };
   }, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
   return (

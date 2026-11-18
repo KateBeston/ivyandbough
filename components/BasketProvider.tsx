@@ -110,7 +110,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   return (
     <BasketContext.Provider value={{ ...value, paying, payFail }}>
       {children}
-      {paying && <CheckoutModal secret={paying} onClose={() => setPaying(null)} onFail={() => { setPaying(null); setPayFail("The payment window didn't load. Please check your connection and try again."); }} />}
+      {paying && <CheckoutModal secret={paying} onClose={() => setPaying(null)} onFail={(reason) => { setPaying(null); setPayFail(`The payment window didn't load. Please check your connection and try again. (${reason.slice(0, 120)})`); }} />}
     </BasketContext.Provider>
   );
 }
