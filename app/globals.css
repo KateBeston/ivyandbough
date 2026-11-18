@@ -1310,3 +1310,5 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .search-collection em{font-style:normal;color:#5A5148}
 .search-collection u{margin-top:6px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid var(--gold);align-self:flex-start}
 @media (max-width:760px){.search-collection{grid-template-columns:1fr;gap:0}.search-collection>span:last-child{padding:16px}}
+.review-google{margin-top:10px;font-size:15px}
+.review-google-link{display:inline-block;margin-top:10px;padding:10px 20px;background:var(--ink);color:#FBF8F2;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none}

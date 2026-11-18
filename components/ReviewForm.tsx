@@ -1,5 +1,8 @@
 "use client";
 
+// Your Google Business Profile review link (Business Profile → Ask for reviews), set in Vercel.
+const GOOGLE_REVIEW_URL = process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL ?? "";
+
 import { useState, type FormEvent } from "react";
 import { Honeypot } from "./Honeypot";
 
@@ -31,7 +34,12 @@ export function ReviewForm({ orderId, token, product, defaultName }: { orderId: 
         <h2>{product.name}</h2>
       </div>
       {state === "done" ? (
-        <p className="review-thanks" role="status">Thank you for your review.</p>
+        <div className="review-thanks" role="status">
+          <p>Thank you for your review.</p>
+          {rating >= 4 && GOOGLE_REVIEW_URL && (
+            <p className="review-google">So glad you love it. Would you also leave us a quick Google review? It helps other people find Ivy &amp; Bough.<br /><a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="review-google-link">Review us on Google</a></p>
+          )}
+        </div>
       ) : (
         <form onSubmit={submit}>
           <Honeypot />
