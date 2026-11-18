@@ -1400,3 +1400,12 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-form>button{grid-column:1/-1;justify-self:start;padding:13px 26px}
 @media (max-width:860px){.wo-wrap{padding:0 16px}.wo-layout{grid-template-columns:1fr;padding:28px 16px 40px}.wo-hero{height:360px}.wo-hero h1{font-size:34px}.wo-row>span{width:100%}.wo-feat{grid-template-columns:1fr}.wo-ev{grid-template-columns:88px minmax(0,1fr);gap:14px;padding:12px}.wo-ev img{width:88px;height:88px}.wo-date,.wo-go{display:none}.wo-mdate{display:inline}.wo-ev h3{font-size:17px}.wo-detail-grid{grid-template-columns:1fr;gap:24px}.wo-detail h1{font-size:30px}.wo-more>div{grid-template-columns:1fr}.wo-form{grid-template-columns:1fr}}
 @media (min-width:1101px) and (max-width:1365px){.menu{gap:0 20px}.nav{gap:6px 20px}.nav-tools{gap:18px}}
+/* What's On filters: larger and bolder so they read clearly */
+.wo-filters{padding:22px 0}
+.wo-row{gap:10px}
+.wo-row+.wo-row{margin-top:12px}
+.wo-row>span{width:76px;font-size:12px;font-weight:600;letter-spacing:.16em;color:var(--ink)}
+.wo-chip{font-size:14px;font-weight:500;letter-spacing:.03em;padding:9px 18px;color:var(--ink);border-color:#CFC5B5}
+.wo-chip.soon{color:#9C9283;font-weight:400}
+.wo-empty{font-size:16px;color:var(--ink)}
+@media (max-width:860px){.wo-chip{font-size:13px;padding:8px 14px}}
