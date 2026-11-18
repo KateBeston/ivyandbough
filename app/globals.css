@@ -1458,3 +1458,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-cal-ev small{display:block;font-size:12px;color:var(--brown)}
 .wo-cal-ev em{font-style:normal;font-size:11px;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--ink);padding:7px 12px}
 @media (max-width:860px){.wo-cal-cell{min-height:52px;align-items:center;padding:4px 2px}.wo-cal-cell b{align-self:center;font-size:15px}.wo-cal-names{display:none}.wo-cal-dots{display:flex;gap:3px;justify-content:center}.wo-cal-dots u{display:block;width:5px;height:5px;border-radius:50%;background:var(--gold)}.wo-cal-dow{font-size:10px;letter-spacing:.06em}.wo-cal-ev{grid-template-columns:60px minmax(0,1fr)}.wo-cal-ev img{width:60px;height:60px}.wo-cal-ev em{display:none}}
+@media (max-width:860px){.wo-filters{position:static}}
