@@ -1410,7 +1410,7 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-empty{font-size:16px;color:var(--ink)}
 @media (max-width:860px){.wo-chip{font-size:13px;padding:8px 14px}}
 /* Sidebar wide enough for the security check (it needs 300px) */
-.wo-layout{grid-template-columns:minmax(0,1fr) 340px}
+@media (min-width:861px){.wo-layout{grid-template-columns:minmax(0,1fr) 340px}}
 .wo-box{padding:26px 20px}
 .wo-signup>img{width:calc(100% + 40px);margin:-26px -20px 18px}
 .wo-signup form>*{max-width:100%}
