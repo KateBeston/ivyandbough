@@ -1414,3 +1414,12 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-box{padding:26px 20px}
 .wo-signup>img{width:calc(100% + 40px);margin:-26px -20px 18px}
 .wo-signup form>*{max-width:100%}
+/* What's On: lighter filters, larger hero, readable eyebrow */
+.wo-chip{font-weight:400;font-size:13.5px}
+.wo-row>span{font-weight:500}
+.wo-hero{height:560px}
+.wo-hero::after{background:linear-gradient(rgba(21,19,15,.45),rgba(21,19,15,.68))}
+.wo-hero h1{font-size:62px}
+.wo-hero p{font-size:18px;max-width:620px}
+.wo-hero .wo-kick{font-size:13px;font-weight:500;color:#FBF8F2;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+@media (max-width:860px){.wo-hero{height:420px}.wo-hero h1{font-size:38px}.wo-hero p{font-size:16px}.wo-hero .wo-kick{font-size:11px}}
