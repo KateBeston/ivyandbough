@@ -11,6 +11,8 @@ const ID = "G-1NFMWB4SQE";
 const GTM = "GTM-N52CVFTX";
 // Meta (Facebook and Instagram) pixel, for ad measurement. Same consent rule as Analytics.
 const META_PIXEL = "3833433373475898";
+// Google Ads account tag (AW-...), set in Vercel once the Google Ads account exists. Same consent rule.
+const GOOGLE_ADS = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "";
 type Fbq = ((...args: unknown[]) => void) & { callMethod?: (...a: unknown[]) => void; queue?: unknown[]; push?: unknown; loaded?: boolean; version?: string };
 type Pintrk = ((...args: unknown[]) => void) & { queue?: unknown[]; version?: string };
 type Tagged = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void; fbq?: Fbq; _fbq?: Fbq; pintrk?: Pintrk };
@@ -61,6 +63,7 @@ function load() {
   w.gtag("consent", "default", { analytics_storage: "granted", ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted" });
   w.gtag("js", new Date());
   w.gtag("config", ID);
+  if (GOOGLE_ADS) w.gtag("config", GOOGLE_ADS);
   const script = document.createElement("script");
   script.id = "ga";
   script.async = true;

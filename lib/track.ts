@@ -15,6 +15,9 @@ export function track(event: "add_to_cart" | "begin_checkout" | "purchase", line
   if (typeof window === "undefined" || readConsent() !== "all" || !lines.length) return;
   const w = window as unknown as Tagged;
   w.gtag?.("event", event, { currency: "AUD", value: total(lines), items: items(lines), ...extra });
+  // Google Ads purchase conversion ("AW-123456789/AbCdEf"), set in Vercel from the conversion action's tag details.
+  const adsConversion = process.env.NEXT_PUBLIC_GOOGLE_ADS_PURCHASE ?? "";
+  if (event === "purchase" && adsConversion) w.gtag?.("event", "conversion", { send_to: adsConversion, value: total(lines), currency: "AUD", transaction_id: extra.transaction_id ? String(extra.transaction_id) : "" });
   // Meta pixel: content_ids match the catalogue feed's ids (SKUs).
   const meta = { currency: "AUD", value: total(lines), content_type: "product", content_ids: lines.map((l) => l.sku || l.id), contents: lines.map((l) => ({ id: l.sku || l.id, quantity: l.quantity })), num_items: lines.reduce((n, l) => n + l.quantity, 0) };
   w.fbq?.("track", META_EVENT[event], meta, extra.transaction_id ? { eventID: String(extra.transaction_id) } : undefined);
