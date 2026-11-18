@@ -53,7 +53,9 @@ export async function GET() {
         ["g:shipping_weight", weightBy.get(v.sku) ? `${weightBy.get(v.sku)} g` : undefined],
         ["g:shipping_label", shipBy.get(v.sku)?.name || "Standard"],
         ["g:custom_label_0", (shipBy.get(v.sku)?.free_delivery_applies ?? true) ? "Free delivery over $150" : "No free delivery"],
-        ["g:custom_label_1", collectionBy.get(v.sku) || undefined],
+        ["g:custom_label_1", collectionBy.get(v.sku) || l.themes?.name || l.product_themes?.find((t) => t.themes)?.themes?.name || undefined],
+        // Every collection the product appears in, so ad product sets can filter with "contains".
+        ["g:custom_label_2", [...new Set([collectionBy.get(v.sku), l.themes?.name, ...(l.product_themes ?? []).map((t) => t.themes?.name)].filter(Boolean))].join(", ") || undefined],
       ];
       const sc = shipBy.get(v.sku);
       const courier = sc && /courier|extra large/i.test(sc.name) ? (baseRate + Number(sc.surcharge || 0)).toFixed(2) : null;
