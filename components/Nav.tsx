@@ -8,7 +8,7 @@ import type { Category, Theme } from "@/lib/catalogue";
 import { useBasket } from "./BasketProvider";
 import { useWishlist } from "./WishlistProvider";
 
-type Panel = "themes" | "shop" | null;
+type Panel = "themes" | "shop" | "events" | null;
 
 export function Nav({ themes, categories, offers = [], solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; offers?: string[]; solid?: boolean; showLogo?: boolean }) {
   const { count } = useBasket();
@@ -56,7 +56,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
           <Link href="/collections" onClick={closeAll} onPointerEnter={hoverOpen("themes")} onFocus={focusOpen("themes")}>Shop the collection</Link>
           <Link href="/shop" onClick={closeAll} onPointerEnter={hoverOpen("shop")} onFocus={focusOpen("shop")}>Shop</Link>
           <Link href="/the-christmas-edit" onClick={closeAll} onMouseEnter={() => setPanel(null)}>The Christmas Edit</Link>
-          <Link href="/whats-on" onClick={closeAll} onMouseEnter={() => setPanel(null)}>What&apos;s On</Link>
+          <Link href="/whats-on" onClick={closeAll} onPointerEnter={hoverOpen("events")} onFocus={focusOpen("events")}>What&apos;s On</Link>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>
           <Link href="/delivery" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Delivery</Link>
           <Link href="/contact" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Contact</Link>
@@ -78,6 +78,17 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
               </Link>
             ))}
           </div>
+        </div>
+      )}
+      {panel === "events" && (
+        <div id="nav-panel" className="themes-menu">
+          <div className="shop-menu">
+            <div><Link href="/whats-on?state=QLD" className="shop-menu-title" onClick={closeAll}>Queensland</Link>{["Brisbane City", "South East Queensland", "Gold Coast", "Sunshine Coast"].map((a) => <Link key={a} href={`/whats-on?state=QLD&area=${encodeURIComponent(a)}`} onClick={closeAll}>{a}</Link>)}</div>
+            <div>{[["NSW", "New South Wales"], ["VIC", "Victoria"], ["ACT", "ACT"]].map(([c, n]) => <Link key={c} href={`/whats-on?state=${c}`} className="shop-menu-title" onClick={closeAll}>{n}</Link>)}</div>
+            <div>{[["SA", "South Australia"], ["WA", "Western Australia"], ["TAS", "Tasmania"], ["NT", "Northern Territory"]].map(([c, n]) => <Link key={c} href={`/whats-on?state=${c}`} className="shop-menu-title" onClick={closeAll}>{n}</Link>)}</div>
+            <div><span className="shop-menu-title">Browse by</span>{["Carols", "Light displays", "Markets", "Family", "Christmas dining", "Outdoor movies", "Santa"].map((t) => <Link key={t} href={`/whats-on?type=${encodeURIComponent(t)}`} onClick={closeAll}>{t}</Link>)}<Link href="/whats-on/list-your-event" onClick={closeAll}>List your event free</Link></div>
+          </div>
+          <div className="themes-menu-all"><Link href="/whats-on" onClick={closeAll}>See all Christmas events</Link></div>
         </div>
       )}
       {panel === "shop" && (

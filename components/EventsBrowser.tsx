@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { SignupForm } from "./SignupForm";
 import { EVENT_AREAS, EVENT_TYPES, STATE_NAMES, dateRange, eventImage, fmtDate, type CalEvent } from "@/lib/events";
 
@@ -25,12 +26,19 @@ function range(when: string): [string, string] | null {
 export function EventsBrowser({ events }: { events: CalEvent[] }) {
   const [state, setState] = useState("QLD");
   const [area, setArea] = useState("All areas");
+  const params = useSearchParams();
+  const qState = (params.get("state") ?? "").toUpperCase();
+  const qArea = params.get("area") ?? "";
+  const qType = params.get("type") ?? "";
   useEffect(() => {
+    if (STATES.includes(qState)) { setState(qState); setArea(qState === "QLD" && EVENT_AREAS.includes(qArea) ? qArea : "All areas"); try { localStorage.setItem("ib-wo-state", qState); } catch { /* private mode */ } }
+    if (qType) setType(EVENT_TYPES.includes(qType) ? qType : "All");
+    if (STATES.includes(qState)) return;
     let saved = "";
     try { saved = localStorage.getItem("ib-wo-state") ?? ""; } catch { /* private mode */ }
     if (STATES.includes(saved)) { setState(saved); return; }
     fetch("/api/geo").then((r) => r.json()).then((g: { state: string | null }) => { if (g.state) setState(g.state); }).catch(() => null);
-  }, []);
+  }, [qState, qArea, qType]);
   const pickState = (s: string) => { setState(s); setArea("All areas"); try { localStorage.setItem("ib-wo-state", s); } catch { /* private mode */ } };
   const inState = useMemo(() => events.filter((e) => e.state === state), [events, state]);
   const fallback = inState.length === 0 && state !== "QLD";

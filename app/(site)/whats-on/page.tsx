@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { EventsBrowser } from "@/components/EventsBrowser";
 import { getEvents } from "@/lib/events";
 import { SITE } from "@/lib/seo";
@@ -15,7 +16,7 @@ export default async function WhatsOnPage() {
   const events = await getEvents();
   return (
     <div className="wo">
-      <EventsBrowser events={events} />
+      <Suspense><EventsBrowser events={events} /></Suspense>
     </div>
   );
 }
