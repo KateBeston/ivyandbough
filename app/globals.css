@@ -1424,3 +1424,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-hero .wo-kick{font-size:13px;font-weight:500;color:#FBF8F2;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 @media (max-width:860px){.wo-hero{height:420px}.wo-hero h1{font-size:38px}.wo-hero p{font-size:16px}.wo-hero .wo-kick{font-size:11px}}
 .wo-chip{padding:8px 15px}
+.wo-chip{padding:8px 14px}.wo-row{gap:8px}.wo-row>span{width:72px}
