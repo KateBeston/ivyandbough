@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ProductGrid } from "@/components/ProductGrid";
-import { getCategories, getPosts, getThemes, searchProducts } from "@/lib/catalogue";
+import Image from "next/image";
+import { getPosts } from "@/lib/catalogue";
+import { siteSearch } from "@/lib/search";
 
 export const metadata: Metadata = { title: "Search | Ivy & Bough", robots: { index: false, follow: true } };
 
@@ -11,9 +13,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const raw = (await searchParams).q;
   const query = (Array.isArray(raw) ? raw[0] : raw ?? "").trim().slice(0, 80);
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const [products, themes, categories, posts] = query ? await Promise.all([searchProducts(query), getThemes(), getCategories(), getPosts()]) : [[], [], [], []];
-  const collections = themes.filter((t) => has(`${t.name} ${t.note}`, words));
-  const shop = categories.filter((c) => has(c.name, words));
+  const [found, posts] = query ? await Promise.all([siteSearch(query), getPosts()]) : [{ collections: [], categories: [], products: [] }, []];
+  const { collections, categories: shop, products } = found;
   const articles = posts.filter((p) => has(`${p.title} ${p.excerpt}`, words));
   const empty = query && !products.length && !collections.length && !shop.length && !articles.length;
   return (
@@ -24,9 +25,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <button type="submit" className="solid">Search</button>
       </form>
       {empty && <p>No results yet. Try another word, or <Link href="/collections">explore all collections</Link>.</p>}
-      {(collections.length > 0 || shop.length > 0) && (
+      {collections.length > 0 && (
+        <div className="search-collections">
+          {collections.map((t) => (
+            <Link key={t.id} href={`/collections/${t.slug}`} className="search-collection">
+              <span className="frame"><Image src={t.card_image_url || t.image_url} alt={`${t.name} Christmas collection`} fill sizes="(max-width: 760px) 100vw, 400px" className="cover" style={{ objectPosition: t.card_position }} /></span>
+              <span><small>Collection</small><strong>{t.name}</strong>{t.note && <em>{t.note}</em>}<u>Shop the collection</u></span>
+            </Link>
+          ))}
+        </div>
+      )}
+      {shop.length > 0 && (
         <div className="search-links">
-          {collections.map((t) => <Link key={t.id} href={`/collections/${t.slug}`}>{t.name}</Link>)}
           {shop.map((c) => <Link key={c.id} href={`/shop/${c.slug}`}>{c.name}</Link>)}
         </div>
       )}
