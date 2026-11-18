@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SignupForm } from "./SignupForm";
-import { EVENT_AREAS, EVENT_TYPES, dateRange, eventImage, fmtDate, type CalEvent } from "@/lib/events";
+import { EVENT_AREAS, EVENT_TYPES, STATE_NAMES, dateRange, eventImage, fmtDate, type CalEvent } from "@/lib/events";
 
 const WHEN = ["Any time", "This weekend", "Next 7 days", "Christmas week"];
-const SOON = ["NSW", "VIC", "More states soon"];
+const STATES = Object.keys(STATE_NAMES);
+const SHORT: Record<string, string> = { QLD: "Queensland", NSW: "NSW", VIC: "Victoria", SA: "SA", WA: "WA", TAS: "Tasmania", ACT: "ACT", NT: "NT" };
 
 const iso = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Brisbane" });
 function range(when: string): [string, string] | null {
@@ -22,14 +23,25 @@ function range(when: string): [string, string] | null {
 }
 
 export function EventsBrowser({ events }: { events: CalEvent[] }) {
+  const [state, setState] = useState("QLD");
   const [area, setArea] = useState("All areas");
+  useEffect(() => {
+    let saved = "";
+    try { saved = localStorage.getItem("ib-wo-state") ?? ""; } catch { /* private mode */ }
+    if (STATES.includes(saved)) { setState(saved); return; }
+    fetch("/api/geo").then((r) => r.json()).then((g: { state: string | null }) => { if (g.state) setState(g.state); }).catch(() => null);
+  }, []);
+  const pickState = (s: string) => { setState(s); setArea("All areas"); try { localStorage.setItem("ib-wo-state", s); } catch { /* private mode */ } };
+  const inState = useMemo(() => events.filter((e) => e.state === state), [events, state]);
+  const fallback = inState.length === 0 && state !== "QLD";
+  const pool = fallback ? events : inState;
   const [type, setType] = useState("All");
   const [when, setWhen] = useState("Any time");
-  const featured = events.find((e) => e.is_featured);
+  const featured = pool.find((e) => e.is_featured);
   const shown = useMemo(() => {
     const w = range(when);
-    return events.filter((e) => (area === "All areas" || e.region === area) && (type === "All" || e.event_type === type) && (!w || (e.start_date <= w[1] && (e.end_date || e.start_date) >= w[0])));
-  }, [events, area, type, when]);
+    return pool.filter((e) => (area === "All areas" || fallback || e.region === area) && (type === "All" || e.event_type === type) && (!w || (e.start_date <= w[1] && (e.end_date || e.start_date) >= w[0])));
+  }, [pool, fallback, area, type, when]);
   const months = useMemo(() => {
     const m = new Map<string, CalEvent[]>();
     shown.forEach((e) => { const k = fmtDate(e.start_date, { month: "long", year: "numeric" }); m.set(k, [...(m.get(k) ?? []), e]); });
@@ -37,15 +49,22 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
   }, [shown]);
   const chip = (label: string, on: boolean, pick: () => void, soon = false) => <button key={label} type="button" className={`wo-chip${on ? " on" : ""}${soon ? " soon" : ""}`} disabled={soon} onClick={pick}>{label}</button>;
 
+  const place = state === "QLD" ? "Brisbane & South East Queensland" : STATE_NAMES[state].replace(/^the /, "");
   return (
     <>
+      <section className="wo-hero">
+        <img src="/images/library/fakhri98-29922196.jpg" alt="A lit Christmas tree outside a grand building at night" />
+        <div><p className="wo-kick">Christmas 2026 · {place}</p><h1>What&apos;s On This Christmas</h1><p>Carols, light displays, markets, outdoor movies and festive dining. Your guide to the season, updated weekly.</p></div>
+      </section>
       <div className="wo-filters"><div className="wo-wrap">
-        <div className="wo-row"><span>Where</span>{["All areas", ...EVENT_AREAS].map((a) => chip(a, area === a, () => setArea(a)))}{SOON.map((s) => chip(s, false, () => null, true))}</div>
+        <div className="wo-row"><span>Where</span>{STATES.map((s) => chip(SHORT[s], state === s, () => pickState(s)))}</div>
+        {state === "QLD" && <div className="wo-row"><span>Area</span>{["All areas", ...EVENT_AREAS].map((a) => chip(a, area === a, () => setArea(a)))}</div>}
         <div className="wo-row"><span>What</span>{["All", ...EVENT_TYPES].map((t) => chip(t, type === t, () => setType(t)))}</div>
         <div className="wo-row"><span>When</span>{WHEN.map((w) => chip(w, when === w, () => setWhen(w)))}</div>
       </div></div>
       <div className="wo-wrap wo-layout">
         <div>
+          {fallback && <div className="wo-notice">We&apos;re adding Christmas events in {STATE_NAMES[state]} now. Running one? <Link href="/whats-on/list-your-event">List it free</Link>. In the meantime, here&apos;s what&apos;s on in Queensland.</div>}
           {featured && (
             <div className="wo-feat">
               <img src={eventImage(featured)} alt="" />

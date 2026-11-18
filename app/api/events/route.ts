@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     time_text: text(b.time_text, 120), about: text(b.about, 800), official_url: link(b.official_url), booking_url: link(b.booking_url), image_url: link(b.image_url),
     venue: text(b.venue, 140), suburb: text(b.suburb, 80), region: text(b.region, 40) || "Brisbane City",
     organiser_name: text(b.organiser_name, 140), organiser_contact: text(b.organiser_contact, 100), organiser_email: text(b.organiser_email, 254).toLowerCase(), organiser_phone: text(b.organiser_phone, 30),
-    image_credit: text(b.organiser_name, 140), source: "Organiser", status: "Submitted", state: "QLD",
+    image_credit: text(b.organiser_name, 140), source: "Organiser", status: "Submitted", state: ["QLD", "NSW", "VIC", "SA", "WA", "TAS", "ACT", "NT"].includes(text(b.state, 3)) ? text(b.state, 3) : "QLD",
   };
   if (!row.name || !row.start_date || !row.venue || !row.suburb || !row.about || !row.organiser_name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(row.organiser_email)) return NextResponse.json({ error: "Please fill in all the required details." }, { status: 400 });
   if (b.rights !== "on") return NextResponse.json({ error: "Please confirm you can share these details." }, { status: 400 });

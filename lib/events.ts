@@ -6,6 +6,7 @@ const COLUMNS = "id,slug,name,event_type,is_featured,state,region,suburb,venue,a
 
 export const EVENT_TYPES = ["Carols", "Light displays", "Markets", "Family", "Community", "Christmas dining", "Outdoor movies", "Santa"];
 export const EVENT_AREAS = ["Brisbane City", "South East Queensland", "Gold Coast", "Sunshine Coast"];
+export const STATE_NAMES: Record<string, string> = { QLD: "Queensland", NSW: "New South Wales", VIC: "Victoria", SA: "South Australia", WA: "Western Australia", TAS: "Tasmania", ACT: "the ACT", NT: "the Northern Territory" };
 
 // Our own library photos stand in until the organiser sends theirs.
 const STAND_IN: Record<string, string> = {

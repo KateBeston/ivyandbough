@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Honeypot } from "./Honeypot";
 import { Turnstile, TURNSTILE_ON } from "./Turnstile";
-import { EVENT_AREAS, EVENT_TYPES } from "@/lib/events";
+import { EVENT_AREAS, EVENT_TYPES, STATE_NAMES } from "@/lib/events";
 
 export function EventSubmitForm() {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -41,7 +41,8 @@ export function EventSubmitForm() {
       <h2>Where</h2>
       <label className="wide">Venue<input name="venue" required maxLength={140} /></label>
       <label>Suburb<input name="suburb" required maxLength={80} /></label>
-      <label>Area<select name="region" defaultValue="Brisbane City">{EVENT_AREAS.map((a) => <option key={a}>{a}</option>)}<option>Other Queensland</option><option>Interstate</option></select></label>
+      <label>State<select name="state" defaultValue="QLD">{Object.keys(STATE_NAMES).map((s) => <option key={s} value={s}>{s}</option>)}</select></label>
+      <label>Area (Queensland)<select name="region" defaultValue="Brisbane City">{EVENT_AREAS.map((a) => <option key={a}>{a}</option>)}<option>Other Queensland</option><option>Outside Queensland</option></select></label>
       <h2>Your details</h2>
       <label>Organisation<input name="organiser_name" required maxLength={140} /></label>
       <label>Your name<input name="organiser_contact" required maxLength={100} /></label>
