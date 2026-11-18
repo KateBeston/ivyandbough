@@ -161,6 +161,9 @@ export function smsSegments(text: string) {
   return text.length <= single ? 1 : Math.ceil(text.length / part);
 }
 
+// Email clients can't load site-relative image paths, so every product photo gets the full web address.
+const emailImage = (url: string) => (!url ? "" : /^https?:\/\//.test(url) ? url : `${SITE_URL}${url.startsWith("/") ? "" : "/"}${url}`);
+
 async function orderData(db: Db, orderId: string) {
   const { data } = await db.from("orders").select("order_number,track_token,placed_on,paid_at,payment_intent_id,payment_method,customer_email,subtotal,discount_total,promo_code,total,shipping_total,gst_total,shipping_name,shipping_address,shipping_phone,customers(name,phone,customer_number),order_items(name,sku,quantity,unit_price,carrier,tracking_number,products(dispatch_days,availability,themes!products_theme_id_fkey(name),product_images(url,sort_order)))").eq("id", orderId).single();
   if (!data) return null;
@@ -184,7 +187,7 @@ async function orderData(db: Db, orderId: string) {
     summary: {
       number: order.order_number, date: new Date(order.paid_at ?? `${order.placed_on}T12:00:00`).toLocaleDateString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "short", year: "numeric" }),
       payment: order.payment_method, name: order.shipping_name, address: order.shipping_address,
-      items: order.order_items.map((i) => ({ name: i.name, sku: i.sku, collection: i.products?.themes?.name ?? "", quantity: i.quantity, amount: Number(i.unit_price) * i.quantity, image: [...(i.products?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "" })),
+      items: order.order_items.map((i) => ({ name: i.name, sku: i.sku, collection: i.products?.themes?.name ?? "", quantity: i.quantity, amount: Number(i.unit_price) * i.quantity, image: emailImage([...(i.products?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "") })),
       subtotal: Number(order.subtotal), discount: Number(order.discount_total), delivery: Number(order.shipping_total), gst: Number(order.gst_total), total: Number(order.total),
     } as OrderSummary,
     invoice: {
