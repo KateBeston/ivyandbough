@@ -115,7 +115,7 @@ function paragraph(block: string) {
   if (block.startsWith("## ")) return `<h2 style="margin:28px 0 8px;font-family:${SANS};font-size:10px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:#6A6156">${esc(block.slice(3).trim())}</h2>`;
   if (block.startsWith("# ")) return `<h1 style="margin:0 0 14px;font-family:${SERIF};font-size:22px;font-weight:400;line-height:1.25;color:#2F2C27">${esc(block.slice(2).trim())}</h1>`;
   const button = block.trim().match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
-  if (button) return `<p style="margin:26px 0 8px"><a href="${esc(button[2])}" style="display:inline-block;padding:13px 24px;background:#2F2C27;color:#ffffff;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase">${esc(button[1])}</a></p>`;
+  if (button) return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 8px"><tr><td style="background:#2F2C27"><a href="${esc(button[2])}" style="display:inline-block;padding:11px 22px;color:#ffffff;font-size:11px;line-height:16px;letter-spacing:1.5px;white-space:nowrap;text-decoration:none;text-transform:uppercase">${esc(button[1])}</a></td></tr></table>`;
   const html = esc(block).replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g, '<a href="$2" style="color:#6B1F2B">$1</a>').replace(/\n/g, "<br>");
   return `<p style="margin:0 0 16px">${html}</p>`;
 }

@@ -42,6 +42,12 @@ export function BasketProvider({ children }: { children: ReactNode }) {
     session.current = read("ib-session") ?? crypto.randomUUID();
     write("ib-session", session.current);
     setReady(true);
+    // A basket that has been paid for since it last changed empties itself, wherever it was left open.
+    fetch(`/api/cart?session=${session.current}`, { cache: "no-store" }).then((r) => r.json()).then((b: { convertedAt: string | null }) => {
+      if (!b?.convertedAt) return;
+      const changed = Number(read("ib-basket-at") ?? 0);
+      if (new Date(b.convertedAt).getTime() >= changed) setLines([]);
+    }).catch(() => null);
     const { data } = account.auth.onAuthStateChange((event, auth) => {
       if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && auth && !asked.current) {
         asked.current = true;
@@ -65,7 +71,10 @@ export function BasketProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    write("ib-basket", JSON.stringify(lines));
+    const before = read("ib-basket") ?? "[]";
+    const now = JSON.stringify(lines);
+    if (now !== before) write("ib-basket-at", String(Date.now()));
+    write("ib-basket", now);
     const t = setTimeout(async () => {
       await fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ sessionId: session.current, lines: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     }, 1200);

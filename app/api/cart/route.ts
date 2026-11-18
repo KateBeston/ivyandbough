@@ -6,6 +6,15 @@ import { admin, userFrom } from "@/lib/server";
 
 const ALERT_GAP = 12 * 3600000;
 
+// When this browser's basket was last paid for, so a basket left in another tab (or refilled before payment finished) can empty itself.
+export async function GET(request: Request) {
+  const db = admin();
+  const sessionId = new URL(request.url).searchParams.get("session") ?? "";
+  if (!db || !/^[0-9a-f-]{36}$/i.test(sessionId)) return NextResponse.json({ convertedAt: null });
+  const { data } = await db.from("cart_items").select("converted_at").eq("session_id", sessionId).eq("status", "Converted").not("converted_at", "is", null).order("converted_at", { ascending: false }).limit(1).maybeSingle();
+  return NextResponse.json({ convertedAt: data?.converted_at ?? null }, { headers: { "Cache-Control": "no-store" } });
+}
+
 export async function POST(request: Request) {
   const db = admin();
   if (!db) return new NextResponse(null, { status: 204 });
