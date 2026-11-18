@@ -44,6 +44,9 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
   const fallback = inState.length === 0 && state !== "QLD";
   const pool = fallback ? events : inState;
   const [type, setType] = useState("All");
+  const [view, setView] = useState<"List" | "Calendar">("List");
+  useEffect(() => { try { if (localStorage.getItem("ib-wo-view") === "Calendar") setView("Calendar"); } catch { /* private mode */ } }, []);
+  const pickView = (v: "List" | "Calendar") => { setView(v); try { localStorage.setItem("ib-wo-view", v); } catch { /* private mode */ } };
   const [when, setWhen] = useState("Any time");
   const featured = pool.find((e) => e.is_featured);
   const shown = useMemo(() => {
@@ -79,6 +82,8 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
               <div><p className="wo-kick">Ivy &amp; Bough pick</p><h2>{featured.name}</h2><p>{featured.about}</p><p className="wo-feat-meta">{dateRange(featured)} · {featured.venue}{featured.price_text ? ` · ${featured.price_text}` : ""}</p><Link className="wo-btn light" href={`/whats-on/${featured.slug}`}>See details</Link></div>
             </div>
           )}
+          <div className="wo-view" role="tablist" aria-label="View">{(["List", "Calendar"] as const).map((v) => <button key={v} type="button" role="tab" aria-selected={view === v} className={view === v ? "on" : ""} onClick={() => pickView(v)}>{v}</button>)}</div>
+          {view === "Calendar" ? <EventsCalendar events={shown} /> : (<>
           {months.length === 0 && <div className="wo-empty">{events.length ? "No events match yet. Try another filter, or list your own event free." : "Events are being added now. Check back soon, or list your own event free."}</div>}
           {months.map(([month, list]) => (
             <section key={month} className="wo-month">
@@ -93,6 +98,7 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
               ))}
             </section>
           ))}
+          </>)}
         </div>
         <aside className="wo-side">
           <div className="wo-box"><h3>List your event free</h3><p>Running carols, a market, a light trail or a Christmas lunch? Add it to our calendar at no cost. We check every listing before it goes live.</p><Link className="wo-btn dark" href="/whats-on/list-your-event">List an event</Link></div>
@@ -102,5 +108,58 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
       </div>
       <p className="wo-foot">Event details come from organisers and official sources. Please check with the organiser before you go.</p>
     </>
+  );
+}
+
+
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+// Month grid, Monday first. Multi-day events appear on every day they run.
+function EventsCalendar({ events }: { events: CalEvent[] }) {
+  const todayKey = iso(new Date());
+  const first = events.find((e) => (e.end_date || e.start_date) >= todayKey);
+  const startMonth = () => { const base = first && first.start_date > todayKey ? first.start_date : todayKey; return new Date(Number(base.slice(0, 4)), Number(base.slice(5, 7)) - 1, 1); };
+  const [month, setMonth] = useState(startMonth);
+  const [picked, setPicked] = useState<string | null>(null);
+  const cells = useMemo(() => {
+    const lead = (month.getDay() + 6) % 7;
+    const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const out: (Date | null)[] = Array.from({ length: lead }, () => null);
+    for (let d = 1; d <= days; d++) out.push(new Date(month.getFullYear(), month.getMonth(), d));
+    while (out.length % 7) out.push(null);
+    return out;
+  }, [month]);
+  const on = (k: string) => events.filter((e) => e.start_date <= k && (e.end_date || e.start_date) >= k);
+  const move = (n: number) => { setMonth(new Date(month.getFullYear(), month.getMonth() + n, 1)); setPicked(null); };
+  const dayList = picked ? on(picked) : [];
+  return (
+    <div className="wo-cal">
+      <div className="wo-cal-head"><button type="button" onClick={() => move(-1)} aria-label="Previous month">‹</button><h2>{month.toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</h2><button type="button" onClick={() => move(1)} aria-label="Next month">›</button></div>
+      <div className="wo-cal-grid">
+        {DAYS.map((d) => <div key={d} className="wo-cal-dow">{d}</div>)}
+        {cells.map((d, i) => {
+          if (!d) return <div key={`x${i}`} className="wo-cal-cell empty" />;
+          const k = key(d);
+          const list = on(k);
+          return (
+            <button key={k} type="button" className={`wo-cal-cell${list.length ? " has" : ""}${k === todayKey ? " today" : ""}${picked === k ? " on" : ""}${k < todayKey ? " past" : ""}`} onClick={() => setPicked(picked === k ? null : k)} aria-label={`${d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })}, ${list.length} ${list.length === 1 ? "event" : "events"}`}>
+              <b>{d.getDate()}</b>
+              <span className="wo-cal-names">{list.slice(0, 3).map((e) => <i key={e.id}>{e.name}</i>)}{list.length > 3 && <em>+{list.length - 3} more</em>}</span>
+              {list.length > 0 && <span className="wo-cal-dots">{list.slice(0, 4).map((e) => <u key={e.id} />)}</span>}
+            </button>
+          );
+        })}
+      </div>
+      {picked && (
+        <div className="wo-cal-day">
+          <h3>{new Date(`${picked}T00:00:00`).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })}</h3>
+          {dayList.length === 0 ? <p className="wo-note">Nothing listed for this day yet.</p> : dayList.map((e) => (
+            <Link key={e.id} href={`/whats-on/${e.slug}`} className="wo-cal-ev"><img src={eventImage(e)} alt="" loading="lazy" /><span><strong>{e.name}</strong><small>{[e.time_text, e.venue].filter(Boolean).join(" · ")}</small></span><em>{e.booking_url ? "Book" : "Details"}</em></Link>
+          ))}
+        </div>
+      )}
+      {!picked && <p className="wo-note">Choose a day to see its events.</p>}
+    </div>
   );
 }
