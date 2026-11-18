@@ -6,6 +6,7 @@ import { buildPdf, ensureReceipt } from "./receipts";
 import { admin } from "./server";
 import { trackingUrl } from "./tracking";
 import { key, url } from "./supabase";
+import { blocksToText, hasBlocks, hydrateBlocks, renderBlocks } from "./email-blocks";
 
 // Every email and text leaves through this file, so the unsubscribe check,
 // the send and the log cannot be skipped. Provider keys stay on the server.
@@ -103,6 +104,7 @@ export const summaryValue = { order_details: SUMMARY_MARK };
 
 export function toText(body: string, summary?: OrderSummary | null) {
   if (summary) body = body.replace(SUMMARY_MARK, summaryText(summary));
+  if (hasBlocks(body)) body = blocksToText(SITE_URL, body);
   return plainLinks(body.replace(/\[([^\]]+)\]\(mailto:[^)\s]+\)/g, "$1")).replace(/^#{1,2} /gm, "");
 }
 
@@ -127,6 +129,7 @@ export function renderEmail(draft: Pick<Draft, "message_class" | "preheader">, b
 
 function emailHtml(draft: Pick<Draft, "message_class" | "preheader">, body: string, summary?: OrderSummary | null) {
   const marketing = draft.message_class === "Marketing";
+  if (hasBlocks(body)) return designedHtml(draft, body);
   let content = body.split(/\n\s*\n/).map(paragraph).join("");
   if (summary) content = content.replace(SUMMARY_MARK, summaryHtml(summary)).replace('<p style="margin:26px 0 8px">', '<p style="margin:30px 0 30px;text-align:center">');
   const link = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="color:#E9E3D8;text-decoration:none">${label}</a>`;
@@ -144,6 +147,35 @@ function emailHtml(draft: Pick<Draft, "message_class" | "preheader">, body: stri
 <tr><td align="center" style="padding:13px 12px;border-bottom:1px solid #E0D8CC;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase">${nav("Shop", "/shop")}${nav("Collections", "/collections")}${nav("The Christmas Edit", "/the-christmas-edit")}</td></tr>
 <tr><td style="padding:44px 36px 36px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.65;color:#2F2C27">${content}</td></tr>${marketing ? collections : ""}
 <tr><td align="center" style="padding:30px 28px 28px;background:#2B2925;font-family:Arial,Helvetica,sans-serif;color:#E9E3D8">
+<div style="padding-bottom:18px"><img src="${SITE_URL}/email/wordmark-cream.png" width="130" alt="Ivy &amp; Bough" style="display:inline-block;width:130px;height:auto;border:0"></div>
+<div style="padding-bottom:16px">${SOCIAL_LINKS.map((s) => `<a href="${s.url}" style="display:inline-block;padding:0 9px;text-decoration:none"><img src="${SITE_URL}/email/social-${s.id}.png" width="20" height="20" alt="${s.name}" style="display:inline-block;width:20px;height:20px;border:0"></a>`).join("")}</div>
+<div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
+<div style="height:1px;background:#4A463F;font-size:0;line-height:0">&nbsp;</div>
+<div style="font-size:11px;line-height:1.7;color:#B9B1A4;padding-top:16px">${why}<br>Ivy &amp; Bough is a trading name of Aurella Group Pty Ltd, ABN 70 649 742 423.<br><a href="mailto:hello@ivyandbough.com" style="color:#C4A265">hello@ivyandbough.com</a> &nbsp;&middot;&nbsp; <a href="${SITE_URL}/privacy" style="color:#C4A265">Privacy Policy</a>${unsubscribe}</div>
+</td></tr>
+</table>
+</td></tr></table></body></html>`;
+}
+
+// The signature campaign layout: full-width sections between the banner and the footer.
+function designedHtml(draft: Pick<Draft, "message_class" | "preheader">, body: string) {
+  const marketing = draft.message_class === "Marketing";
+  const nav = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="display:inline-block;padding:2px 10px;color:#2F2C27;text-decoration:none">${label}</a>`;
+  const bar = '<span style="color:#C4A265">|</span>';
+  const link = (label: string, path: string) => `<a href="${SITE_URL}${path}" style="color:#E9E3D8;text-decoration:none">${label}</a>`;
+  const why = marketing ? "You're receiving this because you joined the Ivy &amp; Bough email list." : "You're receiving this email about your order or enquiry with Ivy &amp; Bough.";
+  const unsubscribe = marketing ? ' &nbsp;&middot;&nbsp; <a href="{{{ pm:unsubscribe }}}" style="color:#C4A265">Unsubscribe</a>' : "";
+  return `<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<link href="https://fonts.googleapis.com/css2?family=Forum&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+<style>@media (max-width:620px){.stack{display:block!important;width:100%!important;box-sizing:border-box}.half{width:50%!important}.pad{padding-left:24px!important;padding-right:24px!important}}</style></head>
+<body style="margin:0;padding:0;background:#E9E3D8">
+<div style="display:none;max-height:0;overflow:hidden">${esc(draft.preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#E9E3D8"><tr><td align="center" style="padding:28px 0">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#FBF8F2">
+<tr><td style="padding:0;background:#2B2925"><a href="${SITE_URL}"><img src="${SITE_URL}/email/header-banner.jpg" width="600" alt="Ivy &amp; Bough" style="display:block;width:100%;max-width:600px;height:auto;border:0"></a></td></tr>
+<tr><td align="center" style="padding:14px 12px;background:#F3EEE5;font-family:Montserrat,Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase">${nav("New in", "/shop")}${bar}${nav("Collections", "/collections")}${bar}${nav("The Christmas Edit", "/the-christmas-edit")}${bar}${nav("Contact", "/contact")}</td></tr>
+${renderBlocks(SITE_URL, body, paragraph)}
+<tr><td align="center" style="padding:32px 28px 28px;background:#2B2925;font-family:Montserrat,Arial,Helvetica,sans-serif;color:#E9E3D8">
 <div style="padding-bottom:18px"><img src="${SITE_URL}/email/wordmark-cream.png" width="130" alt="Ivy &amp; Bough" style="display:inline-block;width:130px;height:auto;border:0"></div>
 <div style="padding-bottom:16px">${SOCIAL_LINKS.map((s) => `<a href="${s.url}" style="display:inline-block;padding:0 9px;text-decoration:none"><img src="${SITE_URL}/email/social-${s.id}.png" width="20" height="20" alt="${s.name}" style="display:inline-block;width:20px;height:20px;border:0"></a>`).join("")}</div>
 <div style="font-size:12px;line-height:2;padding-bottom:16px">${link("Shop", "/shop")} &nbsp;&middot;&nbsp; ${link("Collections", "/collections")} &nbsp;&middot;&nbsp; ${link("The Christmas Edit", "/the-christmas-edit")}<br>${link("Delivery", "/delivery")} &nbsp;&middot;&nbsp; ${link("Returns", "/returns")} &nbsp;&middot;&nbsp; ${link("FAQs", "/faq")} &nbsp;&middot;&nbsp; ${link("Contact", "/contact")}</div>
@@ -319,6 +351,7 @@ export async function sendMessage(opts: { slug?: string; draft?: Draft; to?: str
   const subject = merge(draft.subject, values);
   const preheader = merge(draft.preheader, values);
   const body = merge(draft.body, values);
+  if (draft.channel === "Email") body.text = await hydrateBlocks(db, body.text);
   const missing = [...new Set([...subject.missing, ...preheader.missing, ...body.missing])];
   if (missing.length) return { ok: false, error: `This message needs ${missing.join(", ")}, which isn't available here.` };
   if (draft.channel === "Email" && !subject.text.trim()) return { ok: false, error: "This email needs a subject." };
@@ -369,6 +402,7 @@ async function sendSmsCampaign(db: Db, template: Draft & { id: string; slug: str
   const hour = Number(new Intl.DateTimeFormat("en-AU", { timeZone: "Australia/Brisbane", hour: "numeric", hour12: false }).format(new Date()));
   if (hour < 10 || hour >= 19) return { error: "Marketing texts can only be sent between 10am and 7pm Brisbane time, so they reach people in daytime hours across Australia." };
   const body = merge(template.body, links());
+  body.text = await hydrateBlocks(db, body.text);
   if (body.missing.length) return { error: "Campaigns can't use customer or order fields yet." };
   if (/\[[^\]]+\](?!\()/.test(body.text)) return { error: "This message still has bracketed placeholder text." };
   if (!body.text.trim()) return { error: "This message has no content." };

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { hydrateBlocks } from "@/lib/email-blocks";
+import { admin } from "@/lib/server";
 import { merge, renderEmail, requireAdmin, SAMPLE, SAMPLE_SUMMARY, SITE_URL, smsSegments, summaryValue, toText, withOptOut, type Draft } from "@/lib/comms";
 
 export async function POST(request: Request) {
@@ -7,6 +9,7 @@ export async function POST(request: Request) {
   if (!draft) return NextResponse.json({ error: "Nothing to preview." }, { status: 400 });
   const values = { ...SAMPLE, ...summaryValue, site_url: SITE_URL, account_url: `${SITE_URL}/account` };
   const body = merge(String(draft.body ?? ""), values);
+  if (draft.channel !== "SMS") body.text = await hydrateBlocks(admin(), body.text);
   const subject = merge(String(draft.subject ?? ""), values);
   const preheader = merge(String(draft.preheader ?? ""), values);
   const text = draft.channel === "SMS" ? withOptOut(toText(body.text, SAMPLE_SUMMARY), draft.message_class === "Marketing") : toText(body.text, SAMPLE_SUMMARY);
