@@ -66,6 +66,7 @@ export async function Footer({ signup = true }: { signup?: boolean } = {}) {
         <nav aria-label="About">
           <Link href="/about">About</Link>
           <Link href="/the-christmas-edit">The Christmas Edit</Link>
+          <Link href="/whats-on">What&apos;s On</Link>
           <Link href="/contact">Contact</Link>
         </nav>
         <nav aria-label="Guides">
