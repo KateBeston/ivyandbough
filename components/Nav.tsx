@@ -56,6 +56,7 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
           <Link href="/collections" onClick={closeAll} onPointerEnter={hoverOpen("themes")} onFocus={focusOpen("themes")}>Shop the collection</Link>
           <Link href="/shop" onClick={closeAll} onPointerEnter={hoverOpen("shop")} onFocus={focusOpen("shop")}>Shop</Link>
           <Link href="/the-christmas-edit" onClick={closeAll} onMouseEnter={() => setPanel(null)}>The Christmas Edit</Link>
+          <Link href="/whats-on" onClick={closeAll} onMouseEnter={() => setPanel(null)}>What&apos;s On</Link>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>
           <Link href="/delivery" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Delivery</Link>
           <Link href="/contact" onClick={closeAll} onMouseEnter={() => setPanel(null)}>Contact</Link>

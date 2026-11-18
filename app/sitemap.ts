@@ -2,11 +2,12 @@ import type { MetadataRoute } from "next";
 import { COLOUR_PAGES, colourPath } from "@/lib/colour-pages";
 import { getOfferLinks, getPostCategories, getPosts, getProducts, getStockedCategories, getThemes } from "@/lib/catalogue";
 import { SITE } from "@/lib/seo";
+import { getEvents } from "@/lib/events";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, categories, themes, posts, offers] = await Promise.all([getProducts(), getStockedCategories(), getThemes(), getPosts(), getOfferLinks()]);
+  const [products, categories, themes, posts, offers, events] = await Promise.all([getProducts(), getStockedCategories(), getThemes(), getPosts(), getOfferLinks(), getEvents()]);
   const postCats = (await getPostCategories()).filter((c) => posts.some((p) => p.category === c.name));
   const paths = ["", "/shop", "/shop/new-arrivals", "/shop/gifts-under-25", "/shop/gifts-under-50", "/shop/gifts-under-100", "/collections", "/the-christmas-edit", "/christmas-calculator", "/about", "/contact", "/delivery", "/returns", "/faq", "/privacy", "/terms", "/terms-of-sale", "/account-terms", "/cookies"];
   return [
@@ -18,5 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...COLOUR_PAGES.map((p) => ({ url: `${SITE}${colourPath(p)}` })),
     ...postCats.map((c) => ({ url: `${SITE}/the-christmas-edit/category/${c.slug}` })),
     ...posts.map((p) => ({ url: `${SITE}/the-christmas-edit/${p.slug}`, lastModified: p.published_at })),
+    { url: `${SITE}/whats-on` }, { url: `${SITE}/whats-on/list-your-event` },
+    ...events.map((e) => ({ url: `${SITE}/whats-on/${e.slug}` })),
   ];
 }
