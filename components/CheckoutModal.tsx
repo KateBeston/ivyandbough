@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 type Embedded = { mount: (el: HTMLElement) => void; destroy: () => void };
@@ -24,6 +24,8 @@ function loadStripe() {
 export function CheckoutModal({ secret, onClose, onFail }: { secret: string; onClose: () => void; onFail: (reason: string) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
+  // Stripe must mount into an empty element, so the loading text sits beside it, not inside it.
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     let checkout: Embedded | null = null;
     let gone = false;
@@ -31,7 +33,7 @@ export function CheckoutModal({ secret, onClose, onFail }: { secret: string; onC
     loadStripe().then((stripe) => stripe.initEmbeddedCheckout({ fetchClientSecret: async () => secret })).then((c) => {
       if (gone) return c.destroy();
       checkout = c;
-      if (box.current) c.mount(box.current);
+      if (box.current) { c.mount(box.current); setReady(true); }
     }).catch((e) => { const reason = e instanceof Error ? e.message : String(e); console.error("Stripe checkout failed:", reason); fetch("/api/client-error", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ where: "checkout", reason, ua: navigator.userAgent }) }).catch(() => {}); onFail(reason); });
     return () => { gone = true; checkout?.destroy(); };
   }, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -41,7 +43,7 @@ export function CheckoutModal({ secret, onClose, onFail }: { secret: string; onC
         <span>Secure payment</span>
         <button type="button" onClick={onClose} aria-label="Close payment and return to your basket">×</button>
       </div>
-      <div ref={box} className="checkout-modal-body"><p className="muted">Loading secure payment…</p></div>
+      <div className="checkout-modal-body">{!ready && <p className="muted">Loading secure payment…</p>}<div ref={box} /></div>
     </dialog>
   );
 }
