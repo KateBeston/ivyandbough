@@ -1426,3 +1426,6 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-chip{padding:8px 15px}
 .wo-chip{padding:8px 14px}.wo-row{gap:8px}.wo-row>span{width:72px}
 .wo-notice{margin:0 0 26px;padding:16px 20px;background:var(--sand);border-left:2px solid var(--gold);font-size:15px}
+/* Menus sit above page bars and scroll when taller than the screen */
+.site-nav{z-index:30}
+@media (min-width:1101px){.themes-menu{overflow-y:auto;overscroll-behavior:contain}}

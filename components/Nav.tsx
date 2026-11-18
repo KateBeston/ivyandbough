@@ -43,6 +43,15 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
     setPanel(null);
     setMobileOpen(false);
   };
+  // Keep the open menu within the screen so long menus scroll instead of running off the bottom.
+  useEffect(() => {
+    if (!panel) return;
+    const fit = () => { const el = document.getElementById("nav-panel"); if (el && window.innerWidth > 1100) el.style.maxHeight = `${Math.max(240, window.innerHeight - el.getBoundingClientRect().top - 8)}px`; };
+    fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("scroll", fit, { passive: true });
+    return () => { window.removeEventListener("resize", fit); window.removeEventListener("scroll", fit); };
+  }, [panel]);
   const hoverOpen = (name: Panel) => (e: PointerEvent) => { if (e.pointerType === "mouse" && hoverReady.current) setPanel(name); };
   const focusOpen = (name: Panel) => (e: FocusEvent<HTMLElement>) => { if (e.currentTarget.matches(":focus-visible")) setPanel(name); };
   const mains = categories.filter((c) => !c.parent_id);
