@@ -35,7 +35,8 @@ export default function ThanksPage() {
     sendPurchase(sessionId || `order-${Date.now()}`);
     if (sessionId) showReviewOptIn(sessionId);
   }, []);
-  useEffect(() => { clear(); try { sessionStorage.removeItem("ib-checkout-details"); } catch { /* nothing saved */ } }, [clear]);
+  // Empty the saved basket too: this page's effect runs before the basket loads from storage, so clearing state alone let it reload.
+  useEffect(() => { try { localStorage.removeItem("ib-basket"); sessionStorage.removeItem("ib-checkout-details"); } catch { /* nothing saved */ } clear(); }, [clear]);
   useEffect(() => { account.auth.getSession().then(({ data }) => setGuest(!data.session)); }, []);
   return (
     <main className="shop-page centre">
