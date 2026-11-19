@@ -415,7 +415,7 @@ button{font:inherit;color:inherit}
 .shop-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 20px;margin-bottom:24px;font-size:14px}
 .shop-toolbar select{height:40px;margin-left:6px;padding:0 8px;border:1px solid #B9AE9E;background:#fff;font:inherit}
 .shop-results .product-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:36px 18px}
-.shop-results .product-card .frame{height:320px !important}
+
 @media (max-width:900px){
 .shop-browser{padding:32px 20px 64px}
 .shop-layout{grid-template-columns:1fr;gap:18px;margin-top:18px}
@@ -424,7 +424,7 @@ button{font:inherit;color:inherit}
 .filter-inner{display:none;padding:0 14px 14px}
 .filter-inner.open{display:block}
 .shop-results .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 10px}
-.shop-results .product-card .frame{height:220px !important}
+
 }
 
 /* FAQs */
@@ -1469,3 +1469,6 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .menu-toggle{display:flex;align-items:center;gap:8px}
 .menu-toggle::before{content:"";width:18px;height:12px;background:linear-gradient(currentColor 0 0) top/100% 1.5px no-repeat,linear-gradient(currentColor 0 0) center/100% 1.5px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 1.5px no-repeat}
 }
+
+/* Product photos: square frames everywhere so the whole photo shows, no side cropping */
+.ic{height:auto !important;aspect-ratio:1 / 1}
