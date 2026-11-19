@@ -38,7 +38,13 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
     window.history.replaceState(null, "", q ? `/shop?${q}` : "/shop");
   }, [f]);
 
-  const toggle = (key: (typeof lists)[number], value: string) => setF((s) => ({ ...s, [key]: s[key].includes(value) ? s[key].filter((v) => v !== value) : [...s[key], value] }));
+  const toggle = (key: (typeof lists)[number], value: string) => setF((s) => {
+    if (!s[key].includes(value)) return { ...s, [key]: [...s[key], value] };
+    // Unticking a main category also clears its subcategories, which are hidden with it.
+    const main = key === "category" ? categories.find((c) => c.slug === value && !c.parent_id) : undefined;
+    const kids = main ? categories.filter((c) => c.parent_id === main.id).map((c) => c.slug) : [];
+    return { ...s, [key]: s[key].filter((v) => v !== value && !kids.includes(v)) };
+  });
   const mains = categories.filter((c) => !c.parent_id);
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const offers = useMemo(() => ["Sale", "Clearance"].filter((k) => products.some((p) => p.sale_label === k)), [products]);
@@ -47,12 +53,17 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
 
   const results = useMemo(() => {
     const words = f.q.toLowerCase().split(/\s+/).filter(Boolean);
+    // A main category with any of its subcategories ticked narrows to just those subcategories.
+    const picked = f.category.filter((slug) => {
+      const main = categories.find((c) => c.slug === slug && !c.parent_id);
+      return !main || !categories.some((c) => c.parent_id === main.id && f.category.includes(c.slug));
+    });
     const list = products.filter((p) => {
       const text = `${p.name} ${p.brand} ${p.description} ${p.kind} ${p.materials} ${p.colours}`.toLowerCase();
       if (!words.every((w) => text.includes(w))) return false;
       // Matches its main category or any it has also been added to, and their parent categories.
       const cats = [p.category_id, ...(p.extra_category_ids ?? [])].flatMap((id) => (id && byId.get(id) ? [byId.get(id)!] : []));
-      if (f.category.length && !cats.some((cat) => f.category.includes(cat.slug) || f.category.includes(byId.get(cat.parent_id ?? "")?.slug ?? ""))) return false;
+      if (picked.length && !cats.some((cat) => picked.includes(cat.slug) || picked.includes(byId.get(cat.parent_id ?? "")?.slug ?? ""))) return false;
       if (f.collection.length && ![p.themes?.slug ?? "", ...(p.product_themes ?? []).map((t) => t.themes?.slug ?? "")].some((s) => s && f.collection.includes(s))) return false;
       if (f.colour.length && !split(p.colours).some((c) => f.colour.includes(c))) return false;
       if (f.size.length && !f.size.includes(sizeOf(p))) return false;
@@ -66,7 +77,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
       return true;
     });
     return sortProducts(list, f.sort);
-  }, [products, byId, f]);
+  }, [products, byId, categories, f]);
 
   const check = (key: (typeof lists)[number], value: string, label: string) => (
     <label key={value} className="filter-check"><input type="checkbox" checked={f[key].includes(value)} onChange={() => toggle(key, value)} /> {label}</label>
