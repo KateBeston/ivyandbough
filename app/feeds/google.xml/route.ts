@@ -52,6 +52,9 @@ export async function GET() {
         ["g:color", l.variants?.length ? (/colou?r/i.test(l.option_label || "") ? v.version_name || undefined : v.colour || v.colours || undefined) : (v.colour || v.colours || "").slice(0, 100) || undefined],
         ["g:size", l.variants?.length && /size/i.test(l.option_label || "") ? v.version_name || undefined : undefined],
         ["g:material", v.materials || undefined],
+        // The real dispatch time in business days, so Google shows the same delivery time as the product page.
+        ["g:min_handling_time", v.dispatch_days_min != null ? String(v.dispatch_days_min) : v.dispatch_days != null ? String(v.dispatch_days) : undefined],
+        ["g:max_handling_time", v.dispatch_days != null ? String(v.dispatch_days) : undefined],
         ["g:shipping_weight", weightBy.get(v.sku) ? `${weightBy.get(v.sku)} g` : undefined],
         ["g:shipping_label", shipBy.get(v.sku)?.name || "Standard"],
         ["g:custom_label_0", (shipBy.get(v.sku)?.free_delivery_applies ?? true) ? "Free delivery over $150" : "No free delivery"],
