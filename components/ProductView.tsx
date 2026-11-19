@@ -48,6 +48,8 @@ export async function ProductView({ product: listing, preview = false, colour, s
     return <span aria-hidden="true" className="swatch" style={{ background: b ? `linear-gradient(135deg, ${a} 50%, ${b} 50%)` : a }} />;
   };
   const label = listing.option_label || "Colour";
+  // Made-to-order ranges often have one photo for every colour: show colour swatches instead of repeating it.
+  const samePhotos = versions.length > 1 && new Set(versions.map((v) => (v.product_images ?? [])[0]?.url ?? "")).size === 1;
   const freeOver = settings?.free_over === null || settings?.free_over === undefined ? null : Number(settings.free_over);
   const measured = [product.height_cm && `H ${product.height_cm}`, product.width_cm && `W ${product.width_cm}`, product.depth_cm && `D ${product.depth_cm}`].filter(Boolean).join(" x ");
   const details = [
@@ -107,7 +109,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
     <main className="product-page">
       <nav aria-label="Breadcrumb" className="crumbs"><Link href="/">Home</Link>{parentCat && <> / <Link href={`/shop/${parentCat.slug}`}>{parentCat.name}</Link></>}{product.categories ? <> / <Link href={`/shop/${product.categories.slug}`}>{product.categories.name}</Link></> : null} / {product.name}</nav>
       <div className="product-layout">
-        <div className="product-gallery">{(product.product_media ?? product.product_images).length ? <Gallery key={product.id} images={product.product_media ?? product.product_images} /> : <div className="frame no-photo gallery-empty"><img src="/brand/wreath-ink.svg" alt="Photo coming soon" /><span>Photo coming soon</span></div>}</div>
+        <div className="product-gallery">{(product.product_media ?? product.product_images).length ? <Gallery key={product.id} images={product.product_media ?? product.product_images} /> : <div className="frame no-photo gallery-empty"><img src="/brand/wreath-ink.svg" alt="Photo coming soon" /><span>Photo coming soon</span></div>}{samePhotos && <p className="pictured-note">Pictured in one colour. Yours will be handmade in the colour you choose.</p>}</div>
         <div className="details">
           <div>
             {theme && <div className="eyebrow">{theme.name}</div>}
@@ -125,7 +127,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
                 {versions.map((v) => {
                   const photo = (v.product_images ?? [])[0];
                   const tile = <>
-                    <span className="variant-photo">{photo ? <Image src={photo.url} alt={`${product.name} in ${v.version_name || v.sku}`} fill sizes="80px" className="cover" style={{ objectPosition: photo.position }} /> : null}</span>
+                    <span className="variant-photo">{samePhotos ? <span className="variant-swatch">{dot(v.version_name)}</span> : photo ? <Image src={photo.url} alt={`${product.name} in ${v.version_name || v.sku}`} fill sizes="80px" className="cover" style={{ objectPosition: photo.position }} /> : null}</span>
                     <span className="variant-name">{v.version_name || v.sku}{v.availability === "Sold out" ? " (sold out)" : ""}</span>
                   </>;
                   return v.id === chosen.id
