@@ -87,10 +87,12 @@ export async function ProductView({ product: listing, preview = false, colour, s
   // Made-to-order pieces and anything that takes a week or more to dispatch share the earlier Christmas order-by date, shown as a banner.
   const slow = !soldOut && !comingSoon && (preorder || (product.dispatch_days ?? 0) >= 7);
   const batch = slow ? preSettings ?? await getPreorderSettings() : null;
-  const orderBy = batch?.cutoff && !afterCutoff(batch) ? batch.cutoff : null;
+  // A product can carry its own Christmas note (e.g. made to order, may arrive after Christmas), which replaces the automatic dates.
+  const ownNote = (product.christmas_note ?? "").trim();
+  const orderBy = !ownNote && batch?.cutoff && !afterCutoff(batch) ? batch.cutoff : null;
   // Ready-to-ship pieces: the Christmas order-by date from the delivery page (earliest mainland/TAS date, plus the NT).
   let xmas: { main: string; nt: string | null } | null = null;
-  if (!slow && !soldOut && !comingSoon) {
+  if (!ownNote && !slow && !soldOut && !comingSoon) {
     const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Brisbane" });
     const dates = await getDeliveryDates().catch(() => []);
     const main = dates.filter((d) => d.region !== "NT" && d.last_order_date).map((d) => d.last_order_date as string).sort()[0];
@@ -114,7 +116,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             <div className="price"><Price cents={product.price_cents} wasCents={product.was_cents} gst /></div>
             {!preview && !soldOut && <AfterpayMessage cents={product.price_cents} />}
             <div className="muted price-note">GST included{product.no_discount ? " · Excluded from offers and discount codes" : ""}</div>
-            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" /><span>{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}{xmas && <> Order by {formatDate(xmas.main)} for Christmas delivery{xmas.nt ? ` (${formatDate(xmas.nt)} for the NT)` : ""}. <Link href="/delivery#christmas" className="stock-link">All dates</Link></>}</span></div>{orderBy && <p className="order-by-banner">Order by {niceDate(orderBy)} for Christmas delivery</p>}
+            <div className={`stock-line${soldOut ? " sold-out" : ""}`}><span aria-hidden="true" className="stock-dot" /><span>{soldOut ? "Sold out" : comingSoon ? "Coming soon" : preSettings ? preorderLine(preSettings) : `${product.availability || "Available to order"}. ${dispatch}.`}{xmas && <> Order by {formatDate(xmas.main)} for Christmas delivery{xmas.nt ? ` (${formatDate(xmas.nt)} for the NT)` : ""}. <Link href="/delivery#christmas" className="stock-link">All dates</Link></>}</span></div>{orderBy && <p className="order-by-banner">Order by {niceDate(orderBy)} for Christmas delivery</p>}{ownNote && !soldOut && !comingSoon && <p className="order-by-banner">{ownNote}</p>}
           </div>
           {versions.length > 1 && chosen && (
             <div className="variant-picker">
