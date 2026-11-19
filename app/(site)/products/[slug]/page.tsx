@@ -4,17 +4,17 @@ import { JsonLd } from "@/components/JsonLd";
 import { ProductReviews } from "@/components/ProductReviews";
 import { ProductView } from "@/components/ProductView";
 import { VariantSwitch } from "@/components/VariantSwitch";
-import { getCategories, getProduct, getProducts } from "@/lib/catalogue";
+import { getCategories, getProduct } from "@/lib/catalogue";
 import { getReviews } from "@/lib/reviews";
 import { absolute, breadcrumbs, offerExtras } from "@/lib/seo";
 import { supabase } from "@/lib/supabase";
 
 export const revalidate = 60;
 
-// Every live product page is built ahead of time and kept ready, so it opens instantly.
+// Product pages are built the first time someone opens them, then kept ready and refreshed every minute.
+// Building all of them ahead of time overloads the database now the range is large.
 export async function generateStaticParams() {
-  const products = await getProducts().catch(() => []);
-  return products.map((p) => ({ slug: p.slug }));
+  return [];
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

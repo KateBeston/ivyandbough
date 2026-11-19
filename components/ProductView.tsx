@@ -33,7 +33,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
   const theme = product.themes;
   const [{ data: settings }, related, picked, { data: palette }, inside, meanings] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
-    product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
+    product.category_id && !preview ? getProductsInCategories([product.category_id], 24) : Promise.resolve([] as Product[]),
     preview ? Promise.resolve([] as Product[]) : getProductsByListingIds(listing.similar_ids ?? []),
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
     ["bundle", "pack"].includes(product.product_type ?? "") ? getBundleItems(product.bundle_items ?? []) : Promise.resolve([] as BundleItem[]),

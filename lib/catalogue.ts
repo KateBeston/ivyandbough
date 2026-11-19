@@ -122,12 +122,15 @@ export function focus(p: Product, productId: string): Product {
   return { ...p, id: v.id, sku: v.sku, product_images: v.product_images, product_media: v.product_media, price_cents: v.price_cents, was_cents: v.was_cents, sale_label: v.sale_label, availability: v.availability, version_name: v.version_name, swatch: v.swatch, colour: v.colour, material: v.material, price_from_cents: null, pick_sku: v.sku };
 }
 
-export async function getProductsInCategories(ids: string[]): Promise<Product[]> {
+export async function getProductsInCategories(ids: string[], limit?: number): Promise<Product[]> {
   // Its main category, or any category it has also been added to.
   const [{ data: extra }, picks] = await Promise.all([supabase.from("listing_categories").select("listing_id").in("category_id", ids), memberPicks("product_categories", "category_id", ids)]);
   const own = new Set(((extra ?? []) as { listing_id: string }[]).map((r) => r.listing_id));
   const extraIds = [...new Set([...own, ...picks.keys()])];
-  const { data, error } = await supabase.from("listings").select(listingSelect).or(`category_id.in.(${ids.join(",")})${extraIds.length ? `,id.in.(${extraIds.join(",")})` : ""}`).order("sort_order");
+  let q = supabase.from("listings").select(listingSelect).or(`category_id.in.(${ids.join(",")})${extraIds.length ? `,id.in.(${extraIds.join(",")})` : ""}`).order("sort_order");
+  // A product page only needs a handful of related pieces, not the whole category.
+  if (limit) q = q.limit(limit);
+  const { data, error } = await q;
   return toProducts(must(data, error)).map((p) => (p.listing_type === "group" && !own.has(p.listing_id!) && !ids.includes(p.category_id ?? "") && picks.has(p.listing_id!) ? focus(p, picks.get(p.listing_id!)!) : p));
 }
 
