@@ -1553,3 +1553,6 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wf-card .wo-shop-list{grid-template-columns:1fr 1fr}
 .wf-card .wo-shop-list a{flex-direction:column;align-items:flex-start}.wf-card .wo-shop-list img{width:100%;height:auto;aspect-ratio:1/1}
 @media (max-width:860px){.wf-hero{height:360px}.wf-hero-in{padding:0 16px 26px}.wf-hero h1{font-size:30px}.wf-wrap{grid-template-columns:1fr;gap:28px;padding:24px 16px 40px}.wf-side{order:-1}.wf-card{position:static}.wf-photo.right{float:none;width:100%;margin:22px 0}.wf-photo.right img{aspect-ratio:4/3}.wf-menu ul{columns:1}.wf-good{grid-template-columns:1fr}.wf-awards li{grid-template-columns:1fr;gap:2px}.wf-venue{grid-template-columns:1fr}.wf-venue-contact{text-align:left}}
+.wf-map{grid-column:1/-1}.wf-map iframe{display:block;width:100%;height:240px;border:1px solid var(--line);background:#fff}
+.wf-map a{display:inline-block;margin-top:8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--gold)}
+@media (max-width:860px){.wf-map iframe{height:200px}}

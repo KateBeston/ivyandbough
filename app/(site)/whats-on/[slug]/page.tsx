@@ -99,6 +99,12 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             <section className="wf-venue"><div><span className="wo-kick dark">About the venue</span><h3>{e.organiser_name || e.venue}</h3><p>{e.venue_about}</p>
               <div className="wf-social">{e.official_url && <a href={e.official_url} target="_blank" rel="noopener">Website</a>}{e.facebook_url && <a href={e.facebook_url} target="_blank" rel="noopener">Facebook</a>}{e.instagram_url && <a href={e.instagram_url} target="_blank" rel="noopener">Instagram</a>}{e.booking_url && <a href={e.booking_url} target="_blank" rel="noopener">Book</a>}<a href={maps} target="_blank" rel="noopener">Google Maps</a></div></div>
               <div className="wf-venue-contact">{where}{e.venue_phone && <><br />{e.venue_phone}</>}{e.venue_hours && <><br />{e.venue_hours}</>}</div>
+              {e.maps_url && (
+                <div className="wf-map">
+                  <iframe title={`Map of ${e.venue || e.name}`} src={`https://www.google.com/maps?q=${encodeURIComponent([e.venue, e.address, e.suburb, e.state].filter(Boolean).join(", "))}&output=embed`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+                  <a href={e.maps_url} target="_blank" rel="noopener">Open in Google Maps</a>
+                </div>
+              )}
             </section>
           )}
           <p className="wo-note">Are you the organiser? <a href={`mailto:hello@ivyandbough.com?subject=${encodeURIComponent(`Update listing: ${e.name}`)}`}>Update this listing</a></p>
