@@ -223,10 +223,15 @@ async function sandboxBoard(token: PinToken, liveBoardId: string) {
   const list = await fetch(`${PINTEREST_SANDBOX}/boards?page_size=100`, { cache: "no-store", headers: auth }).then((r) => r.json()).catch(() => null);
   const found = (list?.items ?? []).find((b: { id: string; name: string }) => b.name.toLowerCase() === name.toLowerCase());
   if (found) return found.id as string;
-  const res = await fetch(`${PINTEREST_SANDBOX}/boards`, { method: "POST", cache: "no-store", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify({ name, privacy: "PUBLIC" }) });
-  const json = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(`Pinterest test board: ${json?.message ?? res.status}`);
-  return json.id as string;
+  // The test platform clashes with real board names but doesn't list its own boards, so test boards get their own name.
+  let last = "";
+  for (const testName of [`${name} (Test)`, `${name} (Test ${Date.now().toString(36)})`]) {
+    const res = await fetch(`${PINTEREST_SANDBOX}/boards`, { method: "POST", cache: "no-store", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify({ name: testName.slice(0, 50), privacy: "PUBLIC" }) });
+    const json = await res.json().catch(() => null);
+    if (res.ok && json?.id) return json.id as string;
+    last = json?.message ?? String(res.status);
+  }
+  throw new Error(`Pinterest test board: ${last}`);
 }
 
 async function toPinterest(post: Post, token: PinToken, image: string, _images: string[]): Promise<Sent> {
