@@ -10,7 +10,7 @@ import { checkSuburb } from "@/lib/auspost";
 import { cleanItems, quoteDelivery } from "@/lib/shipping";
 import { supabase } from "@/lib/supabase";
 
-type Row = OfferFields & { id: string; sku: string; name: string; version_name: string; product_images: { url: string; sort_order: number }[] };
+type Row = OfferFields & { id: string; sku: string; name: string; brand: string | null; version_name: string; product_images: { url: string; sort_order: number }[] };
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   if (wrongSuburb) return NextResponse.json({ error: wrongSuburb }, { status: 400 });
 
   // Prices always come from the database, never from the browser.
-  const { data, error } = await supabase.from("products").select(`id,sku,name,version_name,price_cents,availability,sold_separately,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
+  const { data, error } = await supabase.from("products").select(`id,sku,name,brand,version_name,price_cents,availability,sold_separately,${OFFER_COLUMNS},product_images(url,sort_order)`).in("id", items.map((i) => String(i.id)));
   if (error) return NextResponse.json({ error: "Checkout isn't available right now." }, { status: 500 });
   const rows = (data ?? []) as Row[];
   const origin = new URL(request.url).origin;
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     currency: "aud",
     line_items: lines.map(({ row, quantity, cents }) => {
       const url = [...row.product_images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url;
-      return { quantity, price_data: { currency: "aud", unit_amount: cents, product_data: { name: fullName(row), images: url ? [url.startsWith("/") ? `${origin}${url}` : url] : undefined, metadata: { product_id: row.id, sku: row.sku } } } };
+      return { quantity, price_data: { currency: "aud", unit_amount: cents, product_data: { name: fullName(row), images: url ? [url.startsWith("/") ? `${origin}${url}` : url] : undefined, metadata: { product_id: row.id, sku: row.sku, brand: row.brand || "Ivy & Bough" } } } };
     }),
     ...(coupon ? { discounts: [{ coupon: coupon.id }], expires_at: Math.floor(Date.now() / 1000) + 31 * 60 } : {}),
     shipping_options: [{ shipping_rate_data: { display_name: quote.deliveryCents ? "Delivery" : "Free delivery", type: "fixed_amount", fixed_amount: { amount: quote.deliveryCents, currency: "aud" } } }],
