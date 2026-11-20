@@ -1560,6 +1560,6 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wf-ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
 .wf-follow{display:flex;align-items:center;gap:10px;margin-top:16px}
 .wf-follow span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brown);margin-right:4px}
-.wf-follow a{display:block;width:34px;height:34px;transition:transform .15s}.wf-follow a:hover{transform:scale(1.08)}
-.wf-follow svg{width:34px;height:34px;display:block}
+.wf-follow a{display:block;padding:4px;color:var(--ink);opacity:.85}.wf-follow a:hover{opacity:1}
+.wf-follow svg{width:22px;height:22px;display:block;fill:currentColor}
 .wf-venue-contact a{color:var(--ink);border-bottom:1px solid var(--gold);text-decoration:none}
