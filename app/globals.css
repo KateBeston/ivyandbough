@@ -1571,3 +1571,5 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wf-text.first p:first-child::first-letter{color:#6B5640}
 .wf-crumb{font-weight:600}.wf-hero-cr{font-size:11px;font-weight:500;opacity:1;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .wo-feature .wo-note{color:#5E4B39;font-size:12.5px}
+.wo-feature .wo-facts dt{color:#8A6D35;font-weight:600}
+.wo-feature .wo-shop-list em{color:#5E4B39;font-weight:600}
