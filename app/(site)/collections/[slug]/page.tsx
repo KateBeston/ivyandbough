@@ -34,6 +34,7 @@ export default async function CollectionPage({ params }: Props) {
     <main>
       <JsonLd data={breadcrumbs([{ name: "Home", path: "" }, { name: "Collections", path: "/collections" }, { name: theme.name, path: `/collections/${theme.slug}` }])} />
       <CollectionHero title={theme.name} intro={theme.line} src={theme.image_url} alt={theme.image_alt} position={theme.hero_position} />
+      {theme.image_credit && <p className="collection-credit">Photo: {theme.image_credit}</p>}
       {theme.page_intro && <div className="collection-intro"><p>{theme.page_intro}</p></div>}
       <div className="collection-share"><ShareBar url={absolute(`/collections/${theme.slug}`)} title={`${theme.name} | Ivy & Bough`} text={theme.line || theme.name} image={theme.image_url ? absolute(theme.image_url) : undefined} /></div>
       <div className="collection-body">
