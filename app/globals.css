@@ -1573,3 +1573,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-feature .wo-note{color:#5E4B39;font-size:12.5px}
 .wo-feature .wo-facts dt{color:#8A6D35;font-weight:600}
 .wo-feature .wo-shop-list em{color:#5E4B39;font-weight:600}
+.article-text ul,.article-text ol{margin:0 0 20px;padding-left:1.3em;font-family:var(--a-body);font-size:var(--a-size);line-height:1.75}.article-text li{margin-bottom:8px}.article-text ul li::marker{color:var(--gold)}

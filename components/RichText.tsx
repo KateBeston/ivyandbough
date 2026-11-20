@@ -19,5 +19,18 @@ function inline(text: string) {
 
 export function RichText({ text }: { text: string }) {
   const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  return <div className="article-text">{paragraphs.map((p, i) => (p.startsWith("## ") ? <h2 key={i}>{p.slice(3)}</h2> : <p key={i}>{inline(p)}</p>))}</div>;
+  return (
+    <div className="article-text">
+      {paragraphs.map((p, i) => {
+        if (p.startsWith("## ")) return <h2 key={i}>{p.slice(3)}</h2>;
+        const lines = p.split("\n").map((l) => l.trim()).filter(Boolean);
+        // A block where every line starts with "- " or "1. " is a list.
+        if (lines.length > 1 && lines.every((l) => l.startsWith("- "))) return <ul key={i}>{lines.map((l, j) => <li key={j}>{inline(l.slice(2))}</li>)}</ul>;
+        const lead = lines[0] && !/^\d+\.\s/.test(lines[0]) ? lines[0] : "";
+        const items = lead ? lines.slice(1) : lines;
+        if (items.length > 1 && items.every((l) => /^\d+\.\s/.test(l))) return <div key={i}>{lead && <p>{inline(lead)}</p>}<ol>{items.map((l, j) => <li key={j}>{inline(l.replace(/^\d+\.\s/, ""))}</li>)}</ol></div>;
+        return <p key={i}>{inline(p)}</p>;
+      })}
+    </div>
+  );
 }
