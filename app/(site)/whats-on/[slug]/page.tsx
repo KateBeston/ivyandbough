@@ -97,8 +97,14 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           )}
           {e.venue_about && (
             <section className="wf-venue"><div><span className="wo-kick dark">About the venue</span><h3>{e.organiser_name || e.venue}</h3><p>{e.venue_about}</p>
-              <div className="wf-social">{e.official_url && <a href={e.official_url} target="_blank" rel="noopener">Website</a>}{e.facebook_url && <a href={e.facebook_url} target="_blank" rel="noopener">Facebook</a>}{e.instagram_url && <a href={e.instagram_url} target="_blank" rel="noopener">Instagram</a>}{e.booking_url && <a href={e.booking_url} target="_blank" rel="noopener">Book</a>}<a href={maps} target="_blank" rel="noopener">Google Maps</a></div></div>
-              <div className="wf-venue-contact">{where}{e.venue_phone && <><br />{e.venue_phone}</>}{e.venue_hours && <><br />{e.venue_hours}</>}</div>
+              <div className="wf-social">{e.booking_url && <a href={e.booking_url} target="_blank" rel="noopener">Book</a>}<a href={maps} target="_blank" rel="noopener">Google Maps</a></div>
+              {(e.facebook_url || e.instagram_url) && (
+                <div className="wf-follow"><span>Follow {e.organiser_name || e.venue}</span>
+                  {e.facebook_url && <a href={e.facebook_url} target="_blank" rel="noopener" aria-label={`${e.organiser_name || e.venue} on Facebook`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z" /></svg></a>}
+                  {e.instagram_url && <a href={e.instagram_url} target="_blank" rel="noopener" aria-label={`${e.organiser_name || e.venue} on Instagram`}><svg viewBox="0 0 24 24" aria-hidden="true" className="ig"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="1" className="dot" /></svg></a>}
+                </div>
+              )}</div>
+              <div className="wf-venue-contact">{where}{e.venue_phone && <><br />{e.venue_phone}</>}{e.venue_hours && <><br />{e.venue_hours}</>}{e.official_url && <><br /><a href={e.official_url} target="_blank" rel="noopener">{e.official_url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></>}</div>
               {e.maps_url && (
                 <div className="wf-map">
                   <iframe title={`Map of ${e.venue || e.name}`} src={`https://www.google.com/maps?q=${encodeURIComponent([e.venue, e.address, e.suburb, e.state].filter(Boolean).join(", "))}&output=embed`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
@@ -119,7 +125,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <div className="wf-acts">
             {e.booking_url && <a className="wo-btn dark" href={e.booking_url} target="_blank" rel="noopener">Book now</a>}
             {e.official_url && <a className={`wo-btn ${e.booking_url ? "" : "dark"}`} href={e.official_url} target="_blank" rel="noopener">Official website</a>}
-            <div className="wf-row"><a className="wo-btn" href={`/whats-on/${e.slug}/event.ics`}>Add to calendar</a><a className="wo-btn" href={maps} target="_blank" rel="noopener">Directions</a><ShareButton title={e.name} /></div>
+            <div className="wf-row">
+              <a className="wo-btn wf-ico" href={`/whats-on/${e.slug}/event.ics`}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="1.5" /><path d="M3.5 9.5h17M8 3v4M16 3v4" /></svg><span>Calendar</span></a>
+              <a className="wo-btn wf-ico" href={maps} target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.1-6.5-11a6.5 6.5 0 0 1 13 0c0 4.9-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" /></svg><span>Directions</span></a>
+              <ShareButton title={e.name} icon />
+            </div>
           </div>
           {e.booking_url && <p className="wo-note">Bookings are made directly with {e.organiser_name || "the organiser"}. Ivy &amp; Bough doesn&apos;t handle bookings.</p>}
           {shop.items.length > 0 && (
