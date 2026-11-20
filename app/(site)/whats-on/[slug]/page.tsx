@@ -51,62 +51,91 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const more = all.filter((x) => x.id !== e.id).slice(0, 3);
   const image = eventImage(e);
   const free = /free/i.test(e.price_text);
-  const gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.name)}&dates=${e.start_date.replace(/-/g, "")}/${(() => { const d = new Date(`${e.end_date || e.start_date}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ""); })()}&location=${encodeURIComponent([e.venue, e.suburb, e.state].filter(Boolean).join(", "))}&details=${encodeURIComponent(`${e.time_text}\n${SITE}/whats-on/${e.slug}`)}`;
+  const _gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.name)}&dates=${e.start_date.replace(/-/g, "")}/${(() => { const d = new Date(`${e.end_date || e.start_date}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ""); })()}&location=${encodeURIComponent([e.venue, e.suburb, e.state].filter(Boolean).join(", "))}&details=${encodeURIComponent(`${e.time_text}\n${SITE}/whats-on/${e.slug}`)}`;
+  const where = [e.venue, e.address, e.suburb].filter(Boolean).join(", ");
+  const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([e.venue, e.address, e.suburb, e.state].filter(Boolean).join(", "))}`;
+  const story = e.story ?? [];
+  const firstText = story.findIndex((b) => b.type === "text");
   return (
-    <div className="wo wo-detail">
+    <div className="wo wo-feature">
       <JsonLd data={{
-        "@context": "https://schema.org", "@type": "Event", name: e.name, description: e.about, startDate: e.start_date, ...(e.end_date ? { endDate: e.end_date } : {}),
+        "@context": "https://schema.org", "@type": "Event", name: e.name, description: e.lead || e.about, startDate: e.start_date, ...(e.end_date ? { endDate: e.end_date } : {}),
         eventStatus: "https://schema.org/EventScheduled", eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
         image: [image.startsWith("http") ? image : `${SITE}${image}`],
         location: { "@type": "Place", name: e.venue || e.suburb, address: { "@type": "PostalAddress", streetAddress: e.address || undefined, addressLocality: e.suburb, addressRegion: e.state, addressCountry: "AU" } },
         ...(e.organiser_name ? { organizer: { "@type": "Organization", name: e.organiser_name, ...(e.official_url ? { url: e.official_url } : {}) } } : {}),
         ...(free || e.booking_url ? { offers: { "@type": "Offer", url: e.booking_url || e.official_url || `${SITE}/whats-on/${e.slug}`, ...(free ? { price: 0, priceCurrency: "AUD" } : {}), availability: "https://schema.org/InStock" } } : {}),
       }} />
-      <div className="wo-wrap">
-        <p className="wo-crumb"><Link href="/whats-on">What&apos;s On</Link> / {e.event_type}</p>
-        <div className="wo-detail-grid">
-          <div className="wo-detail-img"><img src={image} alt={e.name} />{e.image_url && e.image_credit && <small>Image: {e.image_credit}</small>}</div>
-          <div>
-            <p className="wo-kick dark">{e.event_type}{e.is_featured ? " · Ivy & Bough pick" : ""}</p>
-            <h1>{e.name}</h1>
-            {e.about && <p className="wo-about">{e.about}</p>}
-            <dl className="wo-facts">
-              <dt>When</dt><dd>{dateRange(e, true)}{e.time_text && <><br />{e.time_text}</>}</dd>
-              <dt>Where</dt><dd>{[e.venue, e.address, e.suburb].filter(Boolean).join(", ")}</dd>
-              {e.price_text && <><dt>Cost</dt><dd>{e.price_text}</dd></>}
-              {e.organiser_name && <><dt>Organiser</dt><dd>{e.organiser_name}</dd></>}
-              <dt>Listing</dt><dd>{e.source === "Organiser" ? "Provided by the organiser" : "Compiled by Ivy & Bough from official sources"}</dd>
-            </dl>
-            <div className="wo-acts">
-              {e.booking_url && <a className="wo-btn dark" href={e.booking_url} target="_blank" rel="noopener">Book tickets</a>}
-              {e.official_url && <a className={`wo-btn ${e.booking_url ? "" : "dark"}`} href={e.official_url} target="_blank" rel="noopener">Official event page</a>}
-              <a className="wo-btn" href={`/whats-on/${e.slug}/event.ics`}>Add to calendar</a>
-              <a className="wo-btn" href={gcal} target="_blank" rel="noopener">Google Calendar</a>
-              <ShareButton title={e.name} />
-            </div>
-            {e.booking_url && <p className="wo-note">Tickets are sold by the organiser. Ivy &amp; Bough doesn&apos;t handle bookings.</p>}
-            {shop.items.length > 0 && (
-              <aside className="wo-shop" aria-label="Shop Ivy &amp; Bough">
-                <p className="wo-kick dark">From the Ivy &amp; Bough shop</p>
-                <h2>{shop.title}</h2>
-                <div className="wo-shop-list">{shop.items.map((p) => (
-                  <Link key={p.id} href={`/products/${p.slug}`}>
-                    <Image src={p.product_images[0].url} alt={p.product_images[0].alt || p.name} width={160} height={160} sizes="(max-width:860px) 40vw, 80px" quality={75} />
-                    <span><strong>{p.name.split(",")[0]}</strong><em>{p.price_from_cents ? `From ${formatPrice(p.price_from_cents)}` : formatPrice(p.price_cents)}</em></span>
-                  </Link>
-                ))}</div>
-                <Link className="wo-shop-more" href={shop.href}>{shop.link}</Link>
-              </aside>
-            )}
-            <p className="wo-note">Are you the organiser? <a href={`mailto:hello@ivyandbough.com?subject=${encodeURIComponent(`Update listing: ${e.name}`)}`}>Update this listing</a></p>
-          </div>
+      <section className="wf-hero">
+        <img src={image} alt={e.name} />
+        <div className="wf-hero-in">
+          <p className="wf-crumb"><Link href="/whats-on">What&apos;s On</Link> · {e.event_type}{e.suburb ? ` · ${e.suburb}` : ""}</p>
+          <h1>{e.name}</h1>
+          <div className="wf-chips"><span>{dateRange(e)}</span>{e.price_text && <span>{e.price_text}</span>}{e.venue && <span>{e.venue}</span>}</div>
         </div>
-        {more.length > 0 && (
-          <section className="wo-more"><h2>More this Christmas</h2><div>{more.map((m) => (
-            <Link key={m.id} href={`/whats-on/${m.slug}`}><img src={eventImage(m)} alt="" loading="lazy" /><span className="wo-kick dark">{dateRange(m)}</span><strong>{m.name}</strong></Link>
-          ))}</div></section>
-        )}
+        {e.image_url && e.image_credit && <small className="wf-hero-cr">Image: {e.image_credit}</small>}
+      </section>
+      <div className="wf-wrap">
+        <article className="wf-main">
+          {(e.lead || e.about) && <p className="wf-lead">{e.lead || e.about}</p>}
+          {e.highlights?.length > 0 && <div className="wf-badges">{e.highlights.map((h, i) => <div key={i}><b>{h.title}</b><small>{h.detail}</small></div>)}</div>}
+          {story.length > 0 ? (
+            <div className="wf-story">{story.map((b, i) => b.type === "image"
+              ? <figure key={i} className={`wf-photo ${b.layout === "right" ? "right" : "wide"}`}><img src={b.url} alt={b.alt ?? ""} loading="lazy" />{(b.caption || b.credit) && <figcaption>{[b.caption, b.credit].filter(Boolean).join(" · ")}</figcaption>}</figure>
+              : <div key={i} className={i === firstText ? "wf-text first" : "wf-text"}>{b.heading && <h3>{b.heading}</h3>}{b.text.split(/\n\n+/).map((para, j) => <p key={j}>{para}</p>)}</div>)}</div>
+          ) : (e.lead && e.about ? <div className="wf-story"><div className="wf-text first">{e.about.split(/\n\n+/).map((para, j) => <p key={j}>{para}</p>)}</div></div> : null)}
+          {e.menu?.length > 0 && (
+            <section><h2>On the Menu</h2><div className="wf-menu">{e.menu.map((m, i) => (
+              <div key={i} className="wf-menu-block"><h3>{m.title}{m.price && <em>{m.price}</em>}</h3>{m.note && <p className="wf-menu-note">{m.note}</p>}<ul>{m.items.map((it, j) => <li key={j}>{it}</li>)}</ul></div>
+            ))}{e.menu_url && <a className="wf-more" href={e.menu_url} target="_blank" rel="noopener">View the full menu</a>}</div></section>
+          )}
+          {e.awards?.length > 0 && (
+            <section><h2>Awards</h2><ul className="wf-awards">{e.awards.map((a, i) => <li key={i}><span>{a.years}</span><div><b>{a.title}</b>{a.detail && <small>{a.detail}</small>}</div></li>)}</ul></section>
+          )}
+          {e.good_to_know?.length > 0 && (
+            <section><h2>Good to Know</h2><ul className="wf-good">{e.good_to_know.map((g, i) => <li key={i}>{g}</li>)}</ul></section>
+          )}
+          {e.venue_about && (
+            <section className="wf-venue"><div><span className="wo-kick dark">About the venue</span><h3>{e.organiser_name || e.venue}</h3><p>{e.venue_about}</p>
+              <div className="wf-social">{e.official_url && <a href={e.official_url} target="_blank" rel="noopener">Website</a>}{e.facebook_url && <a href={e.facebook_url} target="_blank" rel="noopener">Facebook</a>}{e.instagram_url && <a href={e.instagram_url} target="_blank" rel="noopener">Instagram</a>}{e.booking_url && <a href={e.booking_url} target="_blank" rel="noopener">Book</a>}</div></div>
+              <div className="wf-venue-contact">{where}{e.venue_phone && <><br />{e.venue_phone}</>}{e.venue_hours && <><br />{e.venue_hours}</>}</div>
+            </section>
+          )}
+          <p className="wo-note">Are you the organiser? <a href={`mailto:hello@ivyandbough.com?subject=${encodeURIComponent(`Update listing: ${e.name}`)}`}>Update this listing</a></p>
+        </article>
+        <aside className="wf-side"><div className="wf-card">
+          {e.price_text && <p className="wf-price">{e.price_text}</p>}
+          <dl className="wo-facts">
+            <dt>When</dt><dd>{dateRange(e, true)}{e.time_text && <><br />{e.time_text}</>}</dd>
+            <dt>Where</dt><dd>{where}</dd>
+            {e.organiser_name && <><dt>Host</dt><dd>{e.organiser_name}</dd></>}
+          </dl>
+          <div className="wf-acts">
+            {e.booking_url && <a className="wo-btn dark" href={e.booking_url} target="_blank" rel="noopener">Book now</a>}
+            {e.official_url && <a className={`wo-btn ${e.booking_url ? "" : "dark"}`} href={e.official_url} target="_blank" rel="noopener">Official website</a>}
+            <div className="wf-row"><a className="wo-btn" href={`/whats-on/${e.slug}/event.ics`}>Add to calendar</a><a className="wo-btn" href={maps} target="_blank" rel="noopener">Directions</a><ShareButton title={e.name} /></div>
+          </div>
+          {e.booking_url && <p className="wo-note">Bookings are made directly with {e.organiser_name || "the organiser"}. Ivy &amp; Bough doesn&apos;t handle bookings.</p>}
+          {shop.items.length > 0 && (
+            <div className="wo-shop">
+              <p className="wo-kick dark">From the Ivy &amp; Bough shop</p>
+              <h2>{shop.title}</h2>
+              <div className="wo-shop-list">{shop.items.map((p) => (
+                <Link key={p.id} href={`/products/${p.slug}`}>
+                  <Image src={p.product_images[0].url} alt={p.product_images[0].alt || p.name} width={160} height={160} sizes="(max-width:860px) 40vw, 80px" quality={75} />
+                  <span><strong>{p.name.split(",")[0]}</strong><em>{p.price_from_cents ? `From ${formatPrice(p.price_from_cents)}` : formatPrice(p.price_cents)}</em></span>
+                </Link>
+              ))}</div>
+              <Link className="wo-shop-more" href={shop.href}>{shop.link}</Link>
+            </div>
+          )}
+        </div></aside>
       </div>
+      {more.length > 0 && (
+        <div className="wo-wrap"><section className="wo-more"><h2>More this Christmas</h2><div>{more.map((m) => (
+          <Link key={m.id} href={`/whats-on/${m.slug}`}><img src={eventImage(m)} alt="" loading="lazy" /><span className="wo-kick dark">{dateRange(m)}</span><strong>{m.name}</strong></Link>
+        ))}</div></section></div>
+      )}
     </div>
   );
 }

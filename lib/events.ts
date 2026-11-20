@@ -1,8 +1,9 @@
 import { supabase } from "./supabase";
 
-export type CalEvent = { id: string; slug: string; name: string; event_type: string; is_featured: boolean; state: string; region: string; suburb: string; venue: string; address: string; start_date: string; end_date: string | null; time_text: string; price_text: string; about: string; official_url: string; booking_url: string; image_url: string; image_credit: string; source: string; organiser_name: string };
+export type CalEvent = { id: string; slug: string; name: string; event_type: string; is_featured: boolean; state: string; region: string; suburb: string; venue: string; address: string; start_date: string; end_date: string | null; time_text: string; price_text: string; about: string; official_url: string; booking_url: string; image_url: string; image_credit: string; source: string; organiser_name: string; lead: string; story: StoryBlock[]; highlights: { title: string; detail: string }[]; menu: { title: string; price: string; note: string; items: string[] }[]; menu_url: string; good_to_know: string[]; awards: { years: string; title: string; detail: string }[]; venue_about: string; venue_phone: string; venue_hours: string; facebook_url: string; instagram_url: string };
+export type StoryBlock = { type: "text"; heading?: string; text: string } | { type: "image"; url: string; alt?: string; caption?: string; credit?: string; layout?: "wide" | "right" };
 
-const COLUMNS = "id,slug,name,event_type,is_featured,state,region,suburb,venue,address,start_date,end_date,time_text,price_text,about,official_url,booking_url,image_url,image_credit,source,organiser_name";
+const COLUMNS = "id,slug,name,event_type,is_featured,state,region,suburb,venue,address,start_date,end_date,time_text,price_text,about,official_url,booking_url,image_url,image_credit,source,organiser_name,lead,story,highlights,menu,menu_url,good_to_know,awards,venue_about,venue_phone,venue_hours,facebook_url,instagram_url";
 
 export const EVENT_TYPES = ["Carols", "Light displays", "Markets", "Family", "Community", "Christmas dining", "Outdoor movies", "Santa"];
 export const EVENT_AREAS = ["Brisbane City", "South East Queensland", "Gold Coast", "Sunshine Coast"];

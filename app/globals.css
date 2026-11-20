@@ -1505,3 +1505,51 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
   .story-shop-item:hover strong{text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:3px}
   .story-shop-more{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--gold);padding-bottom:3px;text-decoration:none;align-self:flex-start}
 }
+
+/* What's On feature layout: banner, magazine story, sticky booking card */
+.wf-hero{position:relative;height:440px;overflow:hidden;color:#fff}
+.wf-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wf-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(20,16,12,.15),rgba(20,16,12,.68))}
+.wf-hero-in{position:absolute;left:0;right:0;bottom:0;z-index:1;max-width:1180px;margin:0 auto;padding:0 40px 36px}
+.wf-crumb{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase}.wf-crumb a{color:#fff}
+.wf-hero h1{margin:10px 0 12px;font-family:var(--serif);font-weight:400;font-size:44px;line-height:1.15;letter-spacing:.1em;text-transform:uppercase;text-wrap:balance}
+.wf-chips{display:flex;flex-wrap:wrap;gap:8px}.wf-chips span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);padding:5px 10px}
+.wf-hero-cr{position:absolute;right:14px;bottom:8px;z-index:1;font-size:10px;opacity:.85}
+.wf-wrap{max-width:1180px;margin:0 auto;padding:44px 40px 50px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:56px;align-items:start}
+.wf-lead{font-size:19px;line-height:1.65;margin:0 0 26px}
+.wf-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 32px}
+.wf-badges div{border:1px solid var(--gold);background:#fff;padding:14px;text-align:center}
+.wf-badges b{display:block;font-family:var(--serif);font-weight:400;font-size:17px;letter-spacing:.06em}.wf-badges small{font-size:11px;color:var(--brown)}
+.wf-story{overflow:hidden}
+.wf-text p{font-size:16px;line-height:1.85;margin:0 0 16px}
+.wf-text.first p:first-child::first-letter{font-family:var(--serif);float:left;font-size:62px;line-height:.85;padding:8px 10px 0 0;color:var(--brown)}
+.wf-text h3{clear:both;font-family:var(--serif);font-weight:400;font-size:22px;letter-spacing:.06em;margin:28px 0 10px}
+.wf-photo{margin:24px 0 26px}.wf-photo img{width:100%;display:block;object-fit:cover}
+.wf-photo.wide{clear:both}.wf-photo.wide img{aspect-ratio:16/9}
+.wf-photo.right{float:right;width:44%;margin:6px 0 16px 24px}.wf-photo.right img{aspect-ratio:4/5}
+.wf-photo figcaption{font-size:11px;color:var(--brown);margin-top:6px}
+.wf-main>section{clear:both}
+.wf-main h2{font-family:var(--serif);font-weight:400;font-size:22px;letter-spacing:.14em;text-transform:uppercase;margin:36px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--gold)}
+.wf-menu{background:#fff;border:1px solid var(--line);padding:22px 26px}
+.wf-menu-block+.wf-menu-block{border-top:1px solid var(--line);margin-top:20px;padding-top:20px}
+.wf-menu h3{margin:0 0 4px;font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.05em;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.wf-menu h3 em{font-style:normal;font-family:var(--sans);font-size:14px;font-weight:500}
+.wf-menu-note{font-size:13px;color:var(--brown);margin:0 0 12px}
+.wf-menu ul{list-style:none;margin:0;padding:0;columns:2;column-gap:28px;font-size:14px}
+.wf-menu li{padding:6px 0;border-bottom:1px dotted var(--line);break-inside:avoid}
+.wf-more{display:inline-block;margin-top:16px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;border-bottom:1px solid var(--gold);text-decoration:none;color:var(--ink)}
+.wf-awards{list-style:none;margin:0;padding:0}.wf-awards li{display:grid;grid-template-columns:130px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.wf-awards span{font-family:var(--serif);font-size:16px;color:var(--brown)}.wf-awards b{display:block;font-weight:500;font-size:14.5px}.wf-awards small{font-size:12.5px;color:var(--brown)}
+.wf-good{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;font-size:14px}
+.wf-good li{padding-left:18px;position:relative}.wf-good li::before{content:"";position:absolute;left:0;top:.65em;width:7px;height:7px;border:1px solid var(--gold);transform:rotate(45deg)}
+.wf-venue{margin-top:36px;background:var(--sand);padding:26px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start}
+.wf-venue h3{font-family:var(--serif);font-weight:400;font-size:24px;letter-spacing:.1em;text-transform:uppercase;margin:4px 0 8px}.wf-venue p{font-size:14px;margin:0 0 12px}
+.wf-social{display:flex;flex-wrap:wrap;gap:8px}.wf-social a{font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--ink);padding:7px 12px;color:var(--ink);text-decoration:none;background:#fff}
+.wf-venue-contact{font-size:13px;line-height:1.7;text-align:right;max-width:220px}
+.wf-card{position:sticky;top:20px;background:#fff;border:1px solid var(--line);padding:24px}
+.wf-price{font-family:var(--serif);font-size:28px;margin:0 0 14px}
+.wf-acts{display:flex;flex-direction:column;gap:10px;margin-top:20px}.wf-acts .wo-btn{text-align:center}
+.wf-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.wf-row>*{font-size:10px !important;padding:10px 4px !important;text-align:center;justify-content:center}
+.wf-card .wo-shop-list{grid-template-columns:1fr 1fr}
+.wf-card .wo-shop-list a{flex-direction:column;align-items:flex-start}.wf-card .wo-shop-list img{width:100%;height:auto;aspect-ratio:1/1}
+@media (max-width:860px){.wf-hero{height:360px}.wf-hero-in{padding:0 16px 26px}.wf-hero h1{font-size:30px}.wf-wrap{grid-template-columns:1fr;gap:28px;padding:24px 16px 40px}.wf-side{order:-1}.wf-card{position:static}.wf-photo.right{float:none;width:100%;margin:22px 0}.wf-photo.right img{aspect-ratio:4/3}.wf-menu ul{columns:1}.wf-good{grid-template-columns:1fr}.wf-awards li{grid-template-columns:1fr;gap:2px}.wf-venue{grid-template-columns:1fr}.wf-venue-contact{text-align:left}}
