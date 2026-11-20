@@ -10,6 +10,8 @@ export const PORTAL_URL = process.env.PORTAL_URL ?? "https://ivy-and-bough-porta
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION ?? "v26.0";
 const GRAPH = `https://graph.facebook.com/${GRAPH_VERSION}`;
 const PINTEREST = "https://api.pinterest.com/v5";
+// Pinterest's test platform. Trial apps can post here; pins made here never appear on the real Pinterest.
+const PINTEREST_SANDBOX = "https://api-sandbox.pinterest.com/v5";
 // Instagram scopes are opt-in (META_INSTAGRAM_SCOPES) because Meta rejects them until the app has the Instagram product added.
 const META_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "pages_manage_engagement", "business_management", "ads_management", "ads_read", ...(process.env.META_INSTAGRAM_SCOPES ?? "").split(",").map((s) => s.trim()).filter(Boolean)].join(",");
 const PINTEREST_SCOPES = "boards:read,boards:write,pins:read,pins:write,user_accounts:read,ads:read,ads:write";
@@ -211,9 +213,32 @@ async function toInstagram(post: Post, token: Token, image: string, images: stri
   return { id: published.id, permalink: null };
 }
 
-async function toPinterest(post: Post, token: Token, image: string, _images: string[]): Promise<Sent> {
+type PinToken = Token & { sandbox?: boolean; liveAccess?: string };
+
+// Test mode: the same board name is found or made on the test platform, so the pin is created there instead.
+async function sandboxBoard(token: PinToken, liveBoardId: string) {
+  const live = token.liveAccess ? await fetch(`${PINTEREST}/boards/${liveBoardId}`, { cache: "no-store", headers: { Authorization: `Bearer ${token.liveAccess}` } }).then((r) => r.json()).catch(() => null) : null;
+  const name: string = live?.name || "Ivy & Bough Test Board";
+  const auth = { Authorization: `Bearer ${token.access_token}` };
+  const list = await fetch(`${PINTEREST_SANDBOX}/boards?page_size=100`, { cache: "no-store", headers: auth }).then((r) => r.json()).catch(() => null);
+  const found = (list?.items ?? []).find((b: { id: string; name: string }) => b.name.toLowerCase() === name.toLowerCase());
+  if (found) return found.id as string;
+  const res = await fetch(`${PINTEREST_SANDBOX}/boards`, { method: "POST", cache: "no-store", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify({ name, privacy: "PUBLIC" }) });
+  const json = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(`Pinterest test board: ${json?.message ?? res.status}`);
+  return json.id as string;
+}
+
+async function toPinterest(post: Post, token: PinToken, image: string, _images: string[]): Promise<Sent> {
   if (!image) throw new Error("Pinterest needs an image.");
   if (!post.pinterest_board_id) throw new Error("Choose a Pinterest board.");
+  if (token.sandbox) {
+    const board = await sandboxBoard(token, post.pinterest_board_id);
+    const res = await fetch(`${PINTEREST_SANDBOX}/pins`, { method: "POST", cache: "no-store", signal: AbortSignal.timeout(45000), headers: { Authorization: `Bearer ${token.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ board_id: board, title: post.pin_title.slice(0, 100) || undefined, description: (post.pin_description || post.caption).slice(0, 800), link: post.link_url || undefined, media_source: { source_type: "image_url", url: image } }) });
+    const json = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(`Pinterest test mode: ${json?.message ?? res.status}`);
+    return { id: `sandbox:${json.id}`, permalink: null };
+  }
   const res = await fetch(`${PINTEREST}/pins`, { method: "POST", cache: "no-store", signal: AbortSignal.timeout(45000), headers: { Authorization: `Bearer ${token.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ board_id: post.pinterest_board_id, title: post.pin_title.slice(0, 100) || undefined, description: (post.pin_description || post.caption).slice(0, 800), link: post.link_url || undefined, media_source: { source_type: "image_url", url: image } }) });
   const json = await res.json();
   if (!res.ok) throw new Error(json?.message ?? `Pinterest returned ${res.status}.`);
@@ -247,7 +272,11 @@ export async function publishPost(db: Db, postId: string) {
     const route = SENDERS[channel as keyof typeof SENDERS];
     try {
       if (!route) throw new Error("There's no publishing route for this channel.");
-      const token = await liveToken(db, route[0]);
+      let token: PinToken | null = await liveToken(db, route[0]);
+      if (channel === "pinterest") {
+        const sandbox = await liveToken(db, "pinterest_sandbox");
+        if (sandbox) token = { ...sandbox, sandbox: true, liveAccess: token?.access_token };
+      }
       if (!token) throw new Error("This account isn't connected.");
       const result = await route[1](post, token, image, images);
       await db.from("social_publishes").insert({ post_id: postId, channel, outcome: "Published", external_post_id: result.id, permalink: result.permalink });
@@ -281,4 +310,13 @@ export async function removePost(db: Db, postId: string) {
   const status = errors.length ? "Remove failed" : "Removed";
   await db.from("social_posts").update({ status, last_error: errors.join(" ") || null, updated_at: new Date().toISOString() }).eq("id", postId);
   return { ok: !errors.length, status };
+}
+
+// Test mode for Pinterest: Kate pastes the test-platform token from her Pinterest developer app. It's stored server-side only.
+export async function saveSandboxToken(db: Db, raw: string) {
+  const access = raw.trim();
+  if (access.length < 20) throw new Error("That doesn't look like a Pinterest test token.");
+  const res = await fetch(`${PINTEREST_SANDBOX}/user_account`, { cache: "no-store", headers: { Authorization: `Bearer ${access}` } });
+  if (!res.ok) throw new Error("Pinterest didn't accept that test token. Generate a new one and try again.");
+  await saveTokens(db, [{ platform: "pinterest", account_kind: "pinterest_sandbox", external_id: "sandbox", display_name: "Test mode (pins go to Pinterest's test platform)", access_token: access }]);
 }
