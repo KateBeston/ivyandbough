@@ -1578,3 +1578,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .share-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border:1px solid var(--line);box-shadow:0 10px 30px rgba(47,44,39,.14);min-width:180px;display:flex;flex-direction:column;padding:6px 0}
 .share-menu a,.share-menu button{display:block;text-align:left;padding:10px 16px;font:inherit;font-size:13px;letter-spacing:.06em;color:var(--ink);text-decoration:none;background:none;border:0;cursor:pointer}
 .share-menu a:hover,.share-menu button:hover{background:var(--sand)}
+.wf-row>.share-pop{padding:0 !important;border:0;background:none}.share-pop>.wf-ico{flex:1}
