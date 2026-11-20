@@ -53,7 +53,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const free = /free/i.test(e.price_text);
   const _gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.name)}&dates=${e.start_date.replace(/-/g, "")}/${(() => { const d = new Date(`${e.end_date || e.start_date}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ""); })()}&location=${encodeURIComponent([e.venue, e.suburb, e.state].filter(Boolean).join(", "))}&details=${encodeURIComponent(`${e.time_text}\n${SITE}/whats-on/${e.slug}`)}`;
   const where = [e.venue, e.address, e.suburb].filter(Boolean).join(", ");
-  const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([e.venue, e.address, e.suburb, e.state].filter(Boolean).join(", "))}`;
+  const maps = e.maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([e.venue, e.address, e.suburb, e.state].filter(Boolean).join(", "))}`;
   const story = e.story ?? [];
   const firstText = story.findIndex((b) => b.type === "text");
   return (
@@ -97,7 +97,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           )}
           {e.venue_about && (
             <section className="wf-venue"><div><span className="wo-kick dark">About the venue</span><h3>{e.organiser_name || e.venue}</h3><p>{e.venue_about}</p>
-              <div className="wf-social">{e.official_url && <a href={e.official_url} target="_blank" rel="noopener">Website</a>}{e.facebook_url && <a href={e.facebook_url} target="_blank" rel="noopener">Facebook</a>}{e.instagram_url && <a href={e.instagram_url} target="_blank" rel="noopener">Instagram</a>}{e.booking_url && <a href={e.booking_url} target="_blank" rel="noopener">Book</a>}</div></div>
+              <div className="wf-social">{e.official_url && <a href={e.official_url} target="_blank" rel="noopener">Website</a>}{e.facebook_url && <a href={e.facebook_url} target="_blank" rel="noopener">Facebook</a>}{e.instagram_url && <a href={e.instagram_url} target="_blank" rel="noopener">Instagram</a>}{e.booking_url && <a href={e.booking_url} target="_blank" rel="noopener">Book</a>}<a href={maps} target="_blank" rel="noopener">Google Maps</a></div></div>
               <div className="wf-venue-contact">{where}{e.venue_phone && <><br />{e.venue_phone}</>}{e.venue_hours && <><br />{e.venue_hours}</>}</div>
             </section>
           )}
