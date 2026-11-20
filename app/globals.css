@@ -1563,3 +1563,11 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wf-follow a{display:block;padding:4px;color:var(--ink);opacity:.85}.wf-follow a:hover{opacity:1}
 .wf-follow svg{width:22px;height:22px;display:block;fill:currentColor}
 .wf-venue-contact a{color:var(--ink);border-bottom:1px solid var(--gold);text-decoration:none}
+/* Event page: stronger small gold and brown text for readability */
+.wo-feature .wo-kick.dark,.wf-follow span{color:#8A6D35;font-weight:600;font-size:12px;letter-spacing:.22em}
+.wf-photo figcaption,.wf-badges small,.wf-menu-note,.wf-awards small{color:#5E4B39;font-weight:500;font-size:12.5px}
+.wf-photo figcaption{font-style:italic}
+.wf-awards span{color:#5E4B39;font-weight:600}
+.wf-text.first p:first-child::first-letter{color:#6B5640}
+.wf-crumb{font-weight:600}.wf-hero-cr{font-size:11px;font-weight:500;opacity:1;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.wo-feature .wo-note{color:#5E4B39;font-size:12.5px}
