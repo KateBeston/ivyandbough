@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/comms";
 import { admin } from "@/lib/server";
-import { connectUrl, pinterestBoards, publishPost, saveSandboxToken, socialStatus } from "@/lib/social";
+import { connectUrl, pinterestBoards, publishPost, socialStatus } from "@/lib/social";
 
 const refused = () => NextResponse.json({ error: "Not allowed." }, { status: 401 });
 
@@ -30,8 +30,6 @@ export async function POST(request: Request) {
       await db.from("social_tokens").delete().eq("id", String(body.id));
       return NextResponse.json({ ok: true });
     }
-    if (body?.action === "sandbox_on") { await saveSandboxToken(db, String(body.token ?? "")); return NextResponse.json({ ok: true }); }
-    if (body?.action === "sandbox_off") { await db.from("social_tokens").delete().eq("account_kind", "pinterest_sandbox"); return NextResponse.json({ ok: true }); }
     if (body?.action === "boards") return NextResponse.json({ boards: await pinterestBoards(db) });
     if (body?.action === "publish") return NextResponse.json(await publishPost(db, String(body.postId)));
   } catch (e) {
