@@ -139,7 +139,7 @@ export async function resolvePinterestBoards(db: Db) {
   return made;
 }
 
-type Post = { id: string; caption: string; image_url: string; image_urls: string[] | null; link_url: string; first_comment: string | null; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
+type Post = { post_type?: string; id: string; caption: string; image_url: string; image_urls: string[] | null; link_url: string; first_comment: string | null; channels: string[]; pin_title: string; pin_description: string; pinterest_board_id: string };
 type Sent = { id: string; permalink: string | null };
 
 // The call to action sits just above the hashtags. Facebook takes the shop link as the first comment; Instagram points to the bio link.
@@ -158,6 +158,13 @@ async function commentLink(post: Post, token: Token, postId: string) {
 }
 
 async function toFacebook(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
+  if (post.post_type === "Story") {
+    // A Page story: upload the photo unpublished, then post it as a story.
+    if (!image) throw new Error("A story needs an image.");
+    const photo = await graphPost<{ id: string }>(`/${token.external_id}/photos`, { url: image, published: "false", access_token: token.access_token });
+    const r = await graphPost<{ post_id?: string; id?: string }>(`/${token.external_id}/photo_stories`, { photo_id: photo.id, access_token: token.access_token });
+    return { id: r.post_id ?? r.id ?? photo.id, permalink: null };
+  }
   const sent = await facebookPost(post, token, image, images);
   await commentLink(post, token, sent.id);
   return sent;
@@ -184,9 +191,11 @@ async function facebookPost(post: Post, token: Token, image: string, images: str
 
 async function toInstagram(post: Post, token: Token, image: string, images: string[]): Promise<Sent> {
   if (!image) throw new Error("Instagram needs an image.");
+  // Stories have no caption; the caption field is only an internal note for them.
   const igCaption = post.link_url ? withCta(post.caption, "Link in bio.") : post.caption;
   let container: { id: string };
-  if (images.length > 1) {
+  if (post.post_type === "Story") container = await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: image, media_type: "STORIES", access_token: token.access_token });
+  else if (images.length > 1) {
     // Instagram carousels take 2 to 10 slides, each made as its own item first.
     const children: string[] = [];
     for (const url of images.slice(0, 10)) children.push((await graphPost<{ id: string }>(`/${token.external_id}/media`, { image_url: url, is_carousel_item: "true", access_token: token.access_token })).id);
