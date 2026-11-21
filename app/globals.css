@@ -1613,3 +1613,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .basket-progress p.muted{margin:10px 0 0;font-size:13px}
 .basket-progress-bar{display:block;height:6px;background:var(--sand);overflow:hidden}
 .basket-progress-bar span{display:block;height:100%;background:#6b1f2b;transition:width .3s ease}
+.footer-hours{margin:10px 0 0;font-size:13px;line-height:1.6;opacity:.85}

@@ -50,6 +50,7 @@ export async function Footer({ signup = true }: { signup?: boolean } = {}) {
         <div className="footer-brand">
           <Link href="/" className="footer-logo-link" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-cream.svg" alt="Ivy & Bough" className="footer-logo" width={150} height={88} /></Link>
           <p className="footer-help-title">Questions?<br />We&apos;re here to help</p>
+          <p className="footer-hours">Our team is here 9am–5pm weekdays (Brisbane time).<br />Chat with us any time: our help chat is open 24/7.</p>
           <address className="footer-contact">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             {CONTACT_PHONE && <a href={`tel:${CONTACT_PHONE.replace(/\s/g, "")}`}>{CONTACT_PHONE}</a>}
