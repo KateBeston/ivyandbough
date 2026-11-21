@@ -59,7 +59,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
       return !main || !categories.some((c) => c.parent_id === main.id && f.category.includes(c.slug));
     });
     const list = products.filter((p) => {
-      const text = `${p.name} ${p.brand} ${p.description} ${p.kind} ${p.materials} ${p.colours}`.toLowerCase();
+      const text = `${p.name} ${p.brand} ${p.short_description ?? ""} ${p.kind} ${p.materials} ${p.colours}`.toLowerCase();
       if (!words.every((w) => text.includes(w))) return false;
       // Matches its main category or any it has also been added to, and their parent categories.
       const cats = [p.category_id, ...(p.extra_category_ids ?? [])].flatMap((id) => (id && byId.get(id) ? [byId.get(id)!] : []));

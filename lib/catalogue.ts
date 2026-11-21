@@ -244,7 +244,6 @@ const CARD_KEYS = ["id", "sku", "slug", "name", "kind", "short_description", "si
 export function forCards(list: Product[]): Product[] {
   const slim = (p: Product): Product => {
     const o = Object.fromEntries(CARD_KEYS.filter((k) => k in p).map((k) => [k, p[k]])) as unknown as Product;
-    o.description = (p.description || "").slice(0, 200);
     if (p.short_description) o.short_description = p.short_description.slice(0, 160); // cards show two lines
     o.product_images = p.product_images.slice(0, 1);
     // Quick add only needs each option's name, price, stock and first photo.
