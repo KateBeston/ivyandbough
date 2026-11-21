@@ -1629,3 +1629,15 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .show-more p{margin:0;font-size:13px;letter-spacing:.06em;color:var(--brown)}
 .show-more .solid{min-width:220px}
 .themes-menu[hidden]{display:none}
+.article-faq{margin:48px 0 32px}
+.article-faq h2,.article-about h2{margin-bottom:16px}
+.article-faq details{border-top:1px solid #d9d2c5;padding:14px 0}
+.article-faq details:last-of-type{border-bottom:1px solid #d9d2c5}
+.article-faq summary{cursor:pointer;font-size:16px;font-weight:500;list-style:none}
+.article-faq summary::-webkit-details-marker{display:none}
+.article-faq summary::after{content:"+";float:right;color:var(--gold)}
+.article-faq details[open] summary::after{content:"–"}
+.article-faq details p{margin:10px 0 0}
+.article-about{margin:32px 0;padding:20px 24px;background:#f6f1e8;border-left:3px solid var(--gold)}
+.article-about h2{font-size:18px}
+.article-about p{margin:0}

@@ -171,6 +171,7 @@ export default async function PostPage({ params }: Props) {
     .map((sec) => ({ heading: grouped ? sec.heading : "", items: (sec.products ?? []).filter((it) => { const k = it.slug || it.url || it.name || ""; if (seen.has(k)) return false; seen.add(k); return true; }) }))
     .filter((g) => g.items.length)
     .reduce<{ heading: string; items: PostProduct[] }[]>((acc, g) => (grouped || !acc.length ? [...acc, g] : [{ heading: "", items: [...acc[0].items, ...g.items] }]), []);
+  const faqs = (post.faqs ?? []).filter((f) => f?.q && f?.a);
   const topics = (post.topics ?? "").split(",").map((t) => t.trim()).filter(Boolean);
   const meta = <JsonLd data={{ "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.excerpt, datePublished: post.published_at, image: post.image_url ? absolute(post.image_url) : undefined, author: { "@type": "Organization", name: "Ivy & Bough" }, publisher: { "@type": "Organization", name: "Ivy & Bough", logo: absolute("/icon.png") }, mainEntityOfPage: absolute(`/the-christmas-edit/${post.slug}`) }} />;
   const share = <ShareBar url={absolute(`/the-christmas-edit/${post.slug}`)} title={post.title} text={post.excerpt} image={post.image_url ? absolute(post.image_url) : undefined} />;
@@ -231,6 +232,24 @@ export default async function PostPage({ params }: Props) {
                 <div className="article-products small">{g.items.map((item, n) => <ArticleProduct key={n} item={item} catalogue={catalogue} />)}</div>
               </Fragment>
             ))}
+          </section>
+        )}
+        {faqs.length > 0 && (
+          <section className="article-faq" aria-labelledby="article-faq">
+            <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />
+            <h2 id="article-faq">Frequently asked questions</h2>
+            {faqs.map((f) => (
+              <details key={f.q}>
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </section>
+        )}
+        {post.author_note && (
+          <section className="article-about" aria-labelledby="article-about">
+            <h2 id="article-about">About {post.author}</h2>
+            <p>{post.author_note}</p>
           </section>
         )}
         {topics.length > 0 && (
