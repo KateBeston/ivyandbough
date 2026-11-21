@@ -1397,10 +1397,10 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-shop-list em{font-style:normal;font-size:13px;color:var(--brown)}
 .wo-shop-more{display:inline-block;margin-top:14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--gold);padding-bottom:3px;text-decoration:none}
 @media (max-width:860px){.wo-shop-list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:6px;margin-right:-16px}.wo-shop-list a{flex:0 0 42%;flex-direction:column;align-items:flex-start;scroll-snap-align:start}.wo-shop-list img{width:100%;height:auto;aspect-ratio:1/1}}
-.wo-more{margin-top:60px}
+.wo-more{margin-top:60px;padding-bottom:64px}
 .wo-more h2{margin:0 0 18px;padding-bottom:8px;border-bottom:1px solid var(--gold);font-family:var(--serif);font-weight:400;font-size:22px;letter-spacing:.14em;text-transform:uppercase}
 .wo-more>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
-.wo-more a{text-decoration:none;color:var(--ink)}
+.wo-more a{display:block;text-decoration:none;color:var(--ink)}
 .wo-more img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;margin-bottom:10px}
 .wo-more strong{display:block;margin-top:4px;font-family:var(--serif);font-weight:400;font-size:18px;letter-spacing:.05em}
 .wo-form{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:20px}
