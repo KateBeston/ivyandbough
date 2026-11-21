@@ -11,6 +11,8 @@ import { PaymentMarks } from "@/components/PaymentMarks";
 import { Price } from "@/components/Price";
 import { Turnstile, TURNSTILE_ON } from "@/components/Turnstile";
 import { formatPrice } from "@/lib/catalogue";
+import { campaignState, getCampaignCodes, type CampaignCode } from "@/lib/campaigns";
+import { supabase } from "@/lib/supabase";
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 const blank = { name: "", phone: "", line1: "", line2: "", city: "", state: "", postcode: "", smsUpdates: false, marketing: false, authorityToLeave: false, instructions: "" };
@@ -43,7 +45,14 @@ export default function BasketPage() {
   const [token, setToken] = useState("");
   const [attempt, setAttempt] = useState(0);
   const trap = useRef<HTMLDivElement>(null);
-  const [promo, setPromo] = useState<Promo | null>(null);
+  const [promos, setPromos] = useState<Promo[]>([]);
+  const [discount, setDiscount] = useState(0);
+  const [freeOver, setFreeOver] = useState<number | null>(null);
+  const [sale, setSale] = useState<CampaignCode[]>([]);
+  useEffect(() => {
+    supabase.from("delivery_settings").select("free_over").maybeSingle().then(({ data }) => setFreeOver(data?.free_over == null ? null : Number(data.free_over)));
+    getCampaignCodes().then((c) => setSale(campaignState(c) === "live" ? c.filter((x) => campaignState([x]) === "live") : [])).catch(() => null);
+  }, []);
   const [promoError, setPromoError] = useState("");
   const offerUsed = useRef(false);
   const validMobile = /^4\d{8}$/.test(mobileDigits(details.phone));
@@ -67,37 +76,43 @@ export default function BasketPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details.postcode, basketKey]);
 
-  const applyCode = useCallback(async (value: string) => {
+  // Every code on the order is checked together: one welcome or personal code plus one sale code at most.
+  const applyCodes = useCallback(async (values: string[], keepOnError = false) => {
     setPromoError("");
-    const res = await fetch("/api/promo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: value, sessionId: sessionId(), items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
+    if (!values.length) { setPromos([]); setDiscount(0); return true; }
+    const res = await fetch("/api/promo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codes: values, sessionId: sessionId(), items: lines.map((l) => ({ id: l.id, quantity: l.quantity })) }) }).catch(() => null);
     const body = await res?.json().catch(() => null);
-    if (res?.ok && body?.code) setPromo(body);
-    else { setPromo(null); setPromoError(body?.error ?? "That code couldn't be applied."); }
+    if (res?.ok && Array.isArray(body?.promos)) { setPromos(body.promos); setDiscount(body.discountCents ?? 0); return true; }
+    if (!keepOnError) { setPromos([]); setDiscount(0); }
+    setPromoError(body?.error ?? "That code couldn't be applied.");
+    return false;
   }, [lines, sessionId]);
 
   // The discount is worked out again whenever the basket changes.
   useEffect(() => {
     if (!lines.length) return;
-    const active = promo?.code ?? (offerUsed.current ? "" : welcome?.code ?? "");
-    if (!active) return;
+    const active = promos.length ? promos.map((p) => p.code) : offerUsed.current || !welcome?.code ? [] : [welcome.code];
+    if (!active.length) return;
     offerUsed.current = true;
-    setCode(active);
-    applyCode(active);
+    applyCodes(active);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basketKey, welcome]);
 
   function submitCode(e: FormEvent) {
     e.preventDefault();
-    if (code.trim()) applyCode(code);
+    if (!code.trim()) return;
+    applyCodes([...promos.map((p) => p.code), code.trim()], true).then((ok) => { if (ok) setCode(""); });
   }
 
-  function removeCode() {
-    setPromo(null);
+  function removeCode(value: string) {
     setPromoError("");
-    setCode("");
+    applyCodes(promos.map((p) => p.code).filter((c) => c !== value));
   }
 
-  const discount = promo?.discountCents ?? 0;
+  // How far the basket is from free delivery (standard items), shown as a bar.
+  const toFree = freeOver === null ? null : Math.max(0, Math.round(freeOver * 100) - subtotal);
+  const big = sale.find((c) => c.include_categories.length);
+  const spend = sale.find((c) => !c.include_categories.length);
   const payable = subtotal - discount + (quote?.deliveryCents ?? 0);
   const poBox = PO_BOX.test(`${details.line1} ${details.line2}`);
   const ready = quote && details.name.trim() && validMobile && details.line1.trim() && !poBox && details.city.trim() && details.state;
@@ -109,7 +124,7 @@ export default function BasketPage() {
   async function pay() {
     setBusy(true);
     setError("");
-    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promo?.code, { token, company: trap.current?.querySelector("input")?.value ?? "", terms: agreed });
+    const message = await checkout({ ...details, phone: `+61${mobileDigits(details.phone)}` }, promos.map((p) => p.code).join(",") || undefined, { token, company: trap.current?.querySelector("input")?.value ?? "", terms: agreed });
     setAttempt((n) => n + 1);
     if (message) {
       setError(message);
@@ -172,8 +187,17 @@ export default function BasketPage() {
             </section>
           </div>
           <aside className="basket-summary">
+            {toFree !== null && (
+              <div className="basket-progress" role="status">
+                <p>{toFree > 0 ? <>You&apos;re <strong>{formatPrice(toFree)}</strong> away from free delivery on standard items.</> : <>You&apos;ve unlocked <strong>free delivery</strong> on standard items.</>}</p>
+                <span className="basket-progress-bar" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.round((subtotal / (Math.round((freeOver ?? 0) * 100) || 1)) * 100))}%` }} /></span>
+                {spend && <p className="muted">Black Friday: $20 off with <strong>{spend.code}</strong> when you spend $150 on table, decorations, entertaining, home and gifts.</p>}
+                {big && <p className="muted">Trees, wreaths, garlands, outdoor or lighting? Take $10 off with <strong>{big.code}</strong> when you spend $100 on them.</p>}
+              </div>
+            )}
             <div><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-            {promo && <div><span>Discount <button type="button" className="link-button" onClick={removeCode}>Remove</button></span><span>-{formatPrice(discount)}</span></div>}
+            {promos.map((p) => <div key={p.code}><span>{p.label || "Discount"} ({p.code}) <button type="button" className="link-button" onClick={() => removeCode(p.code)}>Remove</button></span><span>-{formatPrice(p.discountCents)}</span></div>)}
+            {promos.length > 1 && discount < promos.reduce((n, p) => n + p.discountCents, 0) && <p className="muted">Total discount is capped at {formatPrice(discount)} for this order.</p>}
             <div><span>{quote ? <>Delivery to {details.postcode} <button type="button" className="link-button" onClick={() => { setCalc(details.postcode); set({ postcode: "" }); }}>Change</button></> : "Delivery"}</span><span>{quote ? (quote.deliveryCents ? formatPrice(quote.deliveryCents) : "Free") : ""}</span></div>
             {quote?.estimate && <p className="muted estimate-note">Large item delivery is an estimate. If the courier cost to your postcode is higher, we&apos;ll contact you before dispatch so you can choose to go ahead or cancel for a full refund.</p>}
             {!quote && (
@@ -185,7 +209,7 @@ export default function BasketPage() {
             <div className="total"><span>Total</span><span>{formatPrice(payable)}</span></div>
             <p className="muted">{quote ? `Total includes ${formatPrice(Math.round(payable / 11))} GST.` : "Prices include GST."}</p>
             {quoteError && <p role="alert">{quoteError}</p>}
-            {!promo && (
+            {promos.length < 2 && (
               <form className="promo-form" onSubmit={submitCode}>
                 <input aria-label="Promotion code" placeholder="Promotion code" value={code} onChange={(e) => setCode(e.target.value)} />
                 <button type="submit">Apply</button>

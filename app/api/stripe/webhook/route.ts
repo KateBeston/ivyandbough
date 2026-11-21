@@ -98,9 +98,11 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
 
   if (ship.ad_consent === "yes") await metaPurchase({ eventId: session.id, orderId: session.id, email, phone, name, city: ship.ship_city, state: ship.ship_state, postcode: ship.ship_postcode, externalId: customerId ? String(customerId) : undefined, ip: ship.ad_ip, ua: ship.ad_ua, fbp: ship.ad_fbp, fbc: ship.ad_fbc, value: total, lines: lines.map((i) => { const p = i.price?.product as Stripe.Product | undefined; return { id: p?.metadata?.sku ?? "", name: i.description ?? "", price: i.amount_subtotal / (i.quantity ?? 1) / 100, quantity: i.quantity ?? 1 }; }) }).catch((e) => console.warn("Meta CAPI", e));
 
-  if (promoCode) await db.from("promo_codes").update({ used_at: new Date().toISOString(), order_id: order.id, reserved_until: null }).eq("code", promoCode);
-  // Shared sale codes just count how often they're used.
-  if (promoCode) await db.rpc("count_campaign_use", { c: promoCode });
+  // An order can carry a personal code and a sale code ("WELCOME-ABC,BIG10"). Personal codes are marked used; sale codes are counted.
+  for (const c of promoCode.split(",").map((x) => x.trim()).filter(Boolean)) {
+    await db.from("promo_codes").update({ used_at: new Date().toISOString(), order_id: order.id, reserved_until: null }).eq("code", c);
+    await db.rpc("count_campaign_use", { c });
+  }
   if (session.metadata?.cart_session) await db.from("cart_items").update({ status: "Converted", converted_at: new Date().toISOString() }).eq("session_id", session.metadata.cart_session).eq("status", "In cart");
   if (userId) await db.from("cart_items").update({ status: "Converted", converted_at: new Date().toISOString() }).eq("auth_user_id", userId).eq("status", "In cart");
 

@@ -117,3 +117,22 @@ async function checkCampaign(db: Db, value: string, lines: PricedLine[]): Promis
   const code = { id: c.id, code: c.code, email: "", discount_type: c.discount_type, discount_value: Number(c.discount_value), min_order: Number(c.min_order), applies_to_sale: c.applies_to_sale, expires_at: c.ends_at, used_at: null, reserved_until: null, reserved_cart: null, reserved_session: null } satisfies Code;
   return { ok: true, code, discountCents, label: c.label || "Offer", campaign: true };
 }
+
+export type CheckedSet = { ok: true; applied: Extract<Checked, { ok: true }>[]; discountCents: number } | { ok: false; error: string };
+
+// Up to two codes on one order: one personal code (such as a welcome offer) and one sale code.
+export async function checkCodes(db: Db, inputs: string[], lines: PricedLine[], cart: string): Promise<CheckedSet> {
+  const codes = [...new Set(inputs.map((c) => c.trim().toUpperCase()).filter(Boolean))];
+  if (codes.length > 2) return { ok: false, error: "You can use one welcome code and one sale code per order." };
+  const applied: Extract<Checked, { ok: true }>[] = [];
+  for (const c of codes) {
+    const r = await checkCode(db, c, lines, cart);
+    if (!r.ok) return { ok: false, error: codes.length > 1 ? `${c}: ${r.error}` : r.error };
+    applied.push(r);
+  }
+  if (applied.filter((a) => a.campaign).length > 1) return { ok: false, error: "Only one sale code can be used per order." };
+  if (applied.filter((a) => !a.campaign).length > 1) return { ok: false, error: "Only one welcome or personal code can be used per order." };
+  const subtotal = lines.reduce((n, l) => n + l.cents * l.quantity, 0);
+  const discountCents = Math.min(applied.reduce((n, a) => n + a.discountCents, 0), subtotal - 100);
+  return { ok: true, applied, discountCents };
+}

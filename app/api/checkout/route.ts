@@ -4,7 +4,7 @@ import { isHuman } from "@/lib/guard";
 import { allowed } from "@/lib/limits";
 import { stripeCustomer } from "@/lib/payments";
 import { OFFER_COLUMNS, offerPrice, type OfferFields } from "@/lib/pricing";
-import { checkCode, reserveCode, type Checked } from "@/lib/promotions";
+import { checkCodes, reserveCode, type Checked } from "@/lib/promotions";
 import { admin, stripe, userFrom } from "@/lib/server";
 import { checkSuburb } from "@/lib/auspost";
 import { cleanItems, quoteDelivery } from "@/lib/shipping";
@@ -63,20 +63,26 @@ export async function POST(request: Request) {
 
   const cart = /^[0-9a-f-]{36}$/i.test(String(body?.sessionId)) ? String(body.sessionId) : crypto.randomUUID();
   const db = admin();
-  let promo: Extract<Checked, { ok: true }> | null = null;
-  const promoCode = String(body?.promoCode ?? "").trim();
-  if (promoCode) {
+  // Up to two codes: one personal (welcome) code and one sale code.
+  let promos: Extract<Checked, { ok: true }>[] = [];
+  let promoCents = 0;
+  const promoCodes = String(body?.promoCode ?? "").split(",").map((c) => c.trim()).filter(Boolean);
+  if (promoCodes.length) {
     if (!db) return NextResponse.json({ error: "Codes aren't available right now." }, { status: 503 });
-    const checked = await checkCode(db, promoCode, lines.map((l) => ({ id: l.row.id, cents: l.cents, quantity: l.quantity, onSale: l.onSale, noDiscount: l.noDiscount })), cart);
+    const checked = await checkCodes(db, promoCodes, lines.map((l) => ({ id: l.row.id, cents: l.cents, quantity: l.quantity, onSale: l.onSale, noDiscount: l.noDiscount })), cart);
     if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
-    // Sale codes are shared, so only personal codes are held for one checkout at a time.
-    if (!checked.campaign && !(await reserveCode(db, checked.code, cart))) return NextResponse.json({ error: "That code is already being used at checkout." }, { status: 409 });
-    // Going back to the basket leaves the earlier payment page open, so it's closed here.
-    if (checked.code.reserved_session) await client.checkout.sessions.expire(checked.code.reserved_session).catch(() => null);
-    promo = checked;
+    for (const c of checked.applied) {
+      // Sale codes are shared, so only personal codes are held for one checkout at a time.
+      if (c.campaign) continue;
+      if (!(await reserveCode(db, c.code, cart))) return NextResponse.json({ error: "That code is already being used at checkout." }, { status: 409 });
+      // Going back to the basket leaves the earlier payment page open, so it's closed here.
+      if (c.code.reserved_session) await client.checkout.sessions.expire(c.code.reserved_session).catch(() => null);
+    }
+    promos = checked.applied;
+    promoCents = checked.discountCents;
   }
-  const coupon = promo ? await client.coupons.create({ amount_off: promo.discountCents, currency: "aud", duration: "once", max_redemptions: 1, name: promo.label }) : null;
-  const payable = quote.subtotalCents - (promo?.discountCents ?? 0) + quote.deliveryCents;
+  const coupon = promoCents ? await client.coupons.create({ amount_off: promoCents, currency: "aud", duration: "once", max_redemptions: 1, name: promos.map((p) => p.label).filter((v, i, a) => a.indexOf(v) === i).join(" + ").slice(0, 40) || "Offer" }) : null;
+  const payable = quote.subtotalCents - promoCents + quote.deliveryCents;
 
   const user = await userFrom(request);
   const customer = user ? await stripeCustomer(client, user).catch(() => null) : null;
@@ -92,11 +98,11 @@ export async function POST(request: Request) {
     payment_intent_data: { shipping: { name: delivery.name, phone: delivery.phone, address: { line1: delivery.line1, line2: delivery.line2 || undefined, city: delivery.city, state: delivery.state, postal_code: delivery.postcode, country: "AU" } } },
     custom_text: { submit: { message: `Total includes GST of $${(payable / 1100).toFixed(2)}. Delivery times are estimates. By placing your order, you agree to the Ivy & Bough Terms of Sale and Privacy Policy.` } },
     ...(customer ? { customer, saved_payment_method_options: { payment_method_save: "enabled" as const } } : { customer_email: user?.email }),
-    metadata: { terms_accepted_at: new Date().toISOString(), user_id: user?.id ?? "", cart_session: cart, promo_code: promo?.code.code ?? "", ship_name: delivery.name, ship_phone: delivery.phone, ship_line1: delivery.line1, ship_line2: delivery.line2, ship_city: delivery.city, ship_state: delivery.state, ship_postcode: delivery.postcode, ship_zone: quote.zone, sms_updates: body?.delivery?.smsUpdates === true ? "yes" : "no", marketing: body?.delivery?.marketing === true ? "yes" : "no", atl: body?.delivery?.authorityToLeave === true ? "yes" : "no", ship_notes: text(body?.delivery?.instructions, 200), ...(body?.adConsent === true ? { ad_consent: "yes", ad_ip: (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim().slice(0, 45), ad_ua: (request.headers.get("user-agent") ?? "").slice(0, 400), ad_epik: text(body?.pinClick, 200), ad_fbp: text(body?.metaFbp, 200), ad_fbc: text(body?.metaFbc, 400) } : { ad_consent: "no" }) },
+    metadata: { terms_accepted_at: new Date().toISOString(), user_id: user?.id ?? "", cart_session: cart, promo_code: promos.map((p) => p.code.code).join(","), ship_name: delivery.name, ship_phone: delivery.phone, ship_line1: delivery.line1, ship_line2: delivery.line2, ship_city: delivery.city, ship_state: delivery.state, ship_postcode: delivery.postcode, ship_zone: quote.zone, sms_updates: body?.delivery?.smsUpdates === true ? "yes" : "no", marketing: body?.delivery?.marketing === true ? "yes" : "no", atl: body?.delivery?.authorityToLeave === true ? "yes" : "no", ship_notes: text(body?.delivery?.instructions, 200), ...(body?.adConsent === true ? { ad_consent: "yes", ad_ip: (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim().slice(0, 45), ad_ua: (request.headers.get("user-agent") ?? "").slice(0, 400), ad_epik: text(body?.pinClick, 200), ad_fbp: text(body?.metaFbp, 200), ad_fbc: text(body?.metaFbc, 400) } : { ad_consent: "no" }) },
     // Shown in a window over the basket when the publishable key is set; otherwise Stripe's own page.
     ...(EMBEDDED ? { ui_mode: "embedded_page" as unknown as "embedded", return_url: `${origin}/order/thanks?session_id={CHECKOUT_SESSION_ID}` } : { success_url: `${origin}/order/thanks`, cancel_url: `${origin}/basket` }),
   });
-  if (promo && !promo.campaign && db) await db.from("promo_codes").update({ reserved_session: session.id }).eq("id", promo.code.id);
+  for (const p of promos) if (!p.campaign && db) await db.from("promo_codes").update({ reserved_session: session.id }).eq("id", p.code.id);
   return NextResponse.json(EMBEDDED ? { clientSecret: session.client_secret } : { url: session.url });
 }
 

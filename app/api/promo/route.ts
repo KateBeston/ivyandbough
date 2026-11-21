@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { allowed } from "@/lib/limits";
-import { checkCode, priceLines } from "@/lib/promotions";
+import { checkCodes, priceLines } from "@/lib/promotions";
 import { admin } from "@/lib/server";
 import { cleanItems } from "@/lib/shipping";
 
@@ -11,7 +11,10 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const lines = await priceLines(db, cleanItems(body?.items));
   if (!lines.length) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });
-  const result = await checkCode(db, String(body?.code ?? ""), lines, String(body?.sessionId ?? "").slice(0, 60));
+  // "codes" holds every code on the order (one personal plus one sale code at most); "code" is the older single-code form.
+  const codes = Array.isArray(body?.codes) ? body.codes.slice(0, 3).map(String) : [String(body?.code ?? "")];
+  const result = await checkCodes(db, codes, lines, String(body?.sessionId ?? "").slice(0, 60));
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
-  return NextResponse.json({ code: result.code.code, discountCents: result.discountCents, label: result.label });
+  const promos = result.applied.map((a) => ({ code: a.code.code, discountCents: a.discountCents, label: a.label }));
+  return NextResponse.json({ promos, discountCents: result.discountCents, ...(promos.length === 1 ? promos[0] : {}) });
 }

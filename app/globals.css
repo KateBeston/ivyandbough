@@ -1608,3 +1608,8 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .footer-top nav .footer-cookie{padding:6px 0;text-align:left;background:none;border:0;color:inherit;font:inherit;cursor:pointer}
 @media (min-width:1100px){.footer-top{grid-template-columns:1.4fr repeat(5,minmax(0,1fr))}}
 @media (max-width:1099px) and (min-width:761px){.footer-brand{grid-column:1/-1}}
+.basket-progress{display:block!important;padding:0 0 18px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.basket-progress p{margin:0 0 10px;font-size:14px}
+.basket-progress p.muted{margin:10px 0 0;font-size:13px}
+.basket-progress-bar{display:block;height:6px;background:var(--sand);overflow:hidden}
+.basket-progress-bar span{display:block;height:100%;background:#6b1f2b;transition:width .3s ease}
