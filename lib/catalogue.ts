@@ -182,7 +182,7 @@ export function formatDate(date: string | null) {
 
 export type PostProduct = { slug?: string; name?: string; image?: string; alt?: string; price?: string; shop?: string; url?: string };
 export type PostSection = { type?: "section" | "photo" | "pair" | "quote" | "divider"; heading: string; text: string; image: string; alt: string; position: string; credit?: string; caption?: string; note?: string; products?: PostProduct[]; shape?: string; size?: string; align?: string; columns?: number; width?: string; image2?: string; alt2?: string; position2?: string; style?: string };
-export type Post = { id: string; slug: string; title: string; excerpt: string; intro: string; category: string; author: string; sections: PostSection[]; image_url: string; image_alt: string; image_position: string; image_credit: string; image_caption?: string; numbered?: boolean; topics?: string; featured?: boolean; faqs?: { q: string; a: string }[] | null; author_note?: string; published_at: string };
+export type Post = { id: string; slug: string; title: string; excerpt: string; intro: string; category: string; author: string; sections: PostSection[]; image_url: string; image_alt: string; image_position: string; image_credit: string; image_caption?: string; numbered?: boolean; topics?: string; featured?: boolean; faqs?: { q: string; a: string }[] | null; author_note?: string; summary?: string[] | null; published_at: string };
 
 export async function getPosts(): Promise<Post[]> {
   const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });

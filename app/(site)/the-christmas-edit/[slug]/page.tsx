@@ -214,6 +214,12 @@ export default async function PostPage({ params }: Props) {
       <div className="article-shell">
       <article className={`article ${design.dropCap ? "drop-cap" : ""} ${stacked ? "stacked" : ""}`}>
         {post.intro && <RichText text={post.intro} />}
+        {(post.summary ?? []).length > 0 && (
+          <aside className="article-summary" aria-label="In short">
+            <h2>In short</h2>
+            <ul>{(post.summary ?? []).map((t) => <li key={t}>{t}</li>)}</ul>
+          </aside>
+        )}
         {post.sections.map((s, i) => {
           const count = post.numbered && isPhoto(s) ? `${++photoNo}/${photoTotal}` : undefined;
           return (
