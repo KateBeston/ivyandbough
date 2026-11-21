@@ -6,7 +6,7 @@ import { CollectionHero } from "@/components/CollectionHero";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductList } from "@/components/ProductList";
 import { breadcrumbs } from "@/lib/seo";
-import { getCategories, getCategory, getProductsInCategories, getStockedCategories } from "@/lib/catalogue";
+import { getCategories, getCategory, getProductsInCategories, getStockedCategories, forCards } from "@/lib/catalogue";
 import { campaignState, categoryQualifies, codeMinimum, codeOffer, getCampaignCodes } from "@/lib/campaigns";
 
 export const revalidate = 60;
@@ -47,7 +47,7 @@ export default async function CategoryPage({ params }: Props) {
           <Link href={`/shop/${parent.slug}`} className={parent.id === category.id ? "on" : ""}>All {parent.name}</Link>
           {family.map((c) => <Link key={c.id} href={`/shop/${c.slug}`} className={c.id === category.id ? "on" : ""}>{c.name}</Link>)}
         </nav>
-        {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
+        {products.length ? <ProductList products={forCards(products)} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
       <ColourLinks category={parent.slug} title={`${parent.name} by colour`} />
     </main>

@@ -8,7 +8,7 @@ import { absolute } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductList } from "@/components/ProductList";
 import { RichText } from "@/components/RichText";
-import { getPosts, getProductsByTheme, getTheme, getThemes } from "@/lib/catalogue";
+import { getPosts, getProductsByTheme, getTheme, getThemes, forCards } from "@/lib/catalogue";
 import { breadcrumbs } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -38,7 +38,7 @@ export default async function CollectionPage({ params }: Props) {
       {theme.page_intro && <div className="collection-intro"><p>{theme.page_intro}</p></div>}
       <div className="collection-share"><ShareBar url={absolute(`/collections/${theme.slug}`)} title={`${theme.name} | Ivy & Bough`} text={theme.line || theme.name} image={theme.image_url ? absolute(theme.image_url) : undefined} /></div>
       <div className="collection-body">
-        {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
+        {products.length ? <ProductList products={forCards(products)} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
       {theme.page_content && <section className="collection-copy"><RichText text={theme.page_content} /></section>}
       {faqs.length > 0 && (

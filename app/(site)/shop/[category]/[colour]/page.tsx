@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductList } from "@/components/ProductList";
 import { RichText } from "@/components/RichText";
-import { getCategories, getProducts } from "@/lib/catalogue";
+import { getCategories, getProducts, forCards } from "@/lib/catalogue";
 import { COLOUR_PAGES, SHOP_WIDE, colourPath, colourSlug, findColourPage, hasColour } from "@/lib/colour-pages";
 import { absolute, breadcrumbs } from "@/lib/seo";
 import { ShareBar } from "@/components/ShareBar";
@@ -45,7 +45,7 @@ export default async function ColourPage({ params }: Props) {
         <ShareBar url={absolute(colourPath(page))} title={`${page.h1} | Ivy & Bough`} text={page.intro} />
       </header>
       <div className="collection-body">
-        {products.length ? <ProductList products={products} /> : <p className="empty">New pieces are on the way.</p>}
+        {products.length ? <ProductList products={forCards(products)} /> : <p className="empty">New pieces are on the way.</p>}
       </div>
       <article className="colour-guide">
         <RichText text={page.body} />

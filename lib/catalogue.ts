@@ -237,3 +237,17 @@ export async function getFaqs(): Promise<Faq[]> {
   const { data, error } = await supabase.from("faqs").select("id,category,question,answer").eq("is_published", true).order("sort_order");
   return must(data, error) as Faq[];
 }
+
+// Only what product cards, filters and quick add need. Listing pages send this to the browser, so full
+// descriptions, care notes and extra photos are left out to keep the pages small and fast.
+const CARD_KEYS = ["id", "sku", "slug", "name", "kind", "short_description", "size_label", "price_cents", "was_cents", "price_from_cents", "sale_label", "availability", "pick_sku", "version_name", "option_label", "listing_type", "colours", "height_cm", "width_cm", "depth_cm", "created_at", "brand", "category_id", "extra_category_ids", "materials", "product_themes", "themes", "categories"] as const;
+export function forCards(list: Product[]): Product[] {
+  const slim = (p: Product): Product => {
+    const o = Object.fromEntries(CARD_KEYS.filter((k) => k in p).map((k) => [k, p[k]])) as unknown as Product;
+    o.description = (p.description || "").slice(0, 200);
+    o.product_images = p.product_images.slice(0, 1);
+    if (p.variants) o.variants = p.variants.map(slim);
+    return o;
+  };
+  return list.map(slim);
+}
