@@ -252,3 +252,12 @@ export function forCards(list: Product[]): Product[] {
   };
   return list.map(slim);
 }
+
+// Menus and carousels are client components, so everything passed to them is sent with every page.
+// Keep only the fields they show (guides, SEO text and intros stay on the server).
+export function forMenu<T extends Category>(list: T[]): Category[] {
+  return list.map((c) => ({ id: c.id, slug: c.slug, name: c.name, parent_id: c.parent_id }) as Category);
+}
+export function forMenuThemes(list: Theme[]): Theme[] {
+  return list.map((t) => ({ id: t.id, slug: t.slug, name: t.name, note: t.note, line: t.line, image_url: t.image_url, card_image_url: t.card_image_url, image_alt: t.image_alt, hero_position: t.hero_position, card_position: t.card_position, hero_shade: t.hero_shade }) as Theme);
+}

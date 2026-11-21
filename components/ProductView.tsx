@@ -138,7 +138,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
             </div>
           )}
           <p className="lede">{product.short_description || product.description}</p>
-          {soldOut || comingSoon ? (preview ? <button type="button" className="solid" disabled>{soldOut ? "Sold out" : "Notify me"}</button> : <NotifyMe key={product.id} productId={product.id} soldOut={soldOut} />) : <AddToBasket product={product} preview={preview} note={preSettings ? preorderNote(preSettings) : undefined} />}
+          {soldOut || comingSoon ? (preview ? <button type="button" className="solid" disabled>{soldOut ? "Sold out" : "Notify me"}</button> : <NotifyMe key={product.id} productId={product.id} soldOut={soldOut} />) : <AddToBasket product={{ id: product.id, sku: product.sku, slug: product.slug, name: product.name, version_name: product.version_name, listing_type: product.listing_type, price_cents: product.price_cents, was_cents: product.was_cents, sale_label: product.sale_label, product_images: product.product_images.slice(0, 1) } as Product} preview={preview} note={preSettings ? preorderNote(preSettings) : undefined} />}
           {!preview && <div className="product-share"><ShareBar url={absolute(`/products/${listing.slug}`)} title={`${product.name} | Ivy & Bough`} text={product.short_description || `${product.name} from Ivy & Bough.`} image={product.product_images[0]?.url ? absolute(product.product_images[0].url) : undefined} /></div>}
 
           <div className="delivery-box">

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice, type Product } from "@/lib/catalogue";
+import { formatPrice, forCards, type Product } from "@/lib/catalogue";
 import { HeartButton } from "./HeartButton";
 import { Price } from "./Price";
 import { QuickAdd } from "./QuickAdd";
@@ -34,7 +34,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
             {p.availability === "Coming soon" && <em className="card-soon">Coming soon</em>}
             {p.availability === "Pre-order" && <em className="card-soon">Made to order</em>}
           </Link>
-          <QuickAdd p={p} href={href} />
+          <QuickAdd p={forCards([p])[0]} href={href} />
           </div>
         );
       })}

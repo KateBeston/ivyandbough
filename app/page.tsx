@@ -16,7 +16,7 @@ import { ReviewToast } from "@/components/ReviewToast";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CollectionCarousel } from "@/components/CollectionCarousel";
 import { getEventAreas } from "@/lib/events";
-import { formatDate, getCategories, getDeliveryDates, getOfferLinks, getPosts, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
+import { formatDate, forMenu, forMenuThemes, getCategories, getDeliveryDates, getOfferLinks, getPosts, getProducts, getStockedCategories, getThemes, getWelcomeOffer } from "@/lib/catalogue";
 import { href as storyHref } from "@/components/EditCards";
 
 export const revalidate = 60;
@@ -54,7 +54,7 @@ export default async function HomePage() {
     <>
       <div className="window-bar"><p className="window-tagline">It&apos;s beginning to look a lot like Christmas&hellip;</p><Countdown /></div>
       <JsonLd data={organisation} />
-      <Hero themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} campaign={campaign} />
+      <Hero themes={forMenuThemes(themes)} categories={forMenu(categories)} offers={offers} eventAreas={eventAreas} campaign={campaign} />
       <main>
         {products.length > 0 && <section id="edit" className="edit">
           <div className="edit-inner">
@@ -67,7 +67,7 @@ export default async function HomePage() {
         </section>}
 
         {/* The homepage bar shows every category, stocked or not. */}
-        <CategoryBar categories={allCategories.filter((c) => (c as { is_active?: boolean }).is_active !== false)} />
+        <CategoryBar categories={forMenu(allCategories.filter((c) => (c as { is_active?: boolean }).is_active !== false))} />
 
         <section className="intro">
           <div>
@@ -88,7 +88,7 @@ export default async function HomePage() {
             <p className="magazine-sub">Choose the look you love, then bring it together from the tree to the table.</p>
             <Link href="/collections" className="text-link">Explore all collections</Link>
           </div>
-          <CollectionCarousel themes={themes.filter((t) => t.is_featured).sort((a, b) => a.feature_order - b.feature_order)} />
+          <CollectionCarousel themes={forMenuThemes(themes.filter((t) => t.is_featured).sort((a, b) => a.feature_order - b.feature_order))} />
         </section>
 
         <section className="moment">
