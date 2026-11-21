@@ -246,6 +246,8 @@ export function forCards(list: Product[]): Product[] {
     const o = Object.fromEntries(CARD_KEYS.filter((k) => k in p).map((k) => [k, p[k]])) as unknown as Product;
     if (p.short_description) o.short_description = p.short_description.slice(0, 160); // cards show two lines
     o.product_images = p.product_images.slice(0, 1);
+    // A listing's collections repeat once per colour; cards only need each one once.
+    if (p.product_themes) { const seen = new Set<string>(); o.product_themes = p.product_themes.filter((x) => { const k = x.themes?.slug ?? ""; if (seen.has(k)) return false; seen.add(k); return true; }); }
     // Quick add only needs each option's name, price, stock and first photo.
     if (p.variants) o.variants = p.variants.map((v) => ({ id: v.id, sku: v.sku, version_name: v.version_name, availability: v.availability, price_cents: v.price_cents, was_cents: v.was_cents, sale_label: v.sale_label, product_images: v.product_images.slice(0, 1) }) as unknown as Product);
     return o;
