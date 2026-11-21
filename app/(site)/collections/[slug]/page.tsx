@@ -12,6 +12,8 @@ import { getPosts, getProductsByTheme, getTheme, getThemes, forCards } from "@/l
 import { breadcrumbs } from "@/lib/seo";
 
 export const revalidate = 60;
+// Built on first visit, then cached and refreshed in the background (without this, Next.js rebuilds the page on every visit).
+export async function generateStaticParams() { return []; }
 
 type Props = { params: Promise<{ slug: string }> };
 

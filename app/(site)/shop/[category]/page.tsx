@@ -10,6 +10,8 @@ import { getCategories, getCategory, getProductsInCategories, getStockedCategori
 import { campaignState, categoryQualifies, codeMinimum, codeOffer, getCampaignCodes } from "@/lib/campaigns";
 
 export const revalidate = 60;
+// Built on first visit, then cached and refreshed in the background (without this, Next.js rebuilds the page on every visit).
+export async function generateStaticParams() { return []; }
 
 type Props = { params: Promise<{ category: string }> };
 

@@ -11,6 +11,8 @@ import { EventListing } from "@/components/EventListing";
 import { eventPage, eventPageMeta, isStateSlug } from "@/lib/event-pages";
 
 export const revalidate = 120;
+// Built on first visit, then cached and refreshed in the background (without this, Next.js rebuilds the page on every visit).
+export async function generateStaticParams() { return []; }
 
 // Shop picks matched to the kind of event, so they read as relevant rather than as ads.
 const PICKS: Record<string, { title: string; ids: string[]; href: string; link: string }> = {

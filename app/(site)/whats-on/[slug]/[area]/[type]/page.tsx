@@ -4,6 +4,8 @@ import { EventListing } from "@/components/EventListing";
 import { eventPage, eventPageMeta } from "@/lib/event-pages";
 
 export const revalidate = 120;
+// Built on first visit, then cached and refreshed in the background (without this, Next.js rebuilds the page on every visit).
+export async function generateStaticParams() { return []; }
 type Props = { params: Promise<{ slug: string; area: string; type: string }> };
 
 // /whats-on/qld/gold-coast/carols: one kind of event in one area.
