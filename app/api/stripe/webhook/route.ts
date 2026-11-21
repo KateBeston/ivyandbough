@@ -7,6 +7,7 @@ import { admin, stripe } from "@/lib/server";
 import { startSubscription } from "@/lib/subscribe";
 import { pinterestCheckout } from "@/lib/pinterest-capi";
 import { metaPurchase } from "@/lib/meta-capi";
+import { alertNewOrder } from "@/lib/owner-alerts";
 
 type Address = { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null };
 const addressText = (a?: Address | null) => (a ? [a.line1, a.line2, [a.city, a.state, a.postal_code].filter(Boolean).join(" ")].filter(Boolean).join(", ") : "");
@@ -116,6 +117,7 @@ async function recordOrder(client: Stripe, session: Stripe.Checkout.Session) {
   await sendMessage({ slug: "order-confirmation", orderId: order.id, to: email }).catch(() => null);
   if (phone && ship.sms_updates === "yes") await sendMessage({ slug: "order-confirmation-sms", orderId: order.id }).catch(() => null);
   await draftPurchaseOrders(db, order.id, order.order_number).catch((e) => console.error("Purchase orders could not be drafted", order.id, e));
+  await alertNewOrder(db, order.id).catch((e) => console.warn("New order alert failed", order.id, e));
 }
 
 export async function POST(request: Request) {

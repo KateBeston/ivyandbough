@@ -3,6 +3,7 @@ import { sendMessage } from "@/lib/comms";
 import { allowed } from "@/lib/limits";
 import { CONTACT_EMAIL } from "@/lib/requests";
 import { admin, userFrom } from "@/lib/server";
+import { textOwner } from "@/lib/owner-alerts";
 
 const ALERT_GAP = 12 * 3600000;
 
@@ -50,4 +51,6 @@ async function alertNewBasket(db: NonNullable<ReturnType<typeof admin>>, session
   });
   const value = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(cents / 100);
   await sendMessage({ slug: "basket-started", to: CONTACT_EMAIL, data: { shopper: email ? `${email} (signed in)` : "Guest (not signed in)", basket_value: value, basket_items: items.join("\n") } });
+  const first = items[0]?.replace(/ \(IVB-[^)]*\)$/, "") ?? "";
+  await textOwner(db, "basket-started-sms", { basket_value: value, basket_summary: items.length > 1 ? `${first} and ${items.length - 1} more` : first });
 }
