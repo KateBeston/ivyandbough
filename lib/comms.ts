@@ -39,6 +39,8 @@ export function normalise(channel: Channel, address: string) {
 }
 
 export const SAMPLE: Record<string, string> = {
+  basket_value: "$159.90", basket_summary: "King of Hearts Nutcracker", shopper: "Guest (not signed in)", item_count: "2 items", delivery_state: "QLD", test_note: "",
+  supplier_lines: "2 x King of Hearts Nutcracker (IVB-10001): Urban Products",
   flags: "Below Winter Wares' $300 minimum (this order is $120.00)", portal_url: "https://ivy-and-bough-portal.vercel.app",
   reference: "SR-1001", support_message: "My order hasn't arrived yet.", topic: "Delivery", customer_email: "sarah@example.com", customer_order: "IB-1001", page_url: "/delivery", message_id: "sample",
   document_title: "Supplier Terms of Purchase", signer_name: "Sarah", supplier_name: "Winter Wares", sign_url: "https://ivyandbough.com/sign/sample", expires_on: "5 December 2026", version_id: "SUPPLIER-TERMS-v1", signed_on: "6 November 2026", pdf_url: "https://ivyandbough.com/api/sign/pdf", request_number: "SIG-1001",
