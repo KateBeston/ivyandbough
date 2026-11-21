@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EventsBrowser } from "@/components/EventsBrowser";
-import { getEvents } from "@/lib/events";
+import Link from "next/link";
+import { getEvents, STATE_NAMES } from "@/lib/events";
+import { indexedEventPaths, slugify, typeTitle } from "@/lib/event-pages";
 import { SITE } from "@/lib/seo";
 
 export const revalidate = 120;
@@ -13,10 +15,19 @@ export const metadata: Metadata = {
 };
 
 export default async function WhatsOnPage() {
-  const events = await getEvents();
+  const [events, paths] = await Promise.all([getEvents(), indexedEventPaths().catch(() => [] as string[])]);
+  // Readable names for each location and type page, so Google (and people) can browse by area.
+  const nameFor = (path: string) => {
+    const [, , st, a, t] = path.split("/");
+    const inState = events.filter((e) => e.state.toLowerCase() === st);
+    const area = inState.find((e) => slugify(e.region) === a)?.region;
+    const type = inState.find((e) => slugify(e.event_type) === (area ? t : a))?.event_type;
+    return `${type ? typeTitle(type) : "Christmas events"} in ${area ?? STATE_NAMES[st.toUpperCase()]}`;
+  };
   return (
     <div className="wo">
       <Suspense><EventsBrowser events={events} /></Suspense>
+      {paths.length > 0 && <nav className="wo-areas" aria-labelledby="wo-areas"><h2 id="wo-areas">Browse by area</h2><div>{paths.map((p) => <Link key={p} href={p}>{nameFor(p)}</Link>)}</div></nav>}
     </div>
   );
 }

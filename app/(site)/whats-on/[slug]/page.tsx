@@ -7,6 +7,8 @@ import Image from "next/image";
 import { dateRange, eventImage, getEvent, getEvents } from "@/lib/events";
 import { formatPrice, getProductsInCategories } from "@/lib/catalogue";
 import { SITE } from "@/lib/seo";
+import { EventListing } from "@/components/EventListing";
+import { eventPage, eventPageMeta, isStateSlug } from "@/lib/event-pages";
 
 export const revalidate = 120;
 
@@ -33,7 +35,10 @@ async function shopPicks(type: string) {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const e = await getEvent((await params).slug);
+  const { slug } = await params;
+  // /whats-on/qld and the like are state pages, not events.
+  if (isStateSlug(slug)) { const page = await eventPage(slug); return page ? eventPageMeta(page) : {}; }
+  const e = await getEvent(slug);
   if (!e) return {};
   const where = [e.venue, e.suburb].filter(Boolean).join(", ");
   return {
@@ -45,7 +50,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
-  const e = await getEvent((await params).slug);
+  const { slug } = await params;
+  if (isStateSlug(slug)) { const page = await eventPage(slug); if (!page) notFound(); return <EventListing page={page} />; }
+  const e = await getEvent(slug);
   if (!e) notFound();
   const [all, shop] = await Promise.all([getEvents(), shopPicks(e.event_type)]);
   const more = all.filter((x) => x.id !== e.id).slice(0, 3);

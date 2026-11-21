@@ -1614,3 +1614,14 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .basket-progress-bar{display:block;height:6px;background:var(--sand);overflow:hidden}
 .basket-progress-bar span{display:block;height:100%;background:#6b1f2b;transition:width .3s ease}
 .footer-hours{margin:10px 0 0;font-size:13px;line-height:1.6;opacity:.85}
+.wo-hero-short{min-height:0}
+.wo-crumbs{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;letter-spacing:.08em;margin-bottom:10px;opacity:.9}
+.wo-crumbs span+span::before{content:"/";margin-right:6px;opacity:.6}
+.wo-crumbs a{color:inherit}
+.wo-ev-lead{margin-top:4px;font-size:14px;opacity:.85}
+.wo-links a{display:block;padding:6px 0;text-decoration:none;font-size:14px}
+.wo-links a span{opacity:.6}
+.wo-links a.on{font-weight:500;border-left:2px solid var(--gold);padding-left:8px}
+.wo-areas{max-width:1200px;margin:0 auto;padding:10px 24px 40px;font-size:14px}
+.wo-areas h2{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.14em;text-transform:uppercase}
+.wo-areas div{display:flex;flex-wrap:wrap;gap:8px 20px}

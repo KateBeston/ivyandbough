@@ -1,3 +1,4 @@
+import { indexedEventPaths } from "@/lib/event-pages";
 import type { MetadataRoute } from "next";
 import { COLOUR_PAGES, colourPath } from "@/lib/colour-pages";
 import { getOfferLinks, getPostCategories, getPosts, getProducts, getStockedCategories, getThemes } from "@/lib/catalogue";
@@ -21,5 +22,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts.map((p) => ({ url: `${SITE}/the-christmas-edit/${p.slug}`, lastModified: p.published_at })),
     { url: `${SITE}/whats-on` }, { url: `${SITE}/whats-on/list-your-event` },
     ...events.map((e) => ({ url: `${SITE}/whats-on/${e.slug}` })),
+    ...(await indexedEventPaths().catch(() => [])).map((path) => ({ url: `${SITE}${path}` })),
   ];
 }
