@@ -32,7 +32,7 @@ export function ShareBar({ url, title, text, image }: { url: string; title: stri
     <div className="share-bar" role="group" aria-label="Share">
       <span className="share-label">Share</span>
       {native && <button type="button" className="share-icon" onClick={() => navigator.share({ title, text, url }).catch(() => null)} aria-label="Share" title="Share">{ICONS.Share}</button>}
-      {links.map((l) => <a key={l.name} className="share-icon" href={l.href} target={l.name === "Email" ? undefined : "_blank"} rel="noopener noreferrer" aria-label={l.name === "Email" ? "Share by email" : `Share on ${l.name}`} title={l.name}>{ICONS[l.name]}</a>)}
+      {links.map((l) => <a key={l.name} className="share-icon" href={l.href} target={l.name === "Email" ? undefined : "_blank"} rel="nofollow noopener noreferrer" aria-label={l.name === "Email" ? "Share by email" : `Share on ${l.name}`} title={l.name}>{ICONS[l.name]}</a>)}
       <button type="button" className="share-icon" onClick={copy} aria-label={copied ? "Link copied" : "Copy link"} title={copied ? "Link copied" : "Copy link"}>{copied ? ICONS.Check : ICONS.Link}</button>
       {copied && <span className="share-copied" role="status">Link copied</span>}
     </div>
