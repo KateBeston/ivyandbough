@@ -12,6 +12,29 @@ const money = (cents: number) => `${(cents / 100).toFixed(2)} AUD`;
 const stock = (a: string) => (a === "Sold out" ? "out_of_stock" : a === "Coming soon" ? "preorder" : a === "Pre-order" ? "backorder" : "in_stock");
 
 // The product feed for Google Merchant Center (free listings in Google Shopping and AI shopping answers).
+// Estimated packed weight (grams) for items without a measured weight. Used only in this feed so Google can
+// price delivery; checkout never sees it, so live Australia Post quotes still use real weights only.
+function estimateWeight(name: string, category = "") {
+  const n = `${name} ${category}`.toLowerCase();
+  const size = /\bxl\b|extra large/.test(n) ? 1.8 : /\blarge\b|\btall\b/.test(n) ? 1.4 : /\bsmall\b|\bmini\b|\bshort\b/.test(n) ? 0.7 : 1;
+  let g: number;
+  if (/tree/.test(category.toLowerCase()) && !/candle/.test(n)) g = /pre-lit/.test(n) ? 9000 : 7000;
+  else if (/doormat/.test(n)) g = 1500;
+  else if (/cushion|throw/.test(n)) g = 800;
+  else if (/charm/.test(n)) g = 100;
+  else if (/taper/.test(n)) g = /set of|candles\b/.test(n) ? 350 : 180;
+  else if (/tealight|candlestick|candle holder|holder/.test(n)) g = 350;
+  else if (/jar|vessel|bowl/.test(n)) g = 600;
+  else if (/pillar|column|tower/.test(n)) g = 450;
+  else if (/candle/.test(n)) g = 350;
+  else if (/tray|trinket|dish|platter|plate|serve/.test(n)) g = 400;
+  else if (/glass|mug|cup|drink/.test(n)) g = 450;
+  else if (/ornament|bauble|hanging/.test(n)) g = 150;
+  else if (/napkin|sign|calendar/.test(n)) g = 300;
+  else g = 400;
+  return Math.round((g * size) / 10) * 10;
+}
+
 // One item per thing a customer can buy: each colour in a family is its own item, grouped by the family.
 export async function GET() {
   const listings = await getProducts();
@@ -55,7 +78,7 @@ export async function GET() {
         // The real dispatch time in business days, so Google shows the same delivery time as the product page.
         ["g:min_handling_time", v.dispatch_days_min != null ? String(v.dispatch_days_min) : v.dispatch_days != null ? String(v.dispatch_days) : undefined],
         ["g:max_handling_time", v.dispatch_days != null ? String(v.dispatch_days) : undefined],
-        ["g:shipping_weight", weightBy.get(v.sku) ? `${weightBy.get(v.sku)} g` : undefined],
+        ["g:shipping_weight", `${weightBy.get(v.sku) || estimateWeight(`${l.name} ${v.version_name || ""}`, l.categories?.name)} g`],
         ["g:shipping_label", shipBy.get(v.sku)?.name || "Standard"],
         ["g:custom_label_0", (shipBy.get(v.sku)?.free_delivery_applies ?? true) ? "Free delivery over $150" : "No free delivery"],
         ["g:custom_label_1", collectionBy.get(v.sku) || l.themes?.name || l.product_themes?.find((t) => t.themes)?.themes?.name || undefined],
