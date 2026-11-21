@@ -28,6 +28,8 @@ export default {
   async headers() {
     return [
       { source: "/((?!preview/).*)", headers: [...shared, { key: "X-Frame-Options", value: "DENY" }, { key: "Content-Security-Policy", value: csp("'none'") }] },
+      // Photos in /public: let browsers keep them (and their optimised copies) for a week, checking for changes after that.
+      { source: "/images/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }] },
       { source: "/preview/:path*", headers: [...shared, { key: "Content-Security-Policy", value: csp(portal) }, { key: "X-Robots-Tag", value: "noindex" }] },
     ];
   },
