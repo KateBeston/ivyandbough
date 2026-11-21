@@ -97,7 +97,7 @@ async function checkCampaign(db: Db, value: string, lines: PricedLine[]): Promis
   if (new Date(c.ends_at) <= now) return { ok: false, error: "That code has expired." };
   const ids = lines.map((l) => l.id);
   const [{ data: rows }, { data: links }] = await Promise.all([
-    db.from("products").select("id,category_id,categories(parent_id)").in("id", ids),
+    db.from("products").select("id,category_id,categories!products_category_id_fkey(parent_id)").in("id", ids),
     db.from("supplier_items").select("product_id,supplier_id").in("product_id", ids),
   ]);
   const qualifies = (l: PricedLine) => {
