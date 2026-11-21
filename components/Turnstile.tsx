@@ -31,13 +31,21 @@ export function Turnstile({ onToken, resetKey = 0 }: { onToken: (token: string) 
     if (!KEY) return;
     let id = "";
     let gone = false;
-    loadScript().then(() => {
+    // Wait until the form is nearly on screen, so pages don't load the check for a footer form nobody has reached.
+    let io: IntersectionObserver | null = null;
+    const near = new Promise<void>((resolve) => {
+      if (!box.current || !("IntersectionObserver" in window)) return resolve();
+      io = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { io?.disconnect(); resolve(); } }, { rootMargin: "400px" });
+      io.observe(box.current);
+    });
+    near.then(() => (gone ? undefined : loadScript())).then(() => {
       const api = (window as unknown as Tagged).turnstile;
       if (gone || !api || !box.current) return;
       id = api.render(box.current, { sitekey: KEY, appearance: "always", theme: "light", size: "flexible", callback: (t: string) => callback.current(t), "expired-callback": () => callback.current(""), "error-callback": () => callback.current("") });
     }).catch(() => null);
     return () => {
       gone = true;
+      io?.disconnect();
       if (id) (window as unknown as Tagged).turnstile?.remove(id);
       callback.current("");
     };
