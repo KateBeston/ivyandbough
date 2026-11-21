@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ColourLinks } from "@/components/ColourLinks";
+import { RichText } from "@/components/RichText";
 import { notFound } from "next/navigation";
 import { CollectionHero } from "@/components/CollectionHero";
 import { JsonLd } from "@/components/JsonLd";
@@ -51,6 +52,7 @@ export default async function CategoryPage({ params }: Props) {
         </nav>
         {products.length ? <ProductList products={forCards(products)} /> : <p className="empty">New pieces are being chosen for this collection.</p>}
       </div>
+      {category.page_content && <article id="guide" className="colour-guide"><RichText text={category.page_content} /></article>}
       <ColourLinks category={parent.slug} title={`${parent.name} by colour`} />
     </main>
   );
