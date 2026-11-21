@@ -22,6 +22,11 @@ export async function POST(request: Request) {
   const expected = Buffer.from(key);
   if (!key || given.length !== expected.length || !timingSafeEqual(given, expected)) return NextResponse.json({ ok: false }, { status: 401 });
   revalidatePath("/", "layout");
+  // Rebuild the busiest pages straight away, so the first visitor after a change sees it too.
+  after(async () => {
+    const base = new URL(request.url).origin;
+    await Promise.all(["/", "/whats-on"].map((p) => fetch(base + p, { cache: "no-store" }).catch(() => null)));
+  });
   // Tell Bing the shop changed (at most every 30 minutes), after the reply is sent.
   after(() => pingIndexNow());
   return NextResponse.json({ ok: true });

@@ -4,7 +4,7 @@ import { EventsBrowser } from "@/components/EventsBrowser";
 import { getEvents } from "@/lib/events";
 import { SITE } from "@/lib/seo";
 
-export const revalidate = 600;
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: "What's On This Christmas in Brisbane | Ivy & Bough",

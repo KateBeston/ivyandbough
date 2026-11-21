@@ -8,7 +8,7 @@ import { dateRange, eventImage, getEvent, getEvents } from "@/lib/events";
 import { formatPrice, getProductsInCategories } from "@/lib/catalogue";
 import { SITE } from "@/lib/seo";
 
-export const revalidate = 600;
+export const revalidate = 120;
 
 // Shop picks matched to the kind of event, so they read as relevant rather than as ads.
 const PICKS: Record<string, { title: string; ids: string[]; href: string; link: string }> = {
