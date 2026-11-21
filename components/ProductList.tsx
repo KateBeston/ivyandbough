@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/lib/catalogue";
 import { SIZES, SORTS, sizeOf, sortProducts } from "@/lib/sizes";
-import { ProductGrid } from "./ProductGrid";
+import { PagedGrid } from "./PagedGrid";
 
 const split = (s: string) => s.split(",").map((v) => v.trim()).filter(Boolean);
 
@@ -41,7 +41,7 @@ export function ProductList({ products, defaultSort = "featured" }: { products: 
           <label>Sort by <select value={sort} onChange={(e) => setSort(e.target.value)}>{SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
         </div>
       </div>
-      {shown.length ? <ProductGrid products={shown} /> : <p className="empty">Nothing matches that filter. <button type="button" className="link-button" onClick={() => { setColour(""); setSize(""); }}>Clear filters</button></p>}
+      {shown.length ? <PagedGrid products={shown} /> : <p className="empty">Nothing matches that filter. <button type="button" className="link-button" onClick={() => { setColour(""); setSize(""); }}>Clear filters</button></p>}
     </>
   );
 }

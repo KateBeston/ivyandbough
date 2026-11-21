@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FILTER_COLOURS } from "@/lib/filter-colours";
 import type { Category, Product, Theme } from "@/lib/catalogue";
-import { ProductGrid } from "./ProductGrid";
+import { PagedGrid } from "./PagedGrid";
 import { SIZES, SORTS, sizeOf, sortProducts } from "@/lib/sizes";
 
 type Filters = { q: string; sort: string; category: string[]; collection: string[]; colour: string[]; size: string[]; material: string[]; brand: string[]; price: string[]; offer: string[] };
@@ -115,7 +115,7 @@ export function ShopBrowser({ products, categories, themes }: { products: Produc
             <span role="status">{results.length} {results.length === 1 ? "piece" : "pieces"}</span>
             <label>Sort by <select value={f.sort} onChange={(e) => setF({ ...f, sort: e.target.value })}>{sorts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
           </div>
-          {results.length ? <ProductGrid products={results} /> : <p className="empty">Nothing matches those filters yet. Try removing one.</p>}
+          {results.length ? <PagedGrid products={results} /> : <p className="empty">Nothing matches those filters yet. Try removing one.</p>}
         </div>
       </div>
     </main>

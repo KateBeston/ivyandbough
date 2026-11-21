@@ -33,6 +33,9 @@ export default {
   },
   images: {
     qualities: [75, 85],
+    // Fewer, smaller sizes: nothing on the site displays wider than 1920px.
+    deviceSizes: [640, 828, 1080, 1920],
+    imageSizes: [32, 64, 128, 256, 384],
     remotePatterns: [{ protocol: "https", hostname: "pexlozjdgwrygzwiaivm.supabase.co", pathname: "/storage/v1/object/public/**" }],
   },
   async redirects() {

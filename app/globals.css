@@ -1625,3 +1625,6 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .wo-areas{max-width:1200px;margin:0 auto;padding:10px 24px 40px;font-size:14px}
 .wo-areas h2{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.14em;text-transform:uppercase}
 .wo-areas div{display:flex;flex-wrap:wrap;gap:8px 20px}
+.show-more{display:flex;flex-direction:column;align-items:center;gap:12px;margin:36px 0 10px;text-align:center}
+.show-more p{margin:0;font-size:13px;letter-spacing:.06em;color:var(--brown)}
+.show-more .solid{min-width:220px}
