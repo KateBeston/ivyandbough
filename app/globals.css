@@ -1579,3 +1579,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .share-menu a,.share-menu button{display:block;text-align:left;padding:10px 16px;font:inherit;font-size:13px;letter-spacing:.06em;color:var(--ink);text-decoration:none;background:none;border:0;cursor:pointer}
 .share-menu a:hover,.share-menu button:hover{background:var(--sand)}
 .wf-row>.share-pop{padding:0 !important;border:0;background:none}.share-pop>.wf-ico{flex:1}
+.wo-menu-state{display:flex;flex-direction:column}.wo-menu-state+.wo-menu-state{margin-top:14px}

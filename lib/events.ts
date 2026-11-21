@@ -30,6 +30,20 @@ export async function getEvents() {
   return ((data ?? []) as CalEvent[]).filter((e) => (e.end_date || e.start_date) >= now);
 }
 
+// The areas that have upcoming events, by state, for the What's On menu. Queensland always shows its regular areas.
+export async function getEventAreas(): Promise<Record<string, string[]>> {
+  const { data } = await supabase.from("events").select("state,region,start_date,end_date").eq("status", "Approved");
+  const now = today();
+  const out: Record<string, string[]> = { QLD: [...EVENT_AREAS] };
+  for (const e of (data ?? []) as { state: string; region: string; start_date: string; end_date: string | null }[]) {
+    if (!e.region || (e.end_date || e.start_date) < now) continue;
+    const list = (out[e.state] ??= []);
+    if (!list.includes(e.region)) list.push(e.region);
+  }
+  for (const k of Object.keys(out)) if (k !== "QLD") out[k].sort();
+  return out;
+}
+
 export async function getEvent(slug: string) {
   const { data } = await supabase.from("events").select(COLUMNS).eq("status", "Approved").eq("slug", slug).maybeSingle();
   return data as CalEvent | null;

@@ -10,7 +10,7 @@ import { useWishlist } from "./WishlistProvider";
 
 type Panel = "themes" | "shop" | "events" | null;
 
-export function Nav({ themes, categories, offers = [], solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; offers?: string[]; solid?: boolean; showLogo?: boolean }) {
+export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; offers?: string[]; eventAreas?: Record<string, string[]>; solid?: boolean; showLogo?: boolean }) {
   const { count } = useBasket();
   const saved = useWishlist();
   const [panel, setPanel] = useState<Panel>(null);
@@ -92,9 +92,12 @@ export function Nav({ themes, categories, offers = [], solid = false, showLogo =
       {panel === "events" && (
         <div id="nav-panel" className="themes-menu">
           <div className="shop-menu">
-            <div><Link href="/whats-on?state=QLD" className="shop-menu-title" onClick={closeAll}>Queensland</Link>{["Brisbane City", "South East Queensland", "Gold Coast", "Sunshine Coast"].map((a) => <Link key={a} href={`/whats-on?state=QLD&area=${encodeURIComponent(a)}`} onClick={closeAll}>{a}</Link>)}</div>
-            <div>{[["NSW", "New South Wales"], ["VIC", "Victoria"], ["ACT", "ACT"]].map(([c, n]) => <Link key={c} href={`/whats-on?state=${c}`} className="shop-menu-title" onClick={closeAll}>{n}</Link>)}</div>
-            <div>{[["SA", "South Australia"], ["WA", "Western Australia"], ["TAS", "Tasmania"], ["NT", "Northern Territory"]].map(([c, n]) => <Link key={c} href={`/whats-on?state=${c}`} className="shop-menu-title" onClick={closeAll}>{n}</Link>)}</div>
+            {[[["QLD", "Queensland"]], [["NSW", "New South Wales"], ["VIC", "Victoria"], ["ACT", "ACT"]], [["SA", "South Australia"], ["WA", "Western Australia"], ["TAS", "Tasmania"], ["NT", "Northern Territory"]]].map((col, i) => (
+              <div key={i}>{col.map(([c, n]) => {
+                const areas = c === "QLD" ? eventAreas.QLD ?? ["Brisbane City", "South East Queensland", "Gold Coast", "Sunshine Coast"] : eventAreas[c] ?? [];
+                return <div key={c} className="wo-menu-state"><Link href={`/whats-on?state=${c}`} className="shop-menu-title" onClick={closeAll}>{n}</Link>{areas.map((a) => <Link key={a} href={`/whats-on?state=${c}&area=${encodeURIComponent(a)}`} onClick={closeAll}>{a}</Link>)}</div>;
+              })}</div>
+            ))}
             <div><span className="shop-menu-title">Browse by</span>{["Carols", "Light displays", "Markets", "Family", "Christmas dining", "Outdoor movies", "Santa"].map((t) => <Link key={t} href={`/whats-on?type=${encodeURIComponent(t)}`} onClick={closeAll}>{t}</Link>)}<Link href="/whats-on/list-your-event" onClick={closeAll}>List your event free</Link></div>
           </div>
           <div className="themes-menu-all"><Link href="/whats-on" onClick={closeAll}>See all Christmas events</Link></div>
