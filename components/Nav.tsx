@@ -10,7 +10,7 @@ import { useWishlist } from "./WishlistProvider";
 
 type Panel = "themes" | "shop" | "events" | null;
 
-export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = false, showLogo = true }: { themes: Theme[]; categories: Category[]; offers?: string[]; eventAreas?: Record<string, string[]>; solid?: boolean; showLogo?: boolean }) {
+export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = false, showLogo = true, campaign = null }: { themes: Theme[]; categories: Category[]; offers?: string[]; eventAreas?: Record<string, string[]>; solid?: boolean; showLogo?: boolean; campaign?: { label: string; href: string } | null }) {
   const { count } = useBasket();
   const saved = useWishlist();
   const [panel, setPanel] = useState<Panel>(null);
@@ -64,6 +64,7 @@ export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = 
         <nav id="main-menu" aria-label="Main" className={`menu${mobileOpen ? " open" : ""}`}>
           <Link href="/collections" onClick={closeAll} onPointerEnter={hoverOpen("themes")} onFocus={focusOpen("themes")}>Shop the collection</Link>
           <Link href="/shop" onClick={closeAll} onPointerEnter={hoverOpen("shop")} onFocus={focusOpen("shop")}>Shop</Link>
+          {campaign && <Link href={campaign.href} className="nav-bf" onClick={closeAll} onMouseEnter={() => setPanel(null)}>{campaign.label}</Link>}
           <Link href="/the-christmas-edit" onClick={closeAll} onMouseEnter={() => setPanel(null)}>The Christmas Edit</Link>
           <Link href="/whats-on" onClick={closeAll} onPointerEnter={hoverOpen("events")} onFocus={focusOpen("events")}>What&apos;s On</Link>
           <Link href="/about" onClick={closeAll} onMouseEnter={() => setPanel(null)}>About</Link>

@@ -8,6 +8,7 @@ import { Countdown } from "@/components/Countdown";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { ShopTheLook } from "@/components/ShopTheLook";
+import { getCampaignLink } from "@/lib/campaigns";
 
 const SHOW_SHOP_THE_LOOK = false;
 import { SignupForm } from "@/components/SignupForm";
@@ -46,14 +47,14 @@ function favourites<T extends { category_id: string | null }>(all: T[], max = 8)
 }
 
 export default async function HomePage() {
-  const [themes, categories, allCategories, products, dates, offer, offers, posts, eventAreas] = await Promise.all([getThemes(), getStockedCategories(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks(), getPosts().catch(() => []), getEventAreas().catch(() => ({}))]);
+  const [themes, categories, allCategories, products, dates, offer, offers, posts, eventAreas, campaign] = await Promise.all([getThemes(), getStockedCategories(), getCategories(), getProducts(), getDeliveryDates(), getWelcomeOffer("Newsletter sign-up"), getOfferLinks(), getPosts().catch(() => []), getEventAreas().catch(() => ({})), getCampaignLink()]);
   // Three stories for the home page: featured first, then the newest.
   const stories = [...posts.filter((p) => p.featured), ...posts.filter((p) => !p.featured)].slice(0, 3);
   return (
     <>
       <div className="window-bar"><p className="window-tagline">It&apos;s beginning to look a lot like Christmas&hellip;</p><Countdown /></div>
       <JsonLd data={organisation} />
-      <Hero themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} />
+      <Hero themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} campaign={campaign} />
       <main>
         {products.length > 0 && <section id="edit" className="edit">
           <div className="edit-inner">

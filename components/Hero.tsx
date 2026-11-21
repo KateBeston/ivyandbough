@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { Category, Theme } from "@/lib/catalogue";
 import { Nav } from "./Nav";
 
-export function Hero({ themes, categories, offers, eventAreas }: { themes: Theme[]; categories: Category[]; offers: string[]; eventAreas?: Record<string, string[]> }) {
+export function Hero({ themes, categories, offers, eventAreas, campaign = null }: { themes: Theme[]; categories: Category[]; offers: string[]; eventAreas?: Record<string, string[]>; campaign?: { label: string; href: string } | null }) {
   const [active, setActive] = useState(themes[0]);
   // Other images load when someone reaches for their tab, not all at once.
   const [wanted, setWanted] = useState([themes[0].id]);
@@ -18,7 +18,7 @@ export function Hero({ themes, categories, offers, eventAreas }: { themes: Theme
       ))}
       <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, rgba(16,13,9,${active.hero_shade}) 0%, rgba(16,13,9,${active.hero_shade * 0.4}) 52%, rgba(16,13,9,0) 78%)` }} />
       <div className="hero-wash" />
-      <Nav themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} showLogo={false} />
+      <Nav themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} showLogo={false} campaign={campaign} />
       <div className="hero-inner">
         <div style={{ maxWidth: 560 }}>
           <img src="/brand/wreath-cream.svg" alt="Ivy &amp; Bough" className="hero-logo" width={300} height={300} />

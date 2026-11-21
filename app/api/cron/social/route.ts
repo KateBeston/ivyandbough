@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "crypto";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { admin } from "@/lib/server";
 import { publishPost, removePost, resolvePinterestBoards } from "@/lib/social";
@@ -17,6 +18,10 @@ export async function GET(request: Request) {
   if (!authorised(request)) return NextResponse.json({ ok: false }, { status: 401 });
   const db = admin();
   if (!db) return NextResponse.json({ ok: false }, { status: 503 });
+  // A sale that started or finished since the last run (every 15 minutes) needs the menu, banners and category strips refreshed.
+  const since = new Date(Date.now() - 16 * 60000).toISOString(), now = new Date().toISOString();
+  const { data: turned } = await db.from("campaign_codes").select("id").eq("is_active", true).or(`and(starts_at.gte.${since},starts_at.lte.${now}),and(ends_at.gte.${since},ends_at.lte.${now})`).limit(1);
+  if (turned?.length) revalidatePath("/", "layout");
   // A run that died part-way is shown as failed. Retrying skips what already went out.
   await db.from("social_posts").update({ status: "Failed", last_error: "Publishing was interrupted." }).eq("status", "Publishing").lt("updated_at", new Date(Date.now() - 600000).toISOString());
   await resolvePinterestBoards(db).catch((e) => console.warn("Pinterest boards", e));

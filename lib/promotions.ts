@@ -2,11 +2,12 @@ import { randomInt } from "crypto";
 import { sendMessage } from "./comms";
 import { OFFER_COLUMNS, offerPrice, offerText } from "./pricing";
 import { admin } from "./server";
+import { CAMPAIGN_COLUMNS, categoryQualifies, codeMinimum, type CampaignCode } from "./campaigns";
 
 type Db = NonNullable<ReturnType<typeof admin>>;
 export type Code = { id: string; code: string; email: string; discount_type: string; discount_value: number; min_order: number; applies_to_sale: boolean; expires_at: string; used_at: string | null; reserved_until: string | null; reserved_cart: string | null; reserved_session: string | null };
 export type PricedLine = { id: string; cents: number; quantity: number; onSale: boolean; noDiscount?: boolean };
-export type Checked = { ok: true; code: Code; discountCents: number; label: string } | { ok: false; error: string };
+export type Checked = { ok: true; code: Code; discountCents: number; label: string; campaign?: boolean } | { ok: false; error: string };
 
 const LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const newCode = () => `WELCOME-${Array.from({ length: 8 }, () => LETTERS[randomInt(LETTERS.length)]).join("")}`;
@@ -58,7 +59,7 @@ export async function checkCode(db: Db, input: string, lines: PricedLine[], cart
   if (!/^[A-Z0-9-]{4,30}$/.test(value)) return { ok: false, error: "That code isn't valid." };
   const { data } = await db.from("promo_codes").select("*").eq("code", value).maybeSingle();
   const code = data as Code | null;
-  if (!code) return { ok: false, error: "That code isn't valid." };
+  if (!code) return checkCampaign(db, value, lines);
   if (code.used_at) return { ok: false, error: "That code has already been used." };
   if (new Date(code.expires_at) <= new Date()) return { ok: false, error: "That code has expired." };
   if (await hasOrdered(db, code.email)) return { ok: false, error: "That code is for a first order." };
@@ -81,4 +82,38 @@ export async function reserveCode(db: Db, code: Code, cart: string) {
   const now = new Date();
   const { data } = await db.from("promo_codes").update({ reserved_until: new Date(now.getTime() + 35 * 60000).toISOString(), reserved_cart: cart, reserved_session: null }).eq("id", code.id).is("used_at", null).or(`reserved_until.is.null,reserved_until.lt.${now.toISOString()},reserved_cart.eq.${cart}`).select("id");
   return Boolean(data?.length);
+}
+
+const aud = (cents: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(cents / 100);
+const when = (d: string) => new Intl.DateTimeFormat("en-AU", { timeZone: "Australia/Brisbane", weekday: "long", day: "numeric", month: "long" }).format(new Date(d));
+
+// Public sale codes: anyone can use them during the sale. Only qualifying items count towards the minimum spend and the discount.
+async function checkCampaign(db: Db, value: string, lines: PricedLine[]): Promise<Checked> {
+  const { data } = await db.from("campaign_codes").select(CAMPAIGN_COLUMNS).eq("code", value).eq("is_active", true).maybeSingle();
+  const c = data as CampaignCode | null;
+  if (!c) return { ok: false, error: "That code isn't valid." };
+  const now = new Date();
+  if (new Date(c.starts_at) > now) return { ok: false, error: `That code starts on ${when(c.starts_at)}.` };
+  if (new Date(c.ends_at) <= now) return { ok: false, error: "That code has expired." };
+  const ids = lines.map((l) => l.id);
+  const [{ data: rows }, { data: links }] = await Promise.all([
+    db.from("products").select("id,category_id,categories(parent_id)").in("id", ids),
+    db.from("supplier_items").select("product_id,supplier_id").in("product_id", ids),
+  ]);
+  const qualifies = (l: PricedLine) => {
+    if (l.noDiscount || (!c.applies_to_sale && l.onSale)) return false;
+    const row = (rows ?? []).find((r) => r.id === l.id) as { category_id: string | null; categories: { parent_id: string | null } | null } | undefined;
+    if (!row || !categoryQualifies(c, row.category_id, row.categories?.parent_id)) return false;
+    return !(links ?? []).some((k) => k.product_id === l.id && c.exclude_suppliers.includes(k.supplier_id));
+  };
+  const subtotal = lines.reduce((n, l) => n + l.cents * l.quantity, 0);
+  const base = lines.filter(qualifies).reduce((n, l) => n + l.cents * l.quantity, 0);
+  if (!base) return { ok: false, error: `That code can't be used on the items in your basket${c.headline ? ` (${c.headline})` : ""}.` };
+  const min = Math.round(Number(c.min_order) * 100);
+  if (base < min) return { ok: false, error: `Spend ${codeMinimum(c)} or more on qualifying items to use this code. You're ${aud(min - base)} away.` };
+  const off = c.discount_type === "Percent" ? Math.round(base * Number(c.discount_value) / 100) : Math.min(Math.round(Number(c.discount_value) * 100), base);
+  const discountCents = Math.min(off, subtotal - 100);
+  if (discountCents <= 0) return { ok: false, error: "That code can't be used on this order." };
+  const code = { id: c.id, code: c.code, email: "", discount_type: c.discount_type, discount_value: Number(c.discount_value), min_order: Number(c.min_order), applies_to_sale: c.applies_to_sale, expires_at: c.ends_at, used_at: null, reserved_until: null, reserved_cart: null, reserved_session: null } satisfies Code;
+  return { ok: true, code, discountCents, label: c.label || "Offer", campaign: true };
 }

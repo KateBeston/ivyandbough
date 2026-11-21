@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { ProductList } from "@/components/ProductList";
 import { breadcrumbs } from "@/lib/seo";
 import { getCategories, getCategory, getProductsInCategories, getStockedCategories } from "@/lib/catalogue";
+import { campaignState, categoryQualifies, codeMinimum, codeOffer, getCampaignCodes } from "@/lib/campaigns";
 
 export const revalidate = 60;
 
@@ -31,12 +32,15 @@ export default async function CategoryPage({ params }: Props) {
   const parent = categories.find((c) => c.id === parentId) ?? category;
   const family = categories.filter((c) => c.parent_id === parentId);
   const ids = category.parent_id ? [category.id] : [category.id, ...family.map((c) => c.id)];
-  const products = await getProductsInCategories(ids);
+  const [products, codes] = await Promise.all([getProductsInCategories(ids), getCampaignCodes("Black Friday").catch(() => [])]);
+  // During a sale, the code that suits this category, shown in a strip under the hero.
+  const deal = campaignState(codes) === "live" ? codes.find((c) => c.include_categories.length && categoryQualifies(c, category.id, category.parent_id)) ?? codes.find((c) => categoryQualifies(c, category.id, category.parent_id)) : undefined;
   const crumbs = [{ name: "Home", path: "" }, ...(parent.id === category.id ? [] : [{ name: parent.name, path: `/shop/${parent.slug}` }]), { name: category.name, path: `/shop/${category.slug}` }];
   return (
     <main>
       <JsonLd data={breadcrumbs(crumbs)} />
       <CollectionHero title={category.name} intro={category.intro} src={category.image_url} alt={category.image_alt} position={category.image_position} />
+      {deal && <p className="bf-strip">Black Friday: <strong>{codeOffer(deal)}</strong>{deal.include_categories.length ? (codeMinimum(deal) ? ` when you spend ${codeMinimum(deal)} or more on these` : "") : ` when you spend ${codeMinimum(deal)}`} with code <strong>{deal.code}</strong>. <Link href="/black-friday">See the details</Link></p>}
       {category.page_intro && <div className="collection-intro"><p>{category.page_intro}</p></div>}
       <div className="collection-body">
         <nav aria-label={`${parent.name} categories`} className="pill-row">

@@ -69,7 +69,8 @@ export async function POST(request: Request) {
     if (!db) return NextResponse.json({ error: "Codes aren't available right now." }, { status: 503 });
     const checked = await checkCode(db, promoCode, lines.map((l) => ({ id: l.row.id, cents: l.cents, quantity: l.quantity, onSale: l.onSale, noDiscount: l.noDiscount })), cart);
     if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
-    if (!(await reserveCode(db, checked.code, cart))) return NextResponse.json({ error: "That code is already being used at checkout." }, { status: 409 });
+    // Sale codes are shared, so only personal codes are held for one checkout at a time.
+    if (!checked.campaign && !(await reserveCode(db, checked.code, cart))) return NextResponse.json({ error: "That code is already being used at checkout." }, { status: 409 });
     // Going back to the basket leaves the earlier payment page open, so it's closed here.
     if (checked.code.reserved_session) await client.checkout.sessions.expire(checked.code.reserved_session).catch(() => null);
     promo = checked;
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     // Shown in a window over the basket when the publishable key is set; otherwise Stripe's own page.
     ...(EMBEDDED ? { ui_mode: "embedded_page" as unknown as "embedded", return_url: `${origin}/order/thanks?session_id={CHECKOUT_SESSION_ID}` } : { success_url: `${origin}/order/thanks`, cancel_url: `${origin}/basket` }),
   });
-  if (promo && db) await db.from("promo_codes").update({ reserved_session: session.id }).eq("id", promo.code.id);
+  if (promo && !promo.campaign && db) await db.from("promo_codes").update({ reserved_session: session.id }).eq("id", promo.code.id);
   return NextResponse.json(EMBEDDED ? { clientSecret: session.client_secret } : { url: session.url });
 }
 

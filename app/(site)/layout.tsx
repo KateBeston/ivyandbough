@@ -4,12 +4,13 @@ import { Nav } from "@/components/Nav";
 import { ReviewToast } from "@/components/ReviewToast";
 import { getOfferLinks, getStockedCategories, getThemes } from "@/lib/catalogue";
 import { getEventAreas } from "@/lib/events";
+import { getCampaignLink } from "@/lib/campaigns";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [themes, categories, offers, eventAreas] = await Promise.all([getThemes(), getStockedCategories(), getOfferLinks(), getEventAreas().catch(() => ({}))]);
+  const [themes, categories, offers, eventAreas, campaign] = await Promise.all([getThemes(), getStockedCategories(), getOfferLinks(), getEventAreas().catch(() => ({})), getCampaignLink()]);
   return (
     <>
-      <Nav themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} solid />
+      <Nav themes={themes} categories={categories} offers={offers} eventAreas={eventAreas} campaign={campaign} solid />
       {children}
       <Footer />
       <GoogleBadge />
