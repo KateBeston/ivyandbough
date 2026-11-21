@@ -1599,3 +1599,7 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .menu a.nav-bf{color:#6b1f2b}
 .nav-light .menu a.nav-bf{color:inherit}
 @media (max-width:760px){.bf-code+.bf-code{border-left:0;border-top:1px solid var(--line)}.bf-code{padding:40px 20px}.bf-code h2{font-size:34px}}
+.footer-agree,.footer-country{max-width:1360px;margin:0 auto;padding:0 40px 18px;font-size:12px;line-height:1.7}
+.footer-country{padding-bottom:34px;opacity:.85}
+.footer-agree a{text-decoration:underline;text-underline-offset:2px}
+@media (max-width:640px){.footer-agree,.footer-country{padding-left:24px;padding-right:24px}}

@@ -90,10 +90,13 @@ export async function Footer({ signup = true }: { signup?: boolean } = {}) {
         <Link href="/privacy">Privacy Policy</Link>
         <Link href="/terms">Website Terms of Use</Link>
         <Link href="/terms-of-sale">Terms of Sale</Link>
+        <Link href="/promotional-terms">Promotional Terms</Link>
         <Link href="/account-terms">Account Terms</Link>
         <Link href="/cookies">Cookie Policy</Link>
         <CookieSettingsLink />
       </nav>
+      <p className="footer-agree">By using our website, you agree to our <Link href="/terms">Website Terms of Use</Link>, and by giving us your details, you agree to our <Link href="/privacy">Privacy Policy</Link>.</p>
+      <p className="footer-country">Ivy &amp; Bough acknowledges the Traditional Owners and Custodians of Country throughout Australia, and their continuing connection to land, waters and sky. We acknowledge the Jagera and Turrbal peoples, Traditional Owners of the land in Brisbane where Ivy &amp; Bough is based, and pay our respects to Elders past and present, and to all Aboriginal and Torres Strait Islander peoples.</p>
     </footer>
     </>
   );
