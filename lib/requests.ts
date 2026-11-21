@@ -3,7 +3,7 @@
 export const RESPONSE_HOURS = 24;
 export const DEFAULT_RETURN_DAYS = 14;
 export const CONTACT_EMAIL = "hello@ivyandbough.com";
-export const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "";
+export const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE || "07 3487 1590";
 export const MAX_PHOTOS = 6;
 export const CHANGE_OF_MIND = "Changed my mind";
 
