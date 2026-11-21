@@ -1,7 +1,7 @@
 import { googleCategory } from "@/lib/google-category";
 import { getProducts, type Product } from "@/lib/catalogue";
 import { absolute, SITE } from "@/lib/seo";
-import { supabase } from "@/lib/supabase";
+import { supabase, all } from "@/lib/supabase";
 
 export const revalidate = 3600;
 
@@ -39,7 +39,7 @@ function estimateWeight(name: string, category = "") {
 export async function GET() {
   const listings = await getProducts();
   // Delivery class per SKU, so Facebook and Google can tell free-delivery items from bulky ones.
-  const { data: cls } = await supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies,surcharge),themes!products_theme_id_fkey(name)");
+  const { data: cls } = await all((f, t) => supabase.from("products").select("sku,weight_g,shipping_classes(name,free_delivery_applies,surcharge),themes!products_theme_id_fkey(name)").order("id").range(f, t));
   const shipBy = new Map((cls ?? []).map((r: any) => [r.sku, r.shipping_classes as { name: string; free_delivery_applies: boolean; surcharge: number } | null]));
   // Courier pieces carry their own delivery price in the feed (base rate plus the class surcharge), matching checkout.
   const { data: zone } = await supabase.from("delivery_zones").select("rate").eq("is_default", true).maybeSingle();

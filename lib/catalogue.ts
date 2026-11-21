@@ -1,6 +1,6 @@
 import { defaultDesign, type ArticleDesign } from "./article-design";
 import { OFFER_COLUMNS, offerPrice, offerText } from "./pricing";
-import { supabase } from "./supabase";
+import { all, supabase } from "./supabase";
 
 export type Theme = { id: string; slug: string; name: string; note: string; line: string; image_url: string; card_image_url?: string | null; image_alt: string; hero_position: string; card_position: string; hero_shade: number; image_credit?: string; is_featured: boolean; feature_order: number; seo_title: string; seo_description: string; page_intro: string; page_content: string; faqs?: { q: string; a: string }[] | null };
 export type ProductImage = { url: string; alt: string; position: string; sort_order: number; media_type?: string };
@@ -52,7 +52,7 @@ export async function getThemes(): Promise<Theme[]> {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const { data, error } = await supabase.from("listings").select(listingSelect).order("sort_order");
+  const { data, error } = await all((f, t) => supabase.from("listings").select(listingSelect).order("sort_order").order("id").range(f, t));
   return toProducts(must(data, error));
 }
 
@@ -85,7 +85,7 @@ export async function getCategories(): Promise<Category[]> {
 
 // Only categories with listings to show. A main category stays when any of its subcategories has stock.
 export async function getStockedCategories(): Promise<Category[]> {
-  const [categories, { data }, { data: extra }, { data: member }] = await Promise.all([getCategories(), supabase.from("listings").select("category_id").not("category_id", "is", null), supabase.from("listing_categories").select("category_id,listings!inner(status)"), supabase.from("product_categories").select("category_id")]);
+  const [categories, { data }, { data: extra }, { data: member }] = await Promise.all([getCategories(), all<{ category_id: string }>((f, t) => supabase.from("listings").select("category_id").not("category_id", "is", null).order("id").range(f, t)), all<{ category_id: string }>((f, t) => supabase.from("listing_categories").select("category_id,listings!inner(status)").order("listing_id").range(f, t)), all<{ category_id: string }>((f, t) => supabase.from("product_categories").select("category_id").order("product_id").range(f, t))]);
   const used = new Set([...(data ?? []), ...(extra ?? []), ...(member ?? [])].map((p) => p.category_id as string));
   for (const c of categories) if (c.parent_id && used.has(c.id)) used.add(c.parent_id);
   return categories.filter((c) => used.has(c.id));
@@ -106,10 +106,10 @@ export async function getTheme(slug: string): Promise<Theme | null> {
 // One product in a family can be added to more categories or collections than the family itself.
 // The family then shows there too, opening on that product's colour.
 async function memberPicks(table: "product_categories" | "product_themes", column: "category_id" | "theme_id", ids: string[]) {
-  const { data: rows } = await supabase.from(table).select("product_id").in(column, ids);
+  const { data: rows } = await all((f, t) => supabase.from(table).select("product_id").in(column, ids).order("product_id").range(f, t));
   const productIds = [...new Set(((rows ?? []) as { product_id: string }[]).map((r) => r.product_id))];
   if (!productIds.length) return new Map<string, string>();
-  const { data: links } = await supabase.from("listing_products").select("listing_id,product_id,sort_order").in("product_id", productIds).order("sort_order");
+  const { data: links } = await all((f, t) => supabase.from("listing_products").select("listing_id,product_id,sort_order").in("product_id", productIds).order("sort_order").order("listing_id").range(f, t));
   const picks = new Map<string, string>(); // listing id → product id
   for (const l of (links ?? []) as { listing_id: string; product_id: string }[]) if (!picks.has(l.listing_id)) picks.set(l.listing_id, l.product_id);
   return picks;
@@ -129,8 +129,7 @@ export async function getProductsInCategories(ids: string[], limit?: number): Pr
   const extraIds = [...new Set([...own, ...picks.keys()])];
   let q = supabase.from("listings").select(listingSelect).or(`category_id.in.(${ids.join(",")})${extraIds.length ? `,id.in.(${extraIds.join(",")})` : ""}`).order("sort_order");
   // A product page only needs a handful of related pieces, not the whole category.
-  if (limit) q = q.limit(limit);
-  const { data, error } = await q;
+  const { data, error } = limit ? await q.limit(limit) : await all((f, t) => supabase.from("listings").select(listingSelect).or(`category_id.in.(${ids.join(",")})${extraIds.length ? `,id.in.(${extraIds.join(",")})` : ""}`).order("sort_order").order("id").range(f, t));
   return toProducts(must(data, error)).map((p) => (p.listing_type === "group" && !own.has(p.listing_id!) && !ids.includes(p.category_id ?? "") && picks.has(p.listing_id!) ? focus(p, picks.get(p.listing_id!)!) : p));
 }
 
@@ -162,7 +161,7 @@ export async function getProductsByTheme(id: string): Promise<Product[]> {
   const [{ data: extra }, picks] = await Promise.all([supabase.from("listing_themes").select("listing_id").eq("theme_id", id), memberPicks("product_themes", "theme_id", [id])]);
   const own = new Set(((extra ?? []) as { listing_id: string }[]).map((r) => r.listing_id));
   const extraIds = [...new Set([...own, ...picks.keys()])];
-  const { data, error } = await supabase.from("listings").select(listingSelect).or(extraIds.length ? `theme_id.eq.${id},id.in.(${extraIds.join(",")})` : `theme_id.eq.${id}`).order("sort_order");
+  const { data, error } = await all((f, t) => supabase.from("listings").select(listingSelect).or(extraIds.length ? `theme_id.eq.${id},id.in.(${extraIds.join(",")})` : `theme_id.eq.${id}`).order("sort_order").order("id").range(f, t));
   return toProducts(must(data, error)).map((p) => (p.listing_type === "group" && !own.has(p.listing_id!) && p.theme_id !== id && picks.has(p.listing_id!) ? focus(p, picks.get(p.listing_id!)!) : p));
 }
 
@@ -222,7 +221,7 @@ export async function getDeliverySummary() {
 }
 
 export async function getOfferLinks() {
-  const { data } = await supabase.from("products").select(`price_cents,${OFFER_COLUMNS}`).neq("sale_kind", "");
+  const { data } = await all<Parameters<typeof offerPrice>[0]>((f, t) => supabase.from("products").select(`price_cents,${OFFER_COLUMNS}`).neq("sale_kind", "").order("id").range(f, t));
   const live = new Set((data ?? []).map((p) => offerPrice(p).label).filter(Boolean));
   return ["Sale", "Clearance"].filter((k) => live.has(k));
 }
