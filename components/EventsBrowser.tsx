@@ -31,7 +31,7 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
   const qArea = params.get("area") ?? "";
   const qType = params.get("type") ?? "";
   useEffect(() => {
-    if (STATES.includes(qState)) { setState(qState); setArea(qState === "QLD" && EVENT_AREAS.includes(qArea) ? qArea : "All areas"); try { localStorage.setItem("ib-wo-state", qState); } catch { /* private mode */ } }
+    if (STATES.includes(qState)) { setState(qState); setArea(qArea || "All areas"); try { localStorage.setItem("ib-wo-state", qState); } catch { /* private mode */ } }
     if (qType) setType(EVENT_TYPES.includes(qType) ? qType : "All");
     if (STATES.includes(qState)) return;
     let saved = "";
@@ -43,6 +43,11 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
   const inState = useMemo(() => events.filter((e) => e.state === state), [events, state]);
   const fallback = inState.length === 0 && state !== "QLD";
   const pool = fallback ? events : inState;
+  // Areas for the chosen state: Queensland's regular areas plus any area that has events in that state.
+  const areas = useMemo(() => {
+    const found = [...new Set(inState.map((e) => e.region).filter(Boolean))].sort();
+    return state === "QLD" ? [...EVENT_AREAS, ...found.filter((a) => !EVENT_AREAS.includes(a))] : found;
+  }, [inState, state]);
   const [type, setType] = useState("All");
   const [view, setView] = useState<"List" | "Calendar">("List");
   useEffect(() => { try { if (localStorage.getItem("ib-wo-view") === "Calendar") setView("Calendar"); } catch { /* private mode */ } }, []);
@@ -69,7 +74,7 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
       </section>
       <div className="wo-filters"><div className="wo-wrap">
         <div className="wo-row"><span>Where</span>{STATES.map((s) => chip(SHORT[s], state === s, () => pickState(s)))}</div>
-        {state === "QLD" && <div className="wo-row"><span>Area</span>{["All areas", ...EVENT_AREAS].map((a) => chip(a, area === a, () => setArea(a)))}</div>}
+        {areas.length > 0 && <div className="wo-row"><span>Area</span>{["All areas", ...areas].map((a) => chip(a, area === a, () => setArea(a)))}</div>}
         <div className="wo-row"><span>What</span>{["All", ...EVENT_TYPES].map((t) => chip(t, type === t, () => setType(t)))}</div>
         <div className="wo-row"><span>When</span>{WHEN.map((w) => chip(w, when === w, () => setWhen(w)))}</div>
       </div></div>
