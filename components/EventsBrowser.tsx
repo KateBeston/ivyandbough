@@ -65,12 +65,11 @@ export function EventsBrowser({ events }: { events: CalEvent[] }) {
   }, [shown]);
   const chip = (label: string, on: boolean, pick: () => void, soon = false) => <button key={label} type="button" className={`wo-chip${on ? " on" : ""}${soon ? " soon" : ""}`} disabled={soon} onClick={pick}>{label}</button>;
 
-  const place = state === "QLD" ? "Brisbane & South East Queensland" : STATE_NAMES[state].replace(/^the /, "");
   return (
     <>
       <section className="wo-hero">
         <img src="/images/library/fakhri98-29922196.jpg" alt="A lit Christmas tree outside a grand building at night" />
-        <div><p className="wo-kick">Christmas 2026 · {place}</p><h1>What&apos;s On This Christmas</h1><p>Carols, light displays, markets, outdoor movies and festive dining. Your guide to the season, updated weekly.</p></div>
+        <div><p className="wo-kick">Christmas 2026 · Across Australia</p><h1>What&apos;s On This Christmas</h1><p>Carols, light displays, markets, outdoor movies and festive dining. Your guide to the season, updated weekly.</p></div>
       </section>
       <div className="wo-filters"><div className="wo-wrap">
         <div className="wo-row"><span>Where</span>{STATES.map((s) => chip(SHORT[s], state === s, () => pickState(s)))}</div>
