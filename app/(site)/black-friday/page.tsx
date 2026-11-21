@@ -54,7 +54,7 @@ export default async function BlackFridayPage() {
             <div className="bf-terms">
               <h2>The fine print</h2>
               <ul>
-                {dates && <li>Codes work from 12am {dates.start} to 11:59pm {dates.end} (Brisbane time).</li>}
+                {dates && <li>{state === "live" ? `Codes work until 11:59pm ${dates.end} (Brisbane time).` : `Codes work from ${dates.start} to 11:59pm ${dates.end} (Brisbane time).`}</li>}
                 <li>One code per order. Codes come off the price of qualifying items; delivery isn&apos;t discounted.</li>
                 {codes.map((c) => <li key={c.id}><strong>{c.code}</strong>: {codeOffer(c)} {c.include_categories.length ? "trees, wreaths, garlands, outdoor and lighting" : "table, decorations, entertaining, home and gifts"}{codeMinimum(c) ? `, with ${codeMinimum(c)} or more of those items in your basket` : ""}.{c.exclude_suppliers.length ? " Some large items are excluded and show the full price at checkout." : ""}</li>)}
                 <li>Free delivery on standard items over $150 still applies.</li>
