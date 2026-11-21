@@ -46,7 +46,7 @@ export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = 
   // Keep the open menu within the screen so long menus scroll instead of running off the bottom.
   useEffect(() => {
     if (!panel) return;
-    const fit = () => { const el = document.getElementById("nav-panel"); if (el && window.innerWidth > 1100) el.style.maxHeight = `${Math.max(240, window.innerHeight - el.getBoundingClientRect().top - 8)}px`; };
+    const fit = () => { const el = document.getElementById(`nav-panel-${panel}`); if (el && window.innerWidth > 1100) el.style.maxHeight = `${Math.max(240, window.innerHeight - el.getBoundingClientRect().top - 8)}px`; };
     fit();
     window.addEventListener("resize", fit);
     window.addEventListener("scroll", fit, { passive: true });
@@ -78,8 +78,9 @@ export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = 
           <Link href="/basket">Basket ({count})</Link>
         </div>
       </header>
-      {panel === "themes" && (
-        <div id="nav-panel" className="themes-menu">
+      {/* Always in the page (hidden until opened) so search engines can follow the menu links. */}
+      {(
+        <div id={`nav-panel-themes`} className="themes-menu" hidden={panel !== "themes"}>
           <div className="themes-menu-inner">
             {themes.map((t) => (
               <Link key={t.id} href={`/collections/${t.slug}`} onClick={closeAll}>
@@ -90,8 +91,9 @@ export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = 
           </div>
         </div>
       )}
-      {panel === "events" && (
-        <div id="nav-panel" className="themes-menu">
+      {/* Always in the page (hidden until opened) so search engines can follow the menu links. */}
+      {(
+        <div id={`nav-panel-events`} className="themes-menu" hidden={panel !== "events"}>
           <div className="shop-menu">
             {[[["QLD", "Queensland"]], [["NSW", "New South Wales"], ["VIC", "Victoria"], ["ACT", "ACT"]], [["SA", "South Australia"], ["WA", "Western Australia"], ["TAS", "Tasmania"], ["NT", "Northern Territory"]]].map((col, i) => (
               <div key={i}>{col.map(([c, n]) => {
@@ -104,8 +106,9 @@ export function Nav({ themes, categories, offers = [], eventAreas = {}, solid = 
           <div className="themes-menu-all"><Link href="/whats-on" onClick={closeAll}>See all Christmas events</Link></div>
         </div>
       )}
-      {panel === "shop" && (
-        <div id="nav-panel" className="themes-menu">
+      {/* Always in the page (hidden until opened) so search engines can follow the menu links. */}
+      {(
+        <div id={`nav-panel-shop`} className="themes-menu" hidden={panel !== "shop"}>
           <div className="shop-menu">
             {mains.map((m) => (
               <div key={m.id}>

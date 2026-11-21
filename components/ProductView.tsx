@@ -33,7 +33,7 @@ export async function ProductView({ product: listing, preview = false, colour, s
   const theme = product.themes;
   const [{ data: settings }, related, picked, { data: palette }, inside, meanings] = await Promise.all([
     supabase.from("delivery_settings").select("free_over").maybeSingle(),
-    product.category_id && !preview ? getProductsInCategories([product.category_id], 24) : Promise.resolve([] as Product[]),
+    product.category_id && !preview ? getProductsInCategories([product.category_id]) : Promise.resolve([] as Product[]),
     preview ? Promise.resolve([] as Product[]) : getProductsByListingIds(listing.similar_ids ?? []),
     versions.length ? supabase.from("colours").select("name,hex,hex2") : Promise.resolve({ data: [] as { name: string; hex: string; hex2: string }[] }),
     ["bundle", "pack"].includes(product.product_type ?? "") ? getBundleItems(product.bundle_items ?? []) : Promise.resolve([] as BundleItem[]),
@@ -73,7 +73,10 @@ export async function ProductView({ product: listing, preview = false, colour, s
   // "Similar to this": hand-picked listings first, then the family's other colours, then the same category.
   const otherVersions = listing.listing_type === "group" && chosen ? versions.filter((v) => v.id !== chosen.id).map((v) => focus(listing, v.id)) : [];
   const seen = new Set<string>();
-  const more = [...picked, ...otherVersions, ...related.filter((p) => p.slug !== listing.slug)]
+  // The category's products that come after this one (wrapping round), so every product is suggested from its neighbours' pages, not just the first few.
+  const at = related.findIndex((p) => p.slug === listing.slug);
+  const nearby = at < 0 ? related : [...related.slice(at + 1), ...related.slice(0, at)];
+  const more = [...picked, ...otherVersions, ...nearby.filter((p) => p.slug !== listing.slug)]
     .filter((p) => p.price_cents && p.availability !== "Sold out")
     .filter((p) => { const k = `${p.slug}|${p.pick_sku ?? ""}`; if (seen.has(k) || (p.slug === listing.slug && !p.pick_sku)) return false; seen.add(k); return true; })
     .slice(0, 8);

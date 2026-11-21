@@ -1628,3 +1628,4 @@ img.fit,.cover.fit{object-fit:contain!important;background:#fff}
 .show-more{display:flex;flex-direction:column;align-items:center;gap:12px;margin:36px 0 10px;text-align:center}
 .show-more p{margin:0;font-size:13px;letter-spacing:.06em;color:var(--brown)}
 .show-more .solid{min-width:220px}
+.themes-menu[hidden]{display:none}
