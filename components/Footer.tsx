@@ -49,52 +49,61 @@ export async function Footer({ signup = true }: { signup?: boolean } = {}) {
       <div className="footer-top">
         <div className="footer-brand">
           <Link href="/" className="footer-logo-link" aria-label="Ivy &amp; Bough home"><img src="/brand/stacked-cream.svg" alt="Ivy & Bough" className="footer-logo" width={150} height={88} /></Link>
+          <p className="footer-help-title">Questions?<br />We&apos;re here to help</p>
           <address className="footer-contact">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             {CONTACT_PHONE && <a href={`tel:${CONTACT_PHONE.replace(/\s/g, "")}`}>{CONTACT_PHONE}</a>}
+            <Link href="/contact">Contact us</Link>
             <span>Brisbane, QLD · Delivering Australia-wide</span>
           </address>
           <ul className="footer-social">
             {SOCIAL_LINKS.map((s) => <li key={s.id}><a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`Ivy & Bough on ${s.name}`}><img src={`/social/${s.id}.svg`} alt={s.name} width={20} height={20} /></a></li>)}
           </ul>
         </div>
-        <nav aria-label="Shop">
+        <nav aria-labelledby="footer-shop">
+          <h2 id="footer-shop" className="footer-heading">Shop</h2>
           <Link href="/#collections">Shop the collection</Link>
           <Link href="/shop">Shop everything</Link>
           <Link href="/#home">Around the home</Link>
         </nav>
-        <nav aria-label="About">
-          <Link href="/about">About</Link>
-          <Link href="/the-christmas-edit">The Christmas Edit</Link>
-          <Link href="/whats-on">What&apos;s On</Link>
-          <Link href="/contact">Contact</Link>
+        <nav aria-labelledby="footer-help">
+          <h2 id="footer-help" className="footer-heading">Help &amp; support</h2>
+          <Link href="/contact">Contact us</Link>
+          <Link href="/track">Track an order</Link>
+          <Link href="/delivery">Delivery</Link>
+          <Link href="/returns">Returns</Link>
+          <Link href="/faq">FAQs</Link>
+          <Link href="/account">My account</Link>
         </nav>
-        <nav aria-label="Guides">
+        <nav aria-labelledby="footer-guides">
+          <h2 id="footer-guides" className="footer-heading">Guides</h2>
           <Link href="/the-christmas-edit/christmas-tree-guide">Christmas Tree Guide</Link>
           <Link href="/the-christmas-edit/christmas-lights-guide">Christmas Lights Guide</Link>
           <Link href="/the-christmas-edit/christmas-decorating-guide">Decorating Guide</Link>
           <Link href="/the-christmas-edit/christmas-decorations-care-and-storage">Care &amp; Storage</Link>
           <Link href="/christmas-calculator">Tree &amp; Lights Calculator</Link>
         </nav>
-        <nav aria-label="Help">
-          <Link href="/delivery">Delivery</Link>
-          <Link href="/returns">Returns</Link>
-          <Link href="/faq">FAQs</Link>
+        <nav aria-labelledby="footer-about">
+          <h2 id="footer-about" className="footer-heading">About us</h2>
+          <Link href="/about">About Ivy &amp; Bough</Link>
+          <Link href="/the-christmas-edit">The Christmas Edit</Link>
+          <Link href="/whats-on">What&apos;s On</Link>
+        </nav>
+        <nav aria-labelledby="footer-policies">
+          <h2 id="footer-policies" className="footer-heading">Our policies</h2>
+          <Link href="/terms-of-sale">Terms of Sale</Link>
+          <Link href="/promotional-terms">Promotional Terms</Link>
+          <Link href="/terms">Website Terms of Use</Link>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/account-terms">Account Terms</Link>
+          <Link href="/cookies">Cookie Policy</Link>
+          <CookieSettingsLink />
         </nav>
       </div>
       <div className="footer-bottom">
         <div>© 2026 Aurella Group Pty Ltd trading as Ivy &amp; Bough · ABN 70 649 742 423<br />All prices are in AUD and include GST.</div>
         <div className="footer-pay"><span>Secure checkout</span><PaymentMarks tone="quiet" /></div>
       </div>
-      <nav className="footer-legal" aria-label="Legal">
-        <Link href="/privacy">Privacy Policy</Link>
-        <Link href="/terms">Website Terms of Use</Link>
-        <Link href="/terms-of-sale">Terms of Sale</Link>
-        <Link href="/promotional-terms">Promotional Terms</Link>
-        <Link href="/account-terms">Account Terms</Link>
-        <Link href="/cookies">Cookie Policy</Link>
-        <CookieSettingsLink />
-      </nav>
       <p className="footer-agree">By using our website, you agree to our <Link href="/terms">Website Terms of Use</Link>, and by giving us your details, you agree to our <Link href="/privacy">Privacy Policy</Link>.</p>
       <p className="footer-country">Ivy &amp; Bough acknowledges the Traditional Owners and Custodians of Country throughout Australia, and their continuing connection to land, waters and sky. We acknowledge the Jagera and Turrbal peoples, Traditional Owners of the land in Brisbane where Ivy &amp; Bough is based, and pay our respects to Elders past and present, and to all Aboriginal and Torres Strait Islander peoples.</p>
     </footer>
