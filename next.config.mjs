@@ -33,6 +33,8 @@ export default {
   },
   images: {
     qualities: [75, 85],
+    // Optimised images are cached for 31 days (each deploy and each new photo gets a new address anyway).
+    minimumCacheTTL: 2678400,
     // Fewer, smaller sizes: nothing on the site displays wider than 1920px.
     deviceSizes: [640, 828, 1080, 1920],
     imageSizes: [32, 64, 128, 256, 384],

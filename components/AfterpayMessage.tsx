@@ -27,7 +27,12 @@ export function AfterpayMessage({ cents }: { cents: number | null }) {
   useEffect(() => {
     if (!KEY || !cents || !box.current) return;
     let el: ReturnType<ReturnType<StripeJs["elements"]>["create"]> | null = null;
-    loadStripe().then((stripe) => {
+    // Stripe is a large script, so wait until the page has loaded and the browser is idle. The line has its space reserved, so nothing moves.
+    const afterLoad = new Promise<void>((resolve) => {
+      const idle = () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void, o: { timeout: number }) => void }).requestIdleCallback(() => resolve(), { timeout: 2500 }) : setTimeout(resolve, 1500));
+      if (document.readyState === "complete") idle(); else window.addEventListener("load", idle, { once: true });
+    });
+    afterLoad.then(loadStripe).then((stripe) => {
       if (!box.current) return;
       el = stripe.elements().create("paymentMethodMessaging", { amount: cents, currency: "AUD", paymentMethodTypes: ["afterpay_clearpay"], countryCode: "AU" });
       el.mount(box.current);
